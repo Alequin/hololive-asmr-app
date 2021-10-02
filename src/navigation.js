@@ -5,7 +5,7 @@ import { Dimensions, Image, Text, View } from "react-native";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
-import { fakeApiCall } from "./mocks/fake-api-call";
+import { requestVideos } from "./request-videos";
 
 const windowWidth = Dimensions.get("window").width;
 
@@ -44,7 +44,9 @@ const ListOfVideos = () => {
   const [videos, setVideos] = useState([]);
 
   useEffect(() => {
-    fakeApiCall().then(setVideos);
+    requestVideos().then((videos) => {
+      setVideos(videos);
+    });
   });
 
   const numColumns = 2;
@@ -53,15 +55,13 @@ const ListOfVideos = () => {
       style={{ width: "100%", height: "100%" }}
       data={videos}
       numColumns={numColumns}
-      keyExtractor={({ id }) => id}
+      keyExtractor={({ video_id }) => video_id}
       renderItem={({ item }) => (
         <VideoButton
           size={windowWidth / numColumns}
-          title={item.title}
-          thumbnails={item.thumbnails}
+          thumbnailUrl={item.thumbnail_url}
           onSelectVideo={() =>
-            console.log("on click") ||
-            nav.navigate("videoView", { videoId: item.id })
+            nav.navigate("videoView", { videoId: item.video_id })
           }
         />
       )}
@@ -69,7 +69,7 @@ const ListOfVideos = () => {
   );
 };
 
-const VideoButton = ({ title, thumbnails, size, onSelectVideo }) => {
+const VideoButton = ({ thumbnailUrl, size, onSelectVideo }) => {
   return (
     <TouchableOpacity
       style={{ width: size, height: size }}
@@ -77,7 +77,7 @@ const VideoButton = ({ title, thumbnails, size, onSelectVideo }) => {
     >
       <Image
         style={{ width: "100%", height: "100%", resizeMode: "stretch" }}
-        source={{ uri: thumbnails.medium.url }}
+        source={{ uri: thumbnailUrl }}
       />
     </TouchableOpacity>
   );
