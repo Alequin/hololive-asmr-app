@@ -1,11 +1,11 @@
 import React from "react";
-import { ViewContainerWithStatusBarView } from "../view-container-with-status-bar-view";
+import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { ListOfVideos } from "./list-of-videos";
 
 export const HomeView = () => {
   return (
-    <ViewContainerWithStatusBarView>
+    <ViewContainerWithStatusBar>
       <ListOfVideos />
-    </ViewContainerWithStatusBarView>
+    </ViewContainerWithStatusBar>
   );
 };

@@ -1,4 +1,4 @@
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/core";
 import React from "react";
 import { ActivityIndicator, Dimensions, Image } from "react-native";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
@@ -12,7 +12,7 @@ export const ListOfVideos = () => {
 
   if (isLoading) return <ActivityIndicator size="large" color="#fff" />;
 
-  const numColumns = 2;
+  const numColumns = 4;
   return (
     <FlatList
       style={{ width: "100%", height: "100%" }}
@@ -23,8 +23,10 @@ export const ListOfVideos = () => {
         <VideoButton
           size={windowWidth / numColumns}
           thumbnailUrl={item.thumbnail_url}
-          onSelectVideo={() =>
-            nav.navigate("videoView", { videoId: item.video_id })
+          onSelectVideo={async () =>
+            nav.navigate("videoView", {
+              videoId: item.video_id,
+            })
           }
         />
       )}

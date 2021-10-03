@@ -2,7 +2,7 @@ import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ViewContainer } from "./view-container";
 
-export const ViewContainerWithStatusBarView = (props) => {
+export const ViewContainerWithStatusBar = (props) => {
   const insets = useSafeAreaInsets();
   return (
     <ViewContainer

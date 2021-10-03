@@ -11,11 +11,18 @@ export const Navigation = () => {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
-          name="Root"
+          name="homeView"
           component={HomeView}
-          options={{ headerShown: false }}
+          options={{ headerShown: false, orientation: "landscape_right" }}
         />
-        <Stack.Screen name="videoView" component={VideoView} />
+        <Stack.Screen
+          name="videoView"
+          component={VideoView}
+          options={{
+            headerShown: false,
+            orientation: "landscape_right",
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

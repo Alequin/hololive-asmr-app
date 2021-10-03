@@ -4,7 +4,7 @@ export default {
   name: "hololive-asmr",
   slug: "hololive-asmr",
   version: `${version}.0.0`,
-  orientation: "portrait",
+  orientation: "landscape",
   icon: "./assets/images/icon.png",
   scheme: "myapp",
   userInterfaceStyle: "automatic",
