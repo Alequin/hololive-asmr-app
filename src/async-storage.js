@@ -12,3 +12,5 @@ const newStorageItem = (storageKey) => ({
 });
 
 export const cachedVideos = newStorageItem("CACHED_VIDEOS");
+
+export const zoomState = newStorageItem("ZOOM_STATE");

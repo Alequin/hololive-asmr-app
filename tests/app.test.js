@@ -11,6 +11,10 @@ import { asyncPressEvent, asyncRender, getButtonByText } from "./test-utils";
 import * as Linking from "expo-linking";
 import * as asyncStorage from "../src/async-storage";
 import { VIDEO_CACHE_LIFE_TIME } from "../src/views/home-view/hooks/use-request-videos";
+import {
+  ZOOMED_IN_MODIFIER,
+  ZOOMED_OUT_MODIFIER,
+} from "../src/views/home-view/home-view";
 
 describe("App", () => {
   beforeEach(() => {
@@ -394,6 +398,126 @@ describe("App", () => {
       expect(
         within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton")
       ).toHaveLength(3);
+    });
+
+    it("changes the display of the zoom button when it is pressed", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Find and press zoom out button
+      const zoomOutButton = getButtonByText(within(homeView), "Zoom Out");
+      expect(zoomOutButton).toBeTruthy();
+      expect(within(zoomOutButton).queryByTestId("zoomOutIcon")).toBeTruthy();
+      await asyncPressEvent(zoomOutButton);
+
+      // Confirm zoom out button is gone
+      expect(
+        within(zoomOutButton).queryByTestId("zoomOutIcon")
+      ).not.toBeTruthy();
+
+      // Find and press zoom in button
+      const zoomInButton = getButtonByText(within(homeView), "Zoom In");
+      expect(zoomInButton).toBeTruthy();
+      expect(within(zoomInButton).queryByTestId("zoomInIcon")).toBeTruthy();
+      await asyncPressEvent(zoomInButton);
+    });
+
+    it("saves the zoom level when the user modifies it", async () => {
+      jest.spyOn(asyncStorage.zoomState, "save");
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Store initial zoom state
+      expect(asyncStorage.zoomState.save).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.zoomState.save).toHaveBeenCalledWith(
+        ZOOMED_IN_MODIFIER
+      );
+
+      // Find and press zoom out button
+      await asyncPressEvent(getButtonByText(within(homeView), "Zoom Out"));
+      expect(asyncStorage.zoomState.save).toHaveBeenCalledTimes(2);
+      expect(asyncStorage.zoomState.save).toHaveBeenCalledWith(
+        ZOOMED_OUT_MODIFIER
+      );
+
+      // Find and press zoom in button
+      await asyncPressEvent(getButtonByText(within(homeView), "Zoom In"));
+      expect(asyncStorage.zoomState.save).toHaveBeenCalledTimes(3);
+      expect(asyncStorage.zoomState.save).toHaveBeenCalledWith(
+        ZOOMED_IN_MODIFIER
+      );
+
+      // Find and press zoom out button
+      await asyncPressEvent(getButtonByText(within(homeView), "Zoom Out"));
+      expect(asyncStorage.zoomState.save).toHaveBeenCalledTimes(4);
+      expect(asyncStorage.zoomState.save).toHaveBeenCalledWith(
+        ZOOMED_OUT_MODIFIER
+      );
+    });
+
+    it("loads the saved zoom level on mount", async () => {
+      jest.spyOn(asyncStorage.zoomState, "load");
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      expect(asyncStorage.zoomState.load).toHaveBeenCalledTimes(1);
     });
   });
 

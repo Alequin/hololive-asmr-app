@@ -1,3 +1,4 @@
+import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -40,6 +41,8 @@ const ICON_OPTIONS = {
     "youtube-subscription"
   ),
   sortOrder: customIcon(FontAwesome, "sort-amount-asc"),
+  zoomIn: customIcon(Feather, "zoom-in"),
+  zoomOut: customIcon(Feather, "zoom-out"),
 };
 
 const TestIdElement = (props) => <View {...props} />;
