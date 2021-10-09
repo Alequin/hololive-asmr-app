@@ -9,6 +9,8 @@ import React from "react";
 import { App } from "../App";
 import { asyncPressEvent, asyncRender, getButtonByText } from "./test-utils";
 import * as Linking from "expo-linking";
+import * as asyncStorage from "../src/async-storage";
+import { VIDEO_CACHE_LIFE_TIME } from "../src/views/home-view/hooks/use-request-videos";
 
 describe("App", () => {
   beforeEach(() => {
@@ -286,6 +288,112 @@ describe("App", () => {
         within(newestToOldestVideos[2]).queryByTestId("videoImageBackground")
           .props.source
       ).toEqual({ uri: "https://i.ytimg.com/vi/123/mqdefault.jpg" });
+    });
+
+    it("stores the requested videos in the cache", async () => {
+      jest.spyOn(asyncStorage.cachedVideos, "save");
+
+      const mockApiResponse = [
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ];
+
+      const apiPromise = Promise.resolve(mockApiResponse);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      expect(asyncStorage.cachedVideos.save).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.cachedVideos.save).toHaveBeenCalledWith({
+        videos: mockApiResponse,
+        timeout: expect.anything(),
+      });
+
+      // Confirm cache timeout is at least 1 hour in the future, give or take one minute
+      const cacheTimeoutTime =
+        asyncStorage.cachedVideos.save.mock.calls[0][0].timeout;
+      expect(cacheTimeoutTime).toBeLessThan(
+        Date.now() + VIDEO_CACHE_LIFE_TIME + 60_000
+      );
+      expect(cacheTimeoutTime).toBeGreaterThan(
+        Date.now() + VIDEO_CACHE_LIFE_TIME - 60_000
+      );
+    });
+
+    it("uses the cached videos and does not make an api request when cache has not timed out", async () => {
+      const mockCachedVideos = [
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ];
+
+      jest.spyOn(asyncStorage.cachedVideos, "load").mockResolvedValue({
+        timeout: Date.now() + VIDEO_CACHE_LIFE_TIME,
+        videos: mockCachedVideos,
+      });
+
+      const screen = await asyncRender(<App />);
+
+      expect(asyncStorage.cachedVideos.load).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledTimes(0);
+
+      expect(
+        within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton")
+      ).toHaveLength(3);
     });
   });
 
