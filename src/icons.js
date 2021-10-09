@@ -1,3 +1,4 @@
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import camelCase from "lodash/camelCase";
@@ -38,7 +39,7 @@ const ICON_OPTIONS = {
     MaterialCommunityIcons,
     "youtube-subscription"
   ),
-  youtubeTv: customIcon(MaterialCommunityIcons, "youtube-tv"),
+  sortOrder: customIcon(FontAwesome, "sort-amount-asc"),
 };
 
 const TestIdElement = (props) => <View {...props} />;

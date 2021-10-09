@@ -1,8 +1,9 @@
 import { useNavigation } from "@react-navigation/core";
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
 import { WebView } from "react-native-webview";
-import { Icon } from "../../icons";
+import { ControlBar } from "../../components/control-bar";
+import { IconButton } from "../../components/icon-button";
+import { MainView } from "../../components/main-view";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import * as youtubeLinks from "./youtube-links";
 
@@ -17,11 +18,9 @@ export const VideoView = ({ route }) => {
         backgroundColor: "#000",
       }}
     >
-      <View
+      <MainView
         style={{
-          flex: 1,
-          backgroundColor: "#000",
-          padding: 20,
+          paddingHorizontal: 20,
         }}
       >
         <WebView
@@ -31,13 +30,8 @@ export const VideoView = ({ route }) => {
             uri: youtubeLinks.youtubeEmbeddedVideoUri(route.params.videoId),
           }}
         />
-      </View>
+      </MainView>
       <ControlBar>
-        <IconButton
-          iconName="youtubeTv"
-          onPress={() => youtubeLinks.toYoutubeVideo(route.params.videoId)}
-          text="Watch on Youtube"
-        />
         <IconButton
           iconName="youtubeSubscription"
           onPress={() => youtubeLinks.toYoutubeChannel(route.params.channelId)}
@@ -50,41 +44,5 @@ export const VideoView = ({ route }) => {
         />
       </ControlBar>
     </ViewContainerWithStatusBar>
-  );
-};
-
-const ControlBar = (props) => (
-  <View
-    style={{
-      flexDirection: "row",
-      justifyContent: "space-around",
-    }}
-    {...props}
-  />
-);
-
-const IconButton = ({ iconName, onPress, text }) => {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{
-        flex: 1,
-        marginHorizontal: 5,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Icon
-        style={{
-          alignItems: "center",
-          marginHorizontal: 5,
-        }}
-        name={iconName}
-        color="white"
-        size={24}
-      />
-      <Text style={{ color: "white", marginHorizontal: 5 }}>{text}</Text>
-    </TouchableOpacity>
   );
 };

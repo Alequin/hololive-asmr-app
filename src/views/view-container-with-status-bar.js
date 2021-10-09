@@ -7,7 +7,7 @@ export const ViewContainerWithStatusBar = (props) => {
   return (
     <ViewContainer
       {...props}
-      style={[{ paddingTop: insets.top }, props.style]}
+      style={[{ paddingTop: insets.top, flex: 1 }, props.style]}
     />
   );
 };
