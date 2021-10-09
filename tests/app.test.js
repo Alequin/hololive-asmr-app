@@ -14,7 +14,7 @@ import { VIDEO_CACHE_LIFE_TIME } from "../src/views/home-view/hooks/use-request-
 import {
   ZOOMED_IN_MODIFIER,
   ZOOMED_OUT_MODIFIER,
-} from "../src/views/home-view/home-view";
+} from "../src/views/home-view/hooks/use-zoom-modifier";
 
 describe("App", () => {
   beforeEach(() => {
@@ -442,7 +442,7 @@ describe("App", () => {
     });
 
     it("saves the zoom level when the user modifies it", async () => {
-      jest.spyOn(asyncStorage.zoomState, "save");
+      jest.spyOn(asyncStorage.zoomModifierState, "save");
 
       const apiPromise = Promise.resolve([
         {
@@ -467,35 +467,35 @@ describe("App", () => {
       const homeView = screen.queryByTestId("homeView");
 
       // Store initial zoom state
-      expect(asyncStorage.zoomState.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.zoomState.save).toHaveBeenCalledWith(
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(
         ZOOMED_IN_MODIFIER
       );
 
       // Find and press zoom out button
       await asyncPressEvent(getButtonByText(within(homeView), "Zoom Out"));
-      expect(asyncStorage.zoomState.save).toHaveBeenCalledTimes(2);
-      expect(asyncStorage.zoomState.save).toHaveBeenCalledWith(
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(2);
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(
         ZOOMED_OUT_MODIFIER
       );
 
       // Find and press zoom in button
       await asyncPressEvent(getButtonByText(within(homeView), "Zoom In"));
-      expect(asyncStorage.zoomState.save).toHaveBeenCalledTimes(3);
-      expect(asyncStorage.zoomState.save).toHaveBeenCalledWith(
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(3);
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(
         ZOOMED_IN_MODIFIER
       );
 
       // Find and press zoom out button
       await asyncPressEvent(getButtonByText(within(homeView), "Zoom Out"));
-      expect(asyncStorage.zoomState.save).toHaveBeenCalledTimes(4);
-      expect(asyncStorage.zoomState.save).toHaveBeenCalledWith(
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(4);
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(
         ZOOMED_OUT_MODIFIER
       );
     });
 
     it("loads the saved zoom level on mount", async () => {
-      jest.spyOn(asyncStorage.zoomState, "load");
+      jest.spyOn(asyncStorage.zoomModifierState, "load");
 
       const apiPromise = Promise.resolve([
         {
@@ -517,7 +517,7 @@ describe("App", () => {
       await asyncRender(<App />);
       await act(() => apiPromise);
 
-      expect(asyncStorage.zoomState.load).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.zoomModifierState.load).toHaveBeenCalledTimes(1);
     });
   });
 
