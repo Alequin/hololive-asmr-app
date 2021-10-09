@@ -181,6 +181,7 @@ describe("App", () => {
     });
 
     it("allows the video order to be changed", async () => {
+      jest.spyOn(asyncStorage.sortOrderState, "save");
       const apiPromise = Promise.resolve([
         {
           video_id: "123",
@@ -219,6 +220,9 @@ describe("App", () => {
       const screen = await asyncRender(<App />);
       await act(() => apiPromise);
 
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
+
       // Press button to change order to oldest to newest
       await asyncPressEvent(getButtonByText(screen, "Newest to Oldest"));
       expect(getButtonByText(screen, "Oldest to Newest")).toBeTruthy();
@@ -239,6 +243,9 @@ describe("App", () => {
           .props.source
       ).toEqual({ uri: "https://i.ytimg.com/vi/345/mqdefault.jpg" });
 
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(2);
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(1);
+
       // Press button to change order to a to z
       await asyncPressEvent(getButtonByText(screen, "Oldest to Newest"));
       expect(getButtonByText(screen, "A to Z")).toBeTruthy();
@@ -256,6 +263,9 @@ describe("App", () => {
         within(aToZVideos[2]).queryByTestId("videoImageBackground").props.source
       ).toEqual({ uri: "https://i.ytimg.com/vi/234/mqdefault.jpg" });
 
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(3);
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(2);
+
       // Press button to change order to z to a
       await asyncPressEvent(getButtonByText(screen, "A to Z"));
       expect(getButtonByText(screen, "Z to A")).toBeTruthy();
@@ -272,6 +282,9 @@ describe("App", () => {
       expect(
         within(zToAVideos[2]).queryByTestId("videoImageBackground").props.source
       ).toEqual({ uri: "https://i.ytimg.com/vi/345/mqdefault.jpg" });
+
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(4);
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(3);
 
       // Press button to change order back to the original Newest to Oldest
       await asyncPressEvent(getButtonByText(screen, "Z to A"));
@@ -292,6 +305,9 @@ describe("App", () => {
         within(newestToOldestVideos[2]).queryByTestId("videoImageBackground")
           .props.source
       ).toEqual({ uri: "https://i.ytimg.com/vi/123/mqdefault.jpg" });
+
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(5);
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
     });
 
     it("stores the requested videos in the cache", async () => {
@@ -495,7 +511,9 @@ describe("App", () => {
     });
 
     it("loads the saved zoom level on mount", async () => {
-      jest.spyOn(asyncStorage.zoomModifierState, "load");
+      jest
+        .spyOn(asyncStorage.zoomModifierState, "load")
+        .mockResolvedValue(ZOOMED_OUT_MODIFIER);
 
       const apiPromise = Promise.resolve([
         {
@@ -514,10 +532,106 @@ describe("App", () => {
         json: () => apiPromise,
       });
 
-      await asyncRender(<App />);
+      const screen = await asyncRender(<App />);
       await act(() => apiPromise);
 
       expect(asyncStorage.zoomModifierState.load).toHaveBeenCalledTimes(1);
+      expect(getButtonByText(screen, "Zoom In")).toBeTruthy();
+    });
+
+    it("saves the sort order index when the user modifies it", async () => {
+      jest.spyOn(asyncStorage.sortOrderState, "save");
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Gura",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Sana",
+          published_at: "2021-11-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Fauna",
+          published_at: "2021-12-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
+
+      // Press button to change order to oldest to newest
+      await asyncPressEvent(getButtonByText(screen, "Newest to Oldest"));
+
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(2);
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(1);
+
+      // Press button to change order to a to z
+      await asyncPressEvent(getButtonByText(screen, "Oldest to Newest"));
+
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(3);
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(2);
+
+      // Press button to change order to z to a
+      await asyncPressEvent(getButtonByText(screen, "A to Z"));
+
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(4);
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(3);
+
+      // Press button to change order back to the original Newest to Oldest
+      await asyncPressEvent(getButtonByText(screen, "Z to A"));
+
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(5);
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
+    });
+
+    it("loads the saved sort order on mount", async () => {
+      jest.spyOn(asyncStorage.sortOrderState, "load").mockResolvedValue(3);
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      expect(asyncStorage.sortOrderState.load).toHaveBeenCalledTimes(1);
+      expect(getButtonByText(screen, "Z to A")).toBeTruthy();
     });
   });
 

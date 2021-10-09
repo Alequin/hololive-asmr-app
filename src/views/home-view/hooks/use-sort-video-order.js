@@ -1,4 +1,6 @@
-import { useCallback, useMemo, useState } from "react";
+import isNil from "lodash/isNil";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { sortOrderState } from "../../../async-storage";
 
 const VIDEO_SORT_METHODS = [
   { key: "published_at", direction: "desc", name: "Newest to Oldest" },
@@ -8,13 +10,25 @@ const VIDEO_SORT_METHODS = [
 ];
 
 export const useVideoSortOrder = () => {
-  const [sortOrderIndex, setSortOrderIndex] = useState(0);
+  const [hasLoadedCache, setHasLoadedCache] = useState(false);
+  const [sortOrderIndex, setSortOrderIndex] = useState(null);
+
+  useEffect(() => {
+    sortOrderState.load().then((savedSortOrderIndex) => {
+      setSortOrderIndex(savedSortOrderIndex || 0);
+      setHasLoadedCache(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    // Save current zoom
+    if (hasLoadedCache) sortOrderState.save(sortOrderIndex);
+  }, [hasLoadedCache, sortOrderIndex]);
 
   return {
-    sortOrder: useMemo(
-      () => VIDEO_SORT_METHODS[sortOrderIndex],
-      [sortOrderIndex]
-    ),
+    sortOrder: !isNil(sortOrderIndex)
+      ? VIDEO_SORT_METHODS[sortOrderIndex]
+      : null,
     nextSortOrder: useCallback(() => {
       setSortOrderIndex((currentIndex) => {
         const nextIndex = currentIndex + 1;

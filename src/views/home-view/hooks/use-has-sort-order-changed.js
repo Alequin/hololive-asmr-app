@@ -5,7 +5,7 @@ export const useHasSortOrderChanged = (sortOrder) => {
 
   useEffect(() => {
     setPreviousSortOrder(sortOrder);
-  }, [sortOrder.key, sortOrder.direction]);
+  }, [sortOrder?.key, sortOrder?.direction]);
 
   return previousSortOrder !== sortOrder;
 };
