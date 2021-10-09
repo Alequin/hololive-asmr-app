@@ -1,14 +1,21 @@
 jest.mock("node-fetch", () => jest.fn());
+jest.mock("expo-linking", () => ({
+  openURL: jest.fn(),
+}));
 
+import { act, within } from "@testing-library/react-native";
 import fetch from "node-fetch";
-import { within, act, waitFor } from "@testing-library/react-native";
-import nock from "nock";
 import React from "react";
 import { App } from "../App";
 import { asyncPressEvent, asyncRender, getButtonByText } from "./test-utils";
+import * as Linking from "expo-linking";
 
 describe("App", () => {
-  describe("Home view", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe("Home View", () => {
     it("requests and shows the list of videos on the home view", async () => {
       const apiPromise = Promise.resolve([
         {
@@ -279,6 +286,153 @@ describe("App", () => {
         within(newestToOldestVideos[2]).queryByTestId("videoImageBackground")
           .props.source
       ).toEqual({ uri: "https://i.ytimg.com/vi/123/mqdefault.jpg" });
+    });
+  });
+
+  describe("Video View", () => {
+    it("allows the user to use the video button to open the video view", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+    });
+
+    it("allows the user to use the back button to return to the home view", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      // Start on the home view
+      const homeView = screen.queryByTestId("homeView");
+      expect(homeView).toBeTruthy();
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      // Visit the video view
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      await asyncPressEvent(getButtonByText(within(videoView), "Back"));
+
+      // Return to the home view
+      expect(screen.queryByTestId("homeView")).toBeTruthy();
+      expect(screen.queryByTestId("videoView")).not.toBeTruthy();
+    });
+
+    it("shows the selected video on the video view inside a webview", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const videoView = screen.queryByTestId("videoView");
+
+      const embeddedVideo = within(videoView).queryByTestId("embeddedVideo");
+
+      expect(embeddedVideo.props.source).toEqual({
+        uri: "https://www.youtube.com/embed/123?autoplay=0&controls=1&hl=en&fs=0",
+      });
+    });
+
+    it("provides a button which opens the youtube channel the video is connected with", async () => {
+      jest.spyOn(Linking, "openURL");
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      await asyncPressEvent(
+        getButtonByText(
+          within(screen.getByTestId("videoView")),
+          "Ceres Fauna Ch. hololive-EN"
+        )
+      );
+
+      expect(Linking.openURL).toHaveBeenCalledTimes(1);
+      expect(Linking.openURL).toHaveBeenCalledWith(
+        `https://www.youtube.com/channel/UCO_aKKYxn4tvrqPjcTzZ6EQ`
+      );
     });
   });
 });

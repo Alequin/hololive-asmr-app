@@ -25,6 +25,7 @@ export const VideoView = ({ route }) => {
         }}
       >
         <WebView
+          testID="embeddedVideo"
           style={{ width: "100%", height: "100%", backgroundColor: "#000" }}
           originWhitelist={["*"]}
           source={{

@@ -1,7 +1,4 @@
-import { Linking } from "react-native";
-
-export const toYoutubeVideo = (videoId) =>
-  Linking.openURL(`https://www.youtube.com/watch?v=${videoId}`);
+import * as Linking from "expo-linking";
 
 export const toYoutubeChannel = (channelId) =>
   Linking.openURL(`https://www.youtube.com/channel/${channelId}`);
