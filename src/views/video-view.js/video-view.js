@@ -1,9 +1,10 @@
 import { useNavigation } from "@react-navigation/core";
 import React from "react";
-import { TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { Icon } from "../../icons";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
+import * as youtubeLinks from "./youtube-links";
 
 export const VideoView = ({ route }) => {
   const nav = useNavigation();
@@ -27,56 +28,63 @@ export const VideoView = ({ route }) => {
           style={{ width: "100%", height: "100%", backgroundColor: "#000" }}
           originWhitelist={["*"]}
           source={{
-            uri: youtubeEmbeddedVideoUri(route.params.videoId),
+            uri: youtubeLinks.youtubeEmbeddedVideoUri(route.params.videoId),
           }}
         />
       </View>
-      <FullScreenControls onPressBack={async () => nav.navigate("homeView")} />
+      <ControlBar>
+        <IconButton
+          iconName="youtubeTv"
+          onPress={() => youtubeLinks.toYoutubeVideo(route.params.videoId)}
+          text="Watch on Youtube"
+        />
+        <IconButton
+          iconName="youtubeSubscription"
+          onPress={() => youtubeLinks.toYoutubeChannel(route.params.channelId)}
+          text={route.params.channelTitle}
+        />
+        <IconButton
+          iconName="back"
+          onPress={() => nav.navigate("homeView")}
+          text="Back"
+        />
+      </ControlBar>
     </ViewContainerWithStatusBar>
   );
 };
 
-const youtubeEmbeddedVideoUri = (videoId, startTimeInSeconds = 0) => {
-  const dontAutoPlayVideo = "autoplay=0";
-  const shouldShowVideoControls = "controls=1";
-  const timeToStartVideoAt = `start=${startTimeInSeconds}`;
-  const interfaceLanguage = `hl=en`;
-  const hideFullScreenOption = "fs=0";
+const ControlBar = (props) => (
+  <View
+    style={{
+      flexDirection: "row",
+      justifyContent: "space-around",
+    }}
+    {...props}
+  />
+);
 
-  return `https://www.youtube.com/embed/${videoId}?rel=0&${dontAutoPlayVideo}&${shouldShowVideoControls}&${timeToStartVideoAt}&${interfaceLanguage}&${hideFullScreenOption}`;
-};
-
-const FullScreenControls = ({ onPressBack }) => {
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        justifyContent: "space-around",
-      }}
-    >
-      <IconButton iconName="back" onPress={onPressBack} />
-    </View>
-  );
-};
-
-const IconButton = ({ iconName, onPress }) => {
+const IconButton = ({ iconName, onPress, text }) => {
   return (
     <TouchableOpacity
       onPress={onPress}
       style={{
         flex: 1,
         marginHorizontal: 5,
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
       <Icon
         style={{
           alignItems: "center",
-          width: "100%",
+          marginHorizontal: 5,
         }}
         name={iconName}
         color="white"
         size={24}
       />
+      <Text style={{ color: "white", marginHorizontal: 5 }}>{text}</Text>
     </TouchableOpacity>
   );
 };

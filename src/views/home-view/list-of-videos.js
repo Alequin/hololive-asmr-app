@@ -26,6 +26,8 @@ export const ListOfVideos = () => {
           onSelectVideo={async () =>
             nav.navigate("videoView", {
               videoId: item.video_id,
+              channelTitle: item.channel_title,
+              channelId: item.channel_id,
             })
           }
         />

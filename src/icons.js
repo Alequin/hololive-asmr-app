@@ -1,4 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import camelCase from "lodash/camelCase";
 import React from "react";
 import { View } from "react-native";
@@ -33,6 +34,11 @@ const customIcon =
 
 const ICON_OPTIONS = {
   back: customIcon(Ionicons, "arrow-back"),
+  youtubeSubscription: customIcon(
+    MaterialCommunityIcons,
+    "youtube-subscription"
+  ),
+  youtubeTv: customIcon(MaterialCommunityIcons, "youtube-tv"),
 };
 
 const TestIdElement = (props) => <View {...props} />;

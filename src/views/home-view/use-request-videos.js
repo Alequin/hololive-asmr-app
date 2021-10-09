@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import orderBy from "lodash/orderBy";
 import { requestVideos } from "../../external-requests/request-videos";
 
 export const useRequestVideos = () => {
@@ -12,5 +13,11 @@ export const useRequestVideos = () => {
     });
   });
 
-  return { videos, isLoading };
+  return {
+    videos: useMemo(
+      () => orderBy(videos, "published_at", "desc"),
+      [videos, videos.length]
+    ),
+    isLoading,
+  };
 };
