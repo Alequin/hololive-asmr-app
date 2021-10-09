@@ -12,6 +12,7 @@ export const VideoView = ({ route }) => {
 
   return (
     <ViewContainerWithStatusBar
+      testID="videoView"
       style={{
         width: "100%",
         height: "100%",

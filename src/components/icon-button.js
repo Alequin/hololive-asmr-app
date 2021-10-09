@@ -1,10 +1,11 @@
 import React from "react";
-import { Text, TouchableOpacity } from "react-native";
+import { Text } from "react-native";
 import { Icon } from "../icons";
+import { Button } from "./button";
 
 export const IconButton = ({ iconName, iconSize = 24, onPress, text }) => {
   return (
-    <TouchableOpacity
+    <Button
       onPress={onPress}
       style={{
         flex: 1,
@@ -25,6 +26,6 @@ export const IconButton = ({ iconName, iconSize = 24, onPress, text }) => {
         size={iconSize}
       />
       <Text style={{ color: "white", marginHorizontal: 5 }}>{text}</Text>
-    </TouchableOpacity>
+    </Button>
   );
 };

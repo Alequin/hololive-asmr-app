@@ -8,15 +8,15 @@ import { ListOfVideos } from "./components/list-of-videos";
 const VIDEO_SORT_METHODS = [
   { key: "published_at", direction: "desc", name: "Newest to Oldest" },
   { key: "published_at", direction: "asc", name: "Oldest to Newest" },
-  { key: "channel_title", direction: "desc", name: "A to Z" },
-  { key: "channel_title", direction: "asc", name: "Z to A" },
+  { key: "channel_title", direction: "asc", name: "A to Z" },
+  { key: "channel_title", direction: "desc", name: "Z to A" },
 ];
 
 export const HomeView = () => {
   const { sortOrder, nextSortOrder } = useVideoSortOrder();
 
   return (
-    <ViewContainerWithStatusBar>
+    <ViewContainerWithStatusBar testID="homeView">
       <MainView>
         <ListOfVideos sortOrder={sortOrder} />
       </MainView>
