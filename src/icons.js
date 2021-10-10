@@ -1,6 +1,8 @@
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import camelCase from "lodash/camelCase";
 import React from "react";
@@ -43,6 +45,10 @@ const ICON_OPTIONS = {
   sortOrder: customIcon(FontAwesome, "sort-amount-asc"),
   zoomIn: customIcon(Feather, "zoom-in"),
   zoomOut: customIcon(Feather, "zoom-out"),
+  search: customIcon(FontAwesome5, "search"),
+  blankCheckBox: customIcon(MaterialCommunityIcons, "checkbox-blank-outline"),
+  markedCheckBox: customIcon(MaterialCommunityIcons, "checkbox-marked"),
+  clear: customIcon(MaterialIcons, "clear"),
 };
 
 const TestIdElement = (props) => <View {...props} />;

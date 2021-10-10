@@ -7,7 +7,7 @@ export const useOrderedVideos = (videos, sortOrder) => {
   useEffect(() => {
     if (videos && sortOrder)
       setOrderedVideos(orderBy(videos, sortOrder.key, sortOrder.direction));
-  }, [Boolean(videos), sortOrder?.key, sortOrder?.direction]);
+  }, [videos?.length, sortOrder?.key, sortOrder?.direction]);
 
   return orderedVideos;
 };
