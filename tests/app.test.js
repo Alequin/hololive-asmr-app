@@ -433,20 +433,20 @@ describe("App", () => {
 
       const homeView = screen.queryByTestId("homeView");
 
-      // Find and press zoom out button
-      const zoomOutButton = getButtonByText(within(homeView), "Zoom Out");
-      expect(zoomOutButton).toBeTruthy();
-      expect(within(zoomOutButton).queryByTestId("zoomOutIcon")).toBeTruthy();
-      await asyncPressEvent(zoomOutButton);
-
-      // Confirm zoom out button is gone
-      expect(within(zoomOutButton).queryByTestId("zoomOutIcon")).not.toBeTruthy();
-
       // Find and press zoom in button
       const zoomInButton = getButtonByText(within(homeView), "Zoom In");
       expect(zoomInButton).toBeTruthy();
       expect(within(zoomInButton).queryByTestId("zoomInIcon")).toBeTruthy();
       await asyncPressEvent(zoomInButton);
+
+      // Confirm zoom in button is gone
+      expect(within(zoomInButton).queryByTestId("zoomInIcon")).not.toBeTruthy();
+
+      // Find and press zoom out button
+      const zoomOutButton = getButtonByText(within(homeView), "Zoom Out");
+      expect(zoomOutButton).toBeTruthy();
+      expect(within(zoomOutButton).queryByTestId("zoomOutIcon")).toBeTruthy();
+      await asyncPressEvent(zoomOutButton);
     });
 
     it("saves the zoom level when the user modifies it", async () => {
@@ -476,22 +476,22 @@ describe("App", () => {
 
       // Store initial zoom state
       expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(ZOOMED_IN_MODIFIER);
-
-      // Find and press zoom out button
-      await asyncPressEvent(getButtonByText(within(homeView), "Zoom Out"));
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(2);
       expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(ZOOMED_OUT_MODIFIER);
 
       // Find and press zoom in button
       await asyncPressEvent(getButtonByText(within(homeView), "Zoom In"));
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(3);
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(2);
       expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(ZOOMED_IN_MODIFIER);
 
       // Find and press zoom out button
       await asyncPressEvent(getButtonByText(within(homeView), "Zoom Out"));
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(4);
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(3);
       expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(ZOOMED_OUT_MODIFIER);
+
+      // Find and press zoom in button again
+      await asyncPressEvent(getButtonByText(within(homeView), "Zoom In"));
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(4);
+      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(ZOOMED_IN_MODIFIER);
     });
 
     it("loads the saved zoom level on mount", async () => {

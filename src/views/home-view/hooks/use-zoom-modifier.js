@@ -11,7 +11,7 @@ export const useZoomModifier = () => {
   useEffect(() => {
     // Load zoom from cache
     zoomModifierState.load().then((cachedModifier) => {
-      setZoomModifier(cachedModifier || ZOOMED_IN_MODIFIER);
+      setZoomModifier(cachedModifier || ZOOMED_OUT_MODIFIER);
       setHasLoadedCache(true);
     });
   }, []);
@@ -26,9 +26,7 @@ export const useZoomModifier = () => {
     toggleZoomModifier: useCallback(
       () =>
         setZoomModifier((zoomModifier) =>
-          zoomModifier === ZOOMED_IN_MODIFIER
-            ? ZOOMED_OUT_MODIFIER
-            : ZOOMED_IN_MODIFIER
+          zoomModifier === ZOOMED_IN_MODIFIER ? ZOOMED_OUT_MODIFIER : ZOOMED_IN_MODIFIER
         ),
       [setZoomModifier]
     ),
