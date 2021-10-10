@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 export const useColumnCount = (zoomModifier = 1) => {
-  const baseColumnCount = 4;
+  const baseColumnCount = 3;
   const columnCount = baseColumnCount * zoomModifier;
   const [columnCountToUse, setColumnCountToUse] = useState(columnCount);
 
