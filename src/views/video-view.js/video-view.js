@@ -120,11 +120,11 @@ const ViewMask = ({ isScreenLocked, onPressIn, onPressOut, unlockCountDown }) =>
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "white" }}>Unlocking</Text>
+            <Text style={{ color: "white", fontSize: 16, fontWeight: "bold" }}>Unlocking</Text>
             <LoadingSpinner style={{ margin: 20 }} />
-            <Text style={{ color: "white" }}>{`Continue holding for ${Math.ceil(
-              unlockCountDown
-            )} seconds`}</Text>
+            <Text
+              style={{ color: "white", fontSize: 16, fontWeight: "bold" }}
+            >{`Continue holding for ${Math.ceil(unlockCountDown)} seconds`}</Text>
           </View>
         ) : null}
       </View>
