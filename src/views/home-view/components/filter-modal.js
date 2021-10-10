@@ -1,3 +1,4 @@
+import isEmpty from "lodash/isEmpty";
 import React, { useMemo } from "react";
 import { Modal, Text, View, ScrollView } from "react-native";
 import { Button } from "../../../components/button";
@@ -70,7 +71,12 @@ export const FilterModal = ({
               width: "60%",
             }}
           >
-            <ActionButton text="Clear all Selected" icon="clear" onPress={onClearAllChannels} />
+            <ActionButton
+              text="Clear all Selected"
+              icon="clear"
+              onPress={onClearAllChannels}
+              disabled={isEmpty(channelsToFilterBy)}
+            />
             <ActionButton text="Back to Videos" icon="back" onPress={onDismissModal} />
           </View>
         </View>
@@ -110,7 +116,7 @@ const ChannelOptionButton = ({ onSelect, isSelected, channelName }) => {
   );
 };
 
-const ActionButton = ({ icon, text, onPress }) => (
+const ActionButton = ({ icon, text, onPress, disabled }) => (
   <Button
     style={{
       padding: 10,
@@ -121,6 +127,7 @@ const ActionButton = ({ icon, text, onPress }) => (
       alignItems: "center",
     }}
     onPress={onPress}
+    disabled={disabled}
   >
     <Icon name={icon} size={22} style={{ marginRight: 5 }} />
     <Text style={{ fontSize: 16 }}>{text}</Text>

@@ -1,3 +1,4 @@
+jest.mock("react-native/Libraries/Animated/src/NativeAnimatedHelper");
 jest.mock("node-fetch", () => jest.fn());
 jest.mock("expo-linking", () => ({
   openURL: jest.fn(),
@@ -827,6 +828,68 @@ describe("App", () => {
       expect(
         within(getButtonByText(screen, "Kiara")).queryByTestId("checkboxBlankOutlineIcon")
       ).toBeTruthy();
+    });
+
+    it("disables the 'Clear all Selected' button when no channels are selected", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Fauna",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "fauna-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "sana-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Kiara",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "kiara-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      expect(videoButtons).toHaveLength(3);
+
+      // Open filter by channels modal
+      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+
+      // Confirm all check boxes are blank
+      expect(
+        within(getButtonByText(screen, "Fauna")).queryByTestId("checkboxBlankOutlineIcon")
+      ).toBeTruthy();
+      expect(
+        within(getButtonByText(screen, "Sana")).queryByTestId("checkboxBlankOutlineIcon")
+      ).toBeTruthy();
+      expect(
+        within(getButtonByText(screen, "Kiara")).queryByTestId("checkboxBlankOutlineIcon")
+      ).toBeTruthy();
+
+      // Confirm the button is disabled
+      expect(buttonProps(getButtonByText(screen, "Clear all Selected")).disabled).toBe(true);
     });
   });
 

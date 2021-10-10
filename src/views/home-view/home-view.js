@@ -1,11 +1,10 @@
-import { isEmpty, uniq } from "lodash";
+import isEmpty from "lodash/isEmpty";
+import uniq from "lodash/uniq";
 import React, { useMemo, useState } from "react";
-import { ActivityIndicator, Text } from "react-native";
-import { Button } from "../../components/button";
+import { ActivityIndicator } from "react-native";
 import { ControlBar } from "../../components/control-bar";
 import { IconButton } from "../../components/icon-button";
 import { MainView } from "../../components/main-view";
-import { Icon } from "../../icons";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { FilterModal } from "./components/filter-modal";
 import { ListOfVideos } from "./components/list-of-videos";
