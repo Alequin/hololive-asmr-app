@@ -1,9 +1,10 @@
 import isEmpty from "lodash/isEmpty";
 import uniq from "lodash/uniq";
 import React, { useMemo, useState } from "react";
-import { ActivityIndicator } from "react-native";
 import { ControlBar } from "../../components/control-bar";
+import { FullScreenLoadingSpinner } from "../../components/full-screen-loading-spinner";
 import { IconButton } from "../../components/icon-button";
+import { LoadingSpinner } from "../../components/loading-spinner";
 import { MainView } from "../../components/main-view";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { FilterModal } from "./components/filter-modal";
@@ -32,7 +33,7 @@ export const HomeView = () => {
   if (isLoading)
     return (
       <ViewContainerWithStatusBar testID={VIEW_ID}>
-        <ActivityIndicator size="large" color="#fff" style={{ flex: 1 }} />
+        <FullScreenLoadingSpinner />
       </ViewContainerWithStatusBar>
     );
 

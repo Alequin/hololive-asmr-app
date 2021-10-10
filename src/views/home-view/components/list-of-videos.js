@@ -1,7 +1,9 @@
 import { useNavigation } from "@react-navigation/core";
 import React from "react";
-import { ActivityIndicator, Dimensions } from "react-native";
+import { Dimensions } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
+import { FullScreenLoadingSpinner } from "../../../components/full-screen-loading-spinner";
+import { LoadingSpinner } from "../../../components/loading-spinner";
 import { useColumnCount } from "../hooks/use-column-count";
 import { useHasSortOrderChanged } from "../hooks/use-has-sort-order-changed";
 import { useOrderedVideos } from "../hooks/use-ordered-videos";
@@ -15,7 +17,7 @@ export const ListOfVideos = ({ videos, sortOrder, zoomModifier }) => {
   const { columnCount, isUpdatingColumnCount } = useColumnCount(zoomModifier);
 
   if (useHasSortOrderChanged(sortOrder) || isUpdatingColumnCount)
-    return <ActivityIndicator size="large" color="#fff" style={{ flex: 1 }} />;
+    return <FullScreenLoadingSpinner />;
 
   return (
     <FlatList

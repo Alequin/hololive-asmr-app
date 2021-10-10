@@ -1,10 +1,11 @@
 import { useNavigation } from "@react-navigation/core";
 import * as Brightness from "expo-brightness";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, BackHandler, Pressable, Text, View } from "react-native";
+import { BackHandler, Pressable, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { ControlBar } from "../../components/control-bar";
 import { IconButton } from "../../components/icon-button";
+import { LoadingSpinner } from "../../components/loading-spinner";
 import { MainView } from "../../components/main-view";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import * as youtubeLinks from "./youtube-links";
@@ -120,7 +121,7 @@ const ViewMask = ({ isScreenLocked, onPressIn, onPressOut, unlockCountDown }) =>
             }}
           >
             <Text style={{ color: "white" }}>Unlocking</Text>
-            <ActivityIndicator />
+            <LoadingSpinner style={{ margin: 20 }} />
             <Text style={{ color: "white" }}>{`Continue holding for ${Math.ceil(
               unlockCountDown
             )} seconds`}</Text>
