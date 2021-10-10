@@ -2093,43 +2093,43 @@
     sudo-prompt "^9.0.0"
     wcwidth "^1.0.1"
 
-"@react-navigation/core@^6.0.2":
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/@react-navigation/core/-/core-6.0.2.tgz#301be6c28211ae2571f3e9e3f74c8f077619ccdd"
-  integrity sha512-Omsb670qmNfO0KGiRrOE+KXpCYQ6jXxE5uCPnj5srW31s6YDGiFl/M5sRcMyBdDXLXp5HjkQTJpU9ilmjKtL5g==
+"@react-navigation/core@^6.0.3":
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/@react-navigation/core/-/core-6.0.3.tgz#f60924c2fb52002532526a25683909abfd0946fc"
+  integrity sha512-Kan/mpsCsb4NS1A+yIVpWfj6BITM051QAaQM8osWB5AfEsANhG+fCjSKL4Zv5idXpF0vxDbudj6CfnwJTnja6Q==
   dependencies:
-    "@react-navigation/routers" "^6.0.1"
+    "@react-navigation/routers" "^6.0.2"
     escape-string-regexp "^4.0.0"
     nanoid "^3.1.23"
     query-string "^7.0.0"
     react-is "^16.13.0"
 
-"@react-navigation/elements@^1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@react-navigation/elements/-/elements-1.1.2.tgz#82d8978489e47e7c54f67c453ba4a124046fe253"
-  integrity sha512-PbPCleC1HpUlXtuP0DFNCNTEhRLd6lmB0KxY0SGRGqCemS3HpG/PajEQ1LDe7S51M03a1tDby1MfKTkNanUXAg==
+"@react-navigation/elements@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@react-navigation/elements/-/elements-1.2.0.tgz#e0069fd2d34f53a39594833d1bf249e71988c60d"
+  integrity sha512-0eraS7Gj39CD26aAyUyZdyoCe1XBEa9CbHoFHCv3N5/+FSfX+HYdPzkOi3KPT3nEdNx7GD4rTWN2y0qZ7yUiaA==
 
 "@react-navigation/native-stack@^6.1.0":
-  version "6.2.2"
-  resolved "https://registry.yarnpkg.com/@react-navigation/native-stack/-/native-stack-6.2.2.tgz#1687cff9502aa8c91091c9f2a783026f90823cd3"
-  integrity sha512-OhWW1R0ZgAnWAvuhPZaBiEuMF13j7+BaNB8KmxQTTjG41EdzUi5yvz5MbHvzLjhF3yJ3qHxr6HjxFRMbugWvjw==
+  version "6.2.3"
+  resolved "https://registry.yarnpkg.com/@react-navigation/native-stack/-/native-stack-6.2.3.tgz#e22576f6a13adf8d751a42a4eb94054ebed869fc"
+  integrity sha512-0me63n2ec3rD6Y882IgVAqyJh8yRH2GzwmVdveuZNOGgRkr9+aLhXp9VGw190xLbcmlxdDx/tj+d8hhtRA6Q+A==
   dependencies:
-    "@react-navigation/elements" "^1.1.2"
+    "@react-navigation/elements" "^1.2.0"
     warn-once "^0.1.0"
 
 "@react-navigation/native@^6.0.2":
-  version "6.0.4"
-  resolved "https://registry.yarnpkg.com/@react-navigation/native/-/native-6.0.4.tgz#8a9710ce4e9b903ea12c4a4fce8709f5a37e15fe"
-  integrity sha512-497dGGDIZ8hDCPGj6GXZvLGHk6NvZk5k4r1cjwgqcXwutK5fS7sgD0dZP52NTQC3GvLe8PZNv6AEdMIqFrZK6A==
+  version "6.0.5"
+  resolved "https://registry.yarnpkg.com/@react-navigation/native/-/native-6.0.5.tgz#565748eadc48881b946a3474c74b42c507edffe8"
+  integrity sha512-e23rhomQS98sNMcldO2mPVFOcpizrkfdZ6d7wK8nXhkd/m43IvhGmzAgpX4Iz7MFbOFsHGlDRzwba3nlYIGm1Q==
   dependencies:
-    "@react-navigation/core" "^6.0.2"
+    "@react-navigation/core" "^6.0.3"
     escape-string-regexp "^4.0.0"
     nanoid "^3.1.23"
 
-"@react-navigation/routers@^6.0.1":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/@react-navigation/routers/-/routers-6.0.1.tgz#ae50f07c776c18bd9fdc87f17e9f3afc3fd59d19"
-  integrity sha512-5ctB49rmtTRQuTSBVgqMsEzBUjPP2ByUzBjNivA7jmvk+PDCl4oZsiR8KAm/twhxe215GYThfi2vUWXKAg6EEQ==
+"@react-navigation/routers@^6.0.2":
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@react-navigation/routers/-/routers-6.0.2.tgz#7b0bf01e9327e8ffc7ef2d188ea6cfec3cb8cca6"
+  integrity sha512-VEyBlpY+TBMTKE7qaWll/CUYcRctCrJAFx6jIgzkSxncsCOtgEeDEsDLggkGQEVAwOnftAiuXeVRlHkRswIXiw==
   dependencies:
     nanoid "^3.1.23"
 
@@ -3717,6 +3717,14 @@ expo-asset@~8.3.2, expo-asset@~8.3.3:
     md5-file "^3.2.3"
     path-browserify "^1.0.0"
     url-parse "^1.4.4"
+
+expo-brightness@~9.2.2:
+  version "9.2.2"
+  resolved "https://registry.yarnpkg.com/expo-brightness/-/expo-brightness-9.2.2.tgz#8656875fafa7def3b63cee853c9c7bbf13bd4748"
+  integrity sha512-K8NdTBaJ4oltF/PL9OTCrneh1dKrjjIQjkoDL4DZhS5Jk46W3nvkahTv4cdvYu64GZUMjj6q9gXiO6OGKr2yrg==
+  dependencies:
+    "@expo/config-plugins" "^3.0.0"
+    expo-modules-core "~0.2.0"
 
 expo-constants@~11.0.1:
   version "11.0.1"
@@ -8286,6 +8294,11 @@ w3c-xmlserializer@^1.1.2:
     domexception "^1.0.1"
     webidl-conversions "^4.0.2"
     xml-name-validator "^3.0.0"
+
+wait-for-expect@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/wait-for-expect/-/wait-for-expect-3.0.2.tgz#d2f14b2f7b778c9b82144109c8fa89ceaadaa463"
+  integrity sha512-cfS1+DZxuav1aBYbaO/kE06EOS8yRw7qOFoD3XtjTkYvCvh3zUvNST8DXK/nPaeqIzIv3P3kL3lRJn8iwOiSag==
 
 walker@^1.0.7, walker@~1.0.5:
   version "1.0.7"

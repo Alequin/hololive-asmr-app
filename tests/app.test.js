@@ -2,19 +2,34 @@ jest.mock("node-fetch", () => jest.fn());
 jest.mock("expo-linking", () => ({
   openURL: jest.fn(),
 }));
+jest.mock("react-native/Libraries/Utilities/BackHandler.android", () => ({
+  addEventListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
+}));
 
-import { act, within } from "@testing-library/react-native";
+import { act, waitForElementToBeRemoved, within } from "@testing-library/react-native";
+import * as Brightness from "expo-brightness";
+import * as Linking from "expo-linking";
+import { last } from "lodash";
 import fetch from "node-fetch";
 import React from "react";
+import { BackHandler } from "react-native";
+import waitForExpect from "wait-for-expect";
 import { App } from "../App";
-import { asyncPressEvent, asyncRender, getButtonByText } from "./test-utils";
-import * as Linking from "expo-linking";
 import * as asyncStorage from "../src/async-storage";
 import { VIDEO_CACHE_LIFE_TIME } from "../src/views/home-view/hooks/use-request-videos";
 import {
   ZOOMED_IN_MODIFIER,
   ZOOMED_OUT_MODIFIER,
 } from "../src/views/home-view/hooks/use-zoom-modifier";
+import { mockBackHandlerCallback } from "./mock-back-handler-callback";
+import {
+  asyncPressEvent,
+  asyncRender,
+  buttonProps,
+  enableAllErrorLogs,
+  getButtonByText,
+  silenceAllErrorLogs,
+} from "./test-utils";
 
 describe("App", () => {
   beforeEach(() => {
@@ -22,6 +37,9 @@ describe("App", () => {
     jest.spyOn(asyncStorage.cachedVideos, "load").mockResolvedValue(undefined);
     jest.spyOn(asyncStorage.sortOrderState, "load").mockResolvedValue(undefined);
     jest.spyOn(asyncStorage.zoomModifierState, "load").mockResolvedValue(undefined);
+    jest.spyOn(Brightness, "requestPermissionsAsync").mockResolvedValue({ granted: true });
+    jest.spyOn(Brightness, "getBrightnessAsync").mockResolvedValue(1);
+    jest.spyOn(Brightness, "setBrightnessAsync").mockResolvedValue(undefined);
   });
 
   describe("Home View", () => {
@@ -953,6 +971,277 @@ describe("App", () => {
       expect(Linking.openURL).toHaveBeenCalledWith(
         `https://www.youtube.com/channel/UCO_aKKYxn4tvrqPjcTzZ6EQ`
       );
+    });
+
+    it("locks the screen when the lock button is pressed", async () => {
+      const getBackHandlerCallback = mockBackHandlerCallback();
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      await asyncPressEvent(getButtonByText(within(videoView), "Lock Screen"));
+
+      const lockedVideoView = screen.queryByTestId("videoView");
+      const viewMask = screen.queryByTestId("lockScreen");
+
+      // Confirm locked view mask is visible
+      expect(viewMask).toBeTruthy();
+
+      // Confirm the view mask and the video view have the correct zIndex values to disable all controls
+      expect(lockedVideoView.props.style[1][1].zIndex).toBe(1);
+      expect(viewMask.props.style.zIndex).toBe(2);
+
+      // Confirm locked message is visible
+      expect(
+        within(lockedVideoView).queryByText("Screen is locked. Press and hold anywhere to unlock.")
+      ).toBeTruthy();
+
+      // Confirm the screens brightness is dimmed
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(2);
+      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
+      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0.01]);
+
+      // Confirm the backhandler is disabling the hardware back button by always returning true
+      expect(BackHandler.addEventListener).toHaveBeenCalledTimes(2);
+      expect(getBackHandlerCallback()()).toBe(true);
+    });
+
+    it("allows the user to unlock the screen by pressing and holding the view mask", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      await asyncPressEvent(getButtonByText(within(videoView), "Lock Screen"));
+
+      const viewMask = screen.queryByTestId("lockScreen");
+
+      // Confirm locked view mask is visible
+      expect(viewMask).toBeTruthy();
+
+      // Press and hold the view mask to unlock
+      jest.clearAllMocks();
+      await act(() => buttonProps(viewMask).onPressIn());
+
+      // Confirm the screens brightness is increased while holding the view mask
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
+      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
+
+      silenceAllErrorLogs();
+      await waitForExpect(() => {
+        expect(screen.queryByText("Unlocking")).toBeTruthy();
+        expect(screen.queryByText("Continue holding for 4 seconds")).toBeTruthy();
+      });
+
+      await waitForExpect(() => {
+        expect(screen.queryByText("Unlocking")).toBeTruthy();
+        expect(screen.queryByText("Continue holding for 3 seconds")).toBeTruthy();
+      });
+
+      await waitForExpect(() => {
+        expect(screen.queryByText("Unlocking")).toBeTruthy();
+        expect(screen.queryByText("Continue holding for 2 seconds")).toBeTruthy();
+      });
+
+      await waitForExpect(() => {
+        expect(screen.queryByText("Unlocking")).toBeTruthy();
+        expect(screen.queryByText("Continue holding for 1 seconds")).toBeTruthy();
+      });
+
+      // Unlocks the screen after 5 seconds have passed
+      await waitForElementToBeRemoved(() => screen.queryByTestId("lockScreen"));
+      enableAllErrorLogs();
+    }, 10000);
+
+    it("allows the user to stop unlocking the screen and then start unlocking again", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      await asyncPressEvent(getButtonByText(within(videoView), "Lock Screen"));
+
+      const viewMask = screen.queryByTestId("lockScreen");
+
+      // Confirm locked view mask is visible
+      expect(viewMask).toBeTruthy();
+
+      // Press and hold the view mask to unlock
+      jest.clearAllMocks();
+      await act(() => buttonProps(viewMask).onPressIn());
+
+      // Confirm the screens brightness is increased while holding the view mask
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
+      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
+
+      silenceAllErrorLogs();
+      await waitForExpect(() => {
+        expect(screen.queryByText("Unlocking")).toBeTruthy();
+        expect(screen.queryByText("Continue holding for 4 seconds")).toBeTruthy();
+      });
+
+      await waitForExpect(() => {
+        expect(screen.queryByText("Unlocking")).toBeTruthy();
+        expect(screen.queryByText("Continue holding for 3 seconds")).toBeTruthy();
+      });
+
+      // Stop pressing on the view mask
+      jest.clearAllMocks();
+      await act(() => buttonProps(viewMask).onPressOut());
+
+      // Confirm the screens brightness is decreased again
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
+      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0.01]);
+
+      // Press and hold the view mask again to unlock
+      jest.clearAllMocks();
+      await act(() => buttonProps(viewMask).onPressIn());
+
+      // Confirm the screens brightness is increased while holding the view mask
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
+      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
+
+      await waitForExpect(() => {
+        expect(screen.queryByText("Unlocking")).toBeTruthy();
+        expect(screen.queryByText("Continue holding for 4 seconds")).toBeTruthy();
+      });
+
+      await waitForExpect(() => {
+        expect(screen.queryByText("Unlocking")).toBeTruthy();
+        expect(screen.queryByText("Continue holding for 3 seconds")).toBeTruthy();
+      });
+
+      await waitForExpect(() => {
+        expect(screen.queryByText("Unlocking")).toBeTruthy();
+        expect(screen.queryByText("Continue holding for 2 seconds")).toBeTruthy();
+      });
+
+      await waitForExpect(() => {
+        expect(screen.queryByText("Unlocking")).toBeTruthy();
+        expect(screen.queryByText("Continue holding for 1 seconds")).toBeTruthy();
+      });
+
+      // Unlocks the screen after 5 seconds have passed
+      await waitForElementToBeRemoved(() => screen.queryByTestId("lockScreen"));
+      enableAllErrorLogs();
+    }, 10000);
+
+    it("resets the screen brightness when going back from the video view to the home view", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      // Start on the home view
+      const homeView = screen.queryByTestId("homeView");
+      expect(homeView).toBeTruthy();
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      // Visit the video view
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      // Resets the brightness
+      jest.clearAllMocks();
+      // Press back to return to the home view
+      await asyncPressEvent(getButtonByText(within(videoView), "Back"));
+
+      // Confirm the screens brightness is increased while holding the view mask
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
+      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
     });
   });
 });
