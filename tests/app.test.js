@@ -1022,7 +1022,6 @@ describe("App", () => {
       ).toBeTruthy();
 
       // Confirm the screens brightness is dimmed
-      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(2);
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0.01]);
 
@@ -1239,7 +1238,6 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(within(videoView), "Back"));
 
       // Confirm the screens brightness is increased while holding the view mask
-      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
     });
