@@ -6,21 +6,26 @@ export const VIDEO_CACHE_LIFE_TIME = 1000 * 60 * 60;
 
 export const useRequestVideos = () => {
   const [videos, setVideos] = useState(null);
+  const [hasCacheTimedOut, setHasCacheTimedOut] = useState(null);
 
   useEffect(() => {
     cachedVideos.load().then(async (cache) => {
-      const hasCacheTimedOut = cache?.timeout <= Date.now();
-      const shouldUseCache = cache?.videos && !hasCacheTimedOut;
-      if (shouldUseCache) return setVideos(cache?.videos);
-
-      const requestedVideos = await requestVideos();
-      setVideos(requestedVideos);
-      await cachedVideos.save({
-        videos: requestedVideos,
-        timeout: Date.now() + VIDEO_CACHE_LIFE_TIME,
-      });
+      setVideos(cache?.videos || null);
+      setHasCacheTimedOut(Boolean(cache?.timeout && cache.timeout <= Date.now()));
     });
   }, []);
+
+  useEffect(() => {
+    if (hasCacheTimedOut !== null && (!videos || hasCacheTimedOut)) {
+      requestVideos().then(async (requestedVideos) => {
+        setVideos(requestedVideos);
+        await cachedVideos.save({
+          videos: requestedVideos,
+          timeout: Date.now() + VIDEO_CACHE_LIFE_TIME,
+        });
+      });
+    }
+  }, [videos, hasCacheTimedOut]);
 
   return videos;
 };
