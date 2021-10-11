@@ -1,7 +1,7 @@
 import { get } from "./get";
 
-export const getJson = async (url) => {
-  const response = await get(url);
+export const getJson = async (url, options) => {
+  const response = await get(url, options);
   const isErrorStatus = response.status >= 400;
 
   return {

@@ -18,6 +18,7 @@ import waitForExpect from "wait-for-expect";
 import { App } from "../App";
 import * as asyncStorage from "../src/async-storage";
 import * as requestVideos from "../src/external-requests/request-videos";
+import secrets from "../src/secrets";
 import { VIDEO_CACHE_LIFE_TIME } from "../src/views/home-view/hooks/use-request-videos";
 import {
   ZOOMED_IN_MODIFIER,
@@ -87,6 +88,9 @@ describe("App", () => {
       const homeView = screen.queryByTestId("homeView");
 
       expect(within(homeView).queryAllByTestId("videoButton")).toHaveLength(3);
+      expect(fetch).toHaveBeenCalledWith("https://hololive-asmr-server.herokuapp.com/videos", {
+        headers: { authToken: secrets.serverAuthToken },
+      });
     });
 
     it("shows the expected thumbnails on the video buttons", async () => {
