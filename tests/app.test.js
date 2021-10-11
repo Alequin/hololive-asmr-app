@@ -17,6 +17,7 @@ import { BackHandler } from "react-native";
 import waitForExpect from "wait-for-expect";
 import { App } from "../App";
 import * as asyncStorage from "../src/async-storage";
+import * as requestVideos from "../src/external-requests/request-videos";
 import { VIDEO_CACHE_LIFE_TIME } from "../src/views/home-view/hooks/use-request-videos";
 import {
   ZOOMED_IN_MODIFIER,
@@ -419,10 +420,13 @@ describe("App", () => {
         videos: mockCachedVideos,
       });
 
+      jest.spyOn(requestVideos, "requestVideos");
+
       const screen = await asyncRender(<App />);
 
       expect(asyncStorage.cachedVideos.load).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledTimes(0);
+      expect(fetch).toHaveBeenCalledTimes(1); // Called once on startup
+      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(0); // request videos function never called
 
       expect(within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton")).toHaveLength(
         3

@@ -16,3 +16,5 @@ export const cachedVideos = newStorageItem("CACHED_VIDEOS");
 export const zoomModifierState = newStorageItem("ZOOM_MODIFIER_STATE");
 
 export const sortOrderState = newStorageItem("SORT_ORDER_STATE");
+
+export const firstLoadState = newStorageItem("FIRST_LOAD_STATE");
