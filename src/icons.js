@@ -38,6 +38,7 @@ const ICON_OPTIONS = {
   markedCheckBox: customIcon(MaterialCommunityIcons, "checkbox-marked"),
   clear: customIcon(MaterialIcons, "clear"),
   lock: customIcon(Entypo, "lock"),
+  shieldKey: customIcon(MaterialCommunityIcons, "shield-key"),
 };
 
 const TestIdElement = (props) => <View {...props} />;

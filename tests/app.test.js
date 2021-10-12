@@ -6,6 +6,13 @@ jest.mock("expo-linking", () => ({
 jest.mock("react-native/Libraries/Utilities/BackHandler.android", () => ({
   addEventListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
 }));
+jest.mock("react-native/Libraries/AppState/AppState", () => {
+  return {
+    current: "active",
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  };
+});
 
 import { act, waitForElementToBeRemoved, within } from "@testing-library/react-native";
 import * as Brightness from "expo-brightness";
@@ -19,7 +26,7 @@ import { App } from "../App";
 import * as asyncStorage from "../src/async-storage";
 import * as requestVideos from "../src/external-requests/request-videos";
 import secrets from "../src/secrets";
-import { requestBrightnessPermissions } from "../src/use-brightness";
+import * as showToast from "../src/show-toast";
 import { VIDEO_CACHE_LIFE_TIME } from "../src/views/home-view/hooks/use-request-videos";
 import {
   ZOOMED_IN_MODIFIER,
@@ -45,6 +52,7 @@ describe("App", () => {
     jest.spyOn(Brightness, "getPermissionsAsync").mockResolvedValue({ granted: true });
     jest.spyOn(Brightness, "getBrightnessAsync").mockResolvedValue(1);
     jest.spyOn(Brightness, "setBrightnessAsync").mockResolvedValue(undefined);
+    jest.spyOn(showToast, "showToast").mockImplementation(() => {});
   });
 
   describe("Home View", () => {
@@ -171,6 +179,69 @@ describe("App", () => {
       expect(within(videoButtons[2]).queryByTestId("videoImageBackground").props.source).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
+    });
+
+    it("provides a button which allows the user to give permission for the app to update brightness when it has not already been given", async () => {
+      jest.spyOn(Brightness, "getPermissionsAsync").mockResolvedValue({ granted: false });
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Confirm button is visible
+      const permissionButtons = getButtonByText(within(homeView), "Give System Permission");
+      expect(permissionButtons).toBeTruthy();
+
+      jest.clearAllMocks();
+      // Confirm permission is requested on press
+      await asyncPressEvent(permissionButtons);
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+    });
+
+    it("hides the 'Give System Permission' button when permission has been given", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Confirm button is not visible
+      const permissionButtons = getButtonByText(within(homeView), "Give System Permission");
+      expect(permissionButtons).not.toBeTruthy();
     });
 
     it("orders the video buttons by descending published at date by default", async () => {
