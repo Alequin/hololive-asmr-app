@@ -48,6 +48,7 @@ describe("App", () => {
     jest.spyOn(asyncStorage.cachedVideos, "load").mockResolvedValue(undefined);
     jest.spyOn(asyncStorage.sortOrderState, "load").mockResolvedValue(undefined);
     jest.spyOn(asyncStorage.zoomModifierState, "load").mockResolvedValue(undefined);
+    jest.spyOn(asyncStorage.firstLoadState, "load").mockResolvedValue(undefined);
     jest.spyOn(Brightness, "requestPermissionsAsync").mockResolvedValue({ granted: true });
     jest.spyOn(Brightness, "getPermissionsAsync").mockResolvedValue({ granted: true });
     jest.spyOn(Brightness, "getBrightnessAsync").mockResolvedValue(1);
@@ -125,6 +126,32 @@ describe("App", () => {
       await act(() => apiPromise);
 
       expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not requests permission to change the system brightness when the app starts if the app have previously started", async () => {
+      jest.spyOn(asyncStorage.firstLoadState, "load").mockResolvedValue(true);
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(0);
     });
 
     it("shows the expected thumbnails on the video buttons", async () => {

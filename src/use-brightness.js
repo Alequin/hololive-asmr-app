@@ -17,6 +17,6 @@ export const useBrightness = () => {
 export const requestBrightnessPermissions = async () => {
   Brightness.requestPermissionsAsync().then(({ granted }) => {
     if (!granted)
-      showToast("Permission is required to dim the brightness when locking the screen", 3000);
+      showToast("Permission is required to dim the brightness when locking the screen", 5000);
   });
 };

@@ -13,12 +13,10 @@ export const App = () => {
     firstLoadState.load().then((hasUserLoadedTheAppBefore) => {
       if (!hasUserLoadedTheAppBefore) {
         turnApiOn();
+        requestBrightnessPermissions();
         firstLoadState.save(true);
       }
     });
-
-    // Request permission to modify brightness
-    requestBrightnessPermissions();
   }, []);
 
   useEffect(() => {});

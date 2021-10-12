@@ -1,20 +1,19 @@
+import * as Brightness from "expo-brightness";
 import isEmpty from "lodash/isEmpty";
 import uniq from "lodash/uniq";
 import React, { useEffect, useMemo, useState } from "react";
-import { AppState } from "react-native";
 import { ControlBar } from "../../components/control-bar";
 import { FullScreenLoadingSpinner } from "../../components/full-screen-loading-spinner";
 import { IconButton } from "../../components/icon-button";
 import { MainView } from "../../components/main-view";
 import { useIsAppStateActive } from "../../use-app-state";
-import { hasBrightnessPermission, requestBrightnessPermissions } from "../../use-brightness";
+import { requestBrightnessPermissions } from "../../use-brightness";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { FilterModal } from "./components/filter-modal";
 import { ListOfVideos } from "./components/list-of-videos";
 import { useRequestVideos } from "./hooks/use-request-videos";
 import { useVideoSortOrder } from "./hooks/use-sort-video-order";
 import { useZoomModifier, ZOOMED_IN_MODIFIER } from "./hooks/use-zoom-modifier";
-import * as Brightness from "expo-brightness";
 
 const VIEW_ID = "homeView";
 
