@@ -9,9 +9,11 @@ export const VIDEO_CACHE_LIFE_TIME = 1000 * 60 * 10;
 export const useRequestVideos = () => {
   const isAppActive = useIsAppStateActive();
   const [videos, setVideos] = useState(null);
+  const [lastApiCallTime, setLastApiCallTime] = useState(Date.now());
 
   const updateVideosIfRequired = useCallback(async (currentVideos) => {
     const updatedVideos = await requestVideos();
+    setLastApiCallTime(Date.now());
     if (isEqual(currentVideos, updatedVideos)) return;
     setVideos(updatedVideos);
     await cachedVideos.save(updatedVideos);
@@ -36,6 +38,13 @@ export const useRequestVideos = () => {
       return () => clearInterval(interval);
     }
   }, [videos, isAppActive]);
+
+  useEffect(() => {
+    // If the app has been in the background for longer than the cache life make an api call instantly
+    if (isAppActive && lastApiCallTime + VIDEO_CACHE_LIFE_TIME < Date.now()) {
+      updateVideosIfRequired(videos);
+    }
+  }, [isAppActive]);
 
   return videos;
 };
