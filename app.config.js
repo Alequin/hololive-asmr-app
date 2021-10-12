@@ -1,3 +1,5 @@
+import { googleMobileAdsAppId } from "./secrets.json";
+
 const version = 2;
 
 export default {
@@ -24,6 +26,9 @@ export default {
     adaptiveIcon: {
       foregroundImage: "./assets/images/adaptive-icon.png",
       backgroundColor: "#000000",
+    },
+    config: {
+      googleMobileAdsAppId,
     },
   },
 };
