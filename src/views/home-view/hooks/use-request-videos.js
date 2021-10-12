@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { cachedVideos } from "../../../async-storage";
 import { requestVideos } from "../../../external-requests/request-videos";
 
-export const VIDEO_CACHE_LIFE_TIME = 1000 * 60 * 60;
+export const VIDEO_CACHE_LIFE_TIME = 1000 * 60 * 10;
 
 export const useRequestVideos = () => {
   const [videos, setVideos] = useState(null);
@@ -23,6 +23,7 @@ export const useRequestVideos = () => {
           videos: requestedVideos,
           timeout: Date.now() + VIDEO_CACHE_LIFE_TIME,
         });
+        setHasCacheTimedOut(false);
       });
     }
   }, [videos, hasCacheTimedOut]);
