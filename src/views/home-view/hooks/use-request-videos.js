@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import isEqual from "lodash/isEqual";
+import { useCallback, useEffect, useState } from "react";
 import { cachedVideos } from "../../../async-storage";
 import { requestVideos } from "../../../external-requests/request-videos";
 
@@ -6,27 +7,43 @@ export const VIDEO_CACHE_LIFE_TIME = 1000 * 60 * 10;
 
 export const useRequestVideos = () => {
   const [videos, setVideos] = useState(null);
-  const [hasCacheTimedOut, setHasCacheTimedOut] = useState(null);
+
+  const updateVideosIfRequired = useCallback(async (currentVideos) => {
+    const updatedVideos = await requestVideos();
+    if (isEqual(currentVideos, updatedVideos)) return;
+    setVideos(updatedVideos);
+    await cachedVideos.save(updatedVideos);
+  }, []);
 
   useEffect(() => {
-    cachedVideos.load().then(async (cache) => {
-      setVideos(cache?.videos || null);
-      setHasCacheTimedOut(Boolean(cache?.timeout && cache.timeout <= Date.now()));
+    // Use cached videos on initial load
+    cachedVideos.load().then(async (loadedVideos) => {
+      setVideos(loadedVideos || null);
+      // Once cache has set videos make a request to see if there are changes to the videos
+      await updateVideosIfRequired(loadedVideos);
     });
   }, []);
 
   useEffect(() => {
-    if (hasCacheTimedOut !== null && (!videos || hasCacheTimedOut)) {
-      requestVideos().then(async (requestedVideos) => {
-        setVideos(requestedVideos);
-        await cachedVideos.save({
-          videos: requestedVideos,
-          timeout: Date.now() + VIDEO_CACHE_LIFE_TIME,
-        });
-        setHasCacheTimedOut(false);
-      });
-    }
-  }, [videos, hasCacheTimedOut]);
+    // Make more calls to check it there are new videos on every interval
+    const interval = setIncrementalInterval(
+      async () => updateVideosIfRequired(videos),
+      VIDEO_CACHE_LIFE_TIME
+    );
+    return () => clearInterval(interval);
+  }, [videos]);
 
   return videos;
+};
+
+const setIncrementalInterval = (callback, interval) => {
+  // Timer is divided by the increment to work around issues with long running timers
+  const increment = 10;
+  let eventCount = 1;
+  return setInterval(async () => {
+    eventCount++;
+    if (eventCount % increment !== 0) return;
+    eventCount = 1;
+    await callback();
+  }, interval / increment);
 };

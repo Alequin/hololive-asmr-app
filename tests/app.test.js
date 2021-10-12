@@ -3,6 +3,9 @@ jest.mock("node-fetch", () => jest.fn());
 jest.mock("expo-linking", () => ({
   openURL: jest.fn(),
 }));
+jest.mock("expo-localization", () => ({
+  locale: "en",
+}));
 jest.mock("react-native/Libraries/Utilities/BackHandler.android", () => ({
   addEventListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
 }));
@@ -27,7 +30,6 @@ import * as asyncStorage from "../src/async-storage";
 import * as requestVideos from "../src/external-requests/request-videos";
 import secrets from "../src/secrets";
 import * as showToast from "../src/show-toast";
-import { VIDEO_CACHE_LIFE_TIME } from "../src/views/home-view/hooks/use-request-videos";
 import {
   ZOOMED_IN_MODIFIER,
   ZOOMED_OUT_MODIFIER,
@@ -41,6 +43,7 @@ import {
   getButtonByText,
   silenceAllErrorLogs,
 } from "./test-utils";
+import * as environment from "../src/environment";
 
 describe("App", () => {
   beforeEach(() => {
@@ -54,6 +57,7 @@ describe("App", () => {
     jest.spyOn(Brightness, "getBrightnessAsync").mockResolvedValue(1);
     jest.spyOn(Brightness, "setBrightnessAsync").mockResolvedValue(undefined);
     jest.spyOn(showToast, "showToast").mockImplementation(() => {});
+    jest.spyOn(environment, "locale").mockImplementation(() => "en");
   });
 
   describe("Home View", () => {
@@ -501,19 +505,23 @@ describe("App", () => {
       await act(() => apiPromise);
 
       expect(asyncStorage.cachedVideos.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.cachedVideos.save).toHaveBeenCalledWith({
-        videos: mockApiResponse,
-        timeout: expect.anything(),
-      });
-
-      // Confirm cache timeout is at least 1 hour in the future, give or take one minute
-      const cacheTimeoutTime = asyncStorage.cachedVideos.save.mock.calls[0][0].timeout;
-      expect(cacheTimeoutTime).toBeLessThan(Date.now() + VIDEO_CACHE_LIFE_TIME + 60_000);
-      expect(cacheTimeoutTime).toBeGreaterThan(Date.now() + VIDEO_CACHE_LIFE_TIME - 60_000);
+      expect(asyncStorage.cachedVideos.save).toHaveBeenCalledWith(mockApiResponse);
     });
 
-    it("uses the cached videos and does not make an api request when cache has not timed out", async () => {
-      const mockCachedVideos = [
+    it("uses the cached videos but also make a call to the server as well to see if any videos have been updated", async () => {
+      jest.spyOn(asyncStorage.cachedVideos, "load").mockResolvedValue([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      const mockApiVideos = [
         {
           video_id: "123",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
@@ -543,9 +551,10 @@ describe("App", () => {
         },
       ];
 
-      jest.spyOn(asyncStorage.cachedVideos, "load").mockResolvedValue({
-        timeout: Date.now() + VIDEO_CACHE_LIFE_TIME,
-        videos: mockCachedVideos,
+      const apiPromise = Promise.resolve(mockApiVideos);
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
       });
 
       jest.spyOn(requestVideos, "requestVideos");
@@ -553,9 +562,9 @@ describe("App", () => {
       const screen = await asyncRender(<App />);
 
       expect(asyncStorage.cachedVideos.load).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledTimes(1); // Called once on startup
-      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(0); // request videos function never called
+      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
 
+      // Shows 3 videos even thought the cache contained 1 as the api call overrides the cache
       expect(within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton")).toHaveLength(
         3
       );
@@ -1126,7 +1135,44 @@ describe("App", () => {
       const embeddedVideo = within(videoView).queryByTestId("embeddedVideo");
 
       expect(embeddedVideo.props.source).toEqual({
-        uri: "https://www.youtube.com/embed/123?autoplay=0&controls=1&hl=mock&fs=0",
+        uri: "https://www.youtube.com/embed/123?autoplay=0&controls=1&fs=0&hl=en",
+      });
+    });
+
+    it("sets the correct localization when embedding the video", async () => {
+      jest.spyOn(environment, "locale").mockImplementation(() => "ja");
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const videoView = screen.queryByTestId("videoView");
+
+      const embeddedVideo = within(videoView).queryByTestId("embeddedVideo");
+
+      expect(embeddedVideo.props.source).toEqual({
+        uri: "https://www.youtube.com/embed/123?autoplay=0&controls=1&fs=0&hl=ja",
       });
     });
 

@@ -1,5 +1,4 @@
 import { useNavigation } from "@react-navigation/core";
-import * as Brightness from "expo-brightness";
 import React, { useEffect, useState } from "react";
 import { BackHandler, Pressable, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
