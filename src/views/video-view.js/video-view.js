@@ -2,6 +2,7 @@ import { useNavigation } from "@react-navigation/core";
 import React, { useEffect, useState } from "react";
 import { BackHandler, Pressable, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
+import { AdBanner } from "../../ad-banner";
 import { ControlBar } from "../../components/control-bar";
 import { IconButton } from "../../components/icon-button";
 import { LoadingSpinner } from "../../components/loading-spinner";
@@ -46,7 +47,7 @@ export const VideoView = ({ route }) => {
           zIndex: isScreenLocked ? 1 : 2,
         }}
       >
-        <View style={{ width: "100%", height: "100%" }}>
+        <View style={{ flex: 1, height: "100%" }}>
           <MainView
             style={{
               paddingHorizontal: 20,
@@ -79,6 +80,7 @@ export const VideoView = ({ route }) => {
             )}
           </ControlBar>
         </View>
+        <AdBanner />
       </ViewContainerWithStatusBar>
     </>
   );
