@@ -1126,7 +1126,7 @@ describe("App", () => {
       const embeddedVideo = within(videoView).queryByTestId("embeddedVideo");
 
       expect(embeddedVideo.props.source).toEqual({
-        uri: "https://www.youtube.com/embed/123?autoplay=0&controls=1&hl=en&fs=0",
+        uri: "https://www.youtube.com/embed/123?autoplay=0&controls=1&hl=mock&fs=0",
       });
     });
 
