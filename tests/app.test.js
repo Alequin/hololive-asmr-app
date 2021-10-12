@@ -44,6 +44,7 @@ import {
   silenceAllErrorLogs,
 } from "./test-utils";
 import * as environment from "../src/environment";
+import { mockAppStateUpdate } from "./mock-app-state-update";
 
 describe("App", () => {
   beforeEach(() => {
@@ -1031,6 +1032,36 @@ describe("App", () => {
 
       // Confirm the button is disabled
       expect(buttonProps(getButtonByText(screen, "Clear all Selected")).disabled).toBe(true);
+    });
+
+    it("checks the permissions to modify the brightness when the app state changes from background and active", async () => {
+      const setAppState = mockAppStateUpdate();
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      // Checks once on mount
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
+      await act(() => setAppState("background"));
+      await act(() => setAppState("active"));
+      // Checks again after the app goes from the background to active
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(2);
     });
   });
 
