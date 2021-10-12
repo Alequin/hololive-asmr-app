@@ -19,6 +19,7 @@ import { App } from "../App";
 import * as asyncStorage from "../src/async-storage";
 import * as requestVideos from "../src/external-requests/request-videos";
 import secrets from "../src/secrets";
+import { requestBrightnessPermissions } from "../src/use-brightness";
 import { VIDEO_CACHE_LIFE_TIME } from "../src/views/home-view/hooks/use-request-videos";
 import {
   ZOOMED_IN_MODIFIER,
@@ -41,6 +42,7 @@ describe("App", () => {
     jest.spyOn(asyncStorage.sortOrderState, "load").mockResolvedValue(undefined);
     jest.spyOn(asyncStorage.zoomModifierState, "load").mockResolvedValue(undefined);
     jest.spyOn(Brightness, "requestPermissionsAsync").mockResolvedValue({ granted: true });
+    jest.spyOn(Brightness, "getPermissionsAsync").mockResolvedValue({ granted: true });
     jest.spyOn(Brightness, "getBrightnessAsync").mockResolvedValue(1);
     jest.spyOn(Brightness, "setBrightnessAsync").mockResolvedValue(undefined);
   });
@@ -91,6 +93,30 @@ describe("App", () => {
       expect(fetch).toHaveBeenCalledWith("https://hololive-asmr-server.herokuapp.com/videos", {
         headers: { authToken: secrets.serverAuthToken },
       });
+    });
+
+    it("requests permission to change the system brightness when the app starts", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
     });
 
     it("shows the expected thumbnails on the video buttons", async () => {
@@ -1093,12 +1119,51 @@ describe("App", () => {
       ).toBeTruthy();
 
       // Confirm the screens brightness is dimmed
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalled();
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0.01]);
 
       // Confirm the backhandler is disabling the hardware back button by always returning true
       expect(BackHandler.addEventListener).toHaveBeenCalledTimes(2);
       expect(getBackHandlerCallback()()).toBe(true);
+    });
+
+    it("does not update the brightness when locking the screen if permission has not been given", async () => {
+      jest.spyOn(Brightness, "getPermissionsAsync").mockResolvedValue({ granted: false });
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      await asyncPressEvent(getButtonByText(within(videoView), "Lock Screen"));
+
+      // Confirm the screens brightness is not changed
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalled();
+      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(0);
     });
 
     it("allows the user to unlock the screen by pressing and holding the view mask", async () => {
@@ -1142,7 +1207,7 @@ describe("App", () => {
       await act(() => buttonProps(viewMask).onPressIn());
 
       // Confirm the screens brightness is increased while holding the view mask
-      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
 
@@ -1213,7 +1278,7 @@ describe("App", () => {
       await act(() => buttonProps(viewMask).onPressIn());
 
       // Confirm the screens brightness is increased while holding the view mask
-      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
 
@@ -1233,7 +1298,7 @@ describe("App", () => {
       await act(() => buttonProps(viewMask).onPressOut());
 
       // Confirm the screens brightness is decreased again
-      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0.01]);
 
@@ -1242,7 +1307,7 @@ describe("App", () => {
       await act(() => buttonProps(viewMask).onPressIn());
 
       // Confirm the screens brightness is increased while holding the view mask
-      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
 
@@ -1309,6 +1374,7 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(within(videoView), "Back"));
 
       // Confirm the screens brightness is increased while holding the view mask
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
     });

@@ -7,6 +7,7 @@ import { ControlBar } from "../../components/control-bar";
 import { IconButton } from "../../components/icon-button";
 import { LoadingSpinner } from "../../components/loading-spinner";
 import { MainView } from "../../components/main-view";
+import { useBrightness } from "../../use-brightness";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import * as youtubeLinks from "./youtube-links";
 
@@ -130,19 +131,6 @@ const ViewMask = ({ isScreenLocked, onPressIn, onPressOut, unlockCountDown }) =>
       </View>
     </Pressable>
   );
-};
-
-const useBrightness = () => {
-  const statusPromise = Brightness.requestPermissionsAsync();
-
-  return {
-    getBrightness: async () =>
-      statusPromise.then(async ({ granted }) => granted && Brightness.getBrightnessAsync()),
-    setBrightness: async (brightnessLevel) =>
-      statusPromise.then(
-        async ({ granted }) => granted && Brightness.setBrightnessAsync(brightnessLevel)
-      ),
-  };
 };
 
 const useInitialBrightness = ({ getBrightness, setBrightness }) => {

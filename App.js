@@ -1,9 +1,10 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { firstLoadState } from "./src/async-storage";
 import { turnApiOn } from "./src/external-requests/turn-api-on";
 import { Navigation } from "./src/navigation";
+import { requestBrightnessPermissions } from "./src/use-brightness";
 
 export const App = () => {
   useMemo(() => {
@@ -15,7 +16,12 @@ export const App = () => {
         firstLoadState.save(true);
       }
     });
+
+    // Request permission to modify brightness
+    requestBrightnessPermissions();
   }, []);
+
+  useEffect(() => {});
 
   return (
     <>
