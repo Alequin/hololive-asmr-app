@@ -2,10 +2,12 @@ import isEqual from "lodash/isEqual";
 import { useCallback, useEffect, useState } from "react";
 import { cachedVideos } from "../../../async-storage";
 import { requestVideos } from "../../../external-requests/request-videos";
+import { useIsAppStateActive } from "../../../use-app-state";
 
 export const VIDEO_CACHE_LIFE_TIME = 1000 * 60 * 10;
 
 export const useRequestVideos = () => {
+  const isAppActive = useIsAppStateActive();
   const [videos, setVideos] = useState(null);
 
   const updateVideosIfRequired = useCallback(async (currentVideos) => {
@@ -25,13 +27,15 @@ export const useRequestVideos = () => {
   }, []);
 
   useEffect(() => {
-    // Make more calls to check it there are new videos on every interval
-    const interval = setIncrementalInterval(
-      async () => updateVideosIfRequired(videos),
-      VIDEO_CACHE_LIFE_TIME
-    );
-    return () => clearInterval(interval);
-  }, [videos]);
+    if (isAppActive) {
+      // Make more calls to check it there are new videos on every interval
+      const interval = setIncrementalInterval(
+        async () => updateVideosIfRequired(videos),
+        VIDEO_CACHE_LIFE_TIME
+      );
+      return () => clearInterval(interval);
+    }
+  }, [videos, isAppActive]);
 
   return videos;
 };

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AppState } from "react-native";
 
 export const useIsAppStateActive = () => {
-  const [appState, setAppState] = useState(AppState.current);
+  const [appState, setAppState] = useState(AppState.currentState);
 
   useEffect(() => {
     AppState.addEventListener("change", setAppState);

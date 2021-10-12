@@ -11,7 +11,7 @@ jest.mock("react-native/Libraries/Utilities/BackHandler.android", () => ({
 }));
 jest.mock("react-native/Libraries/AppState/AppState", () => {
   return {
-    current: "active",
+    currentState: "active",
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
   };
