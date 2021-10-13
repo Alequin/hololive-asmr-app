@@ -9,7 +9,6 @@ export const IconButton = ({ iconName, iconSize = 24, onPress, text }) => {
       onPress={onPress}
       style={{
         flex: 1,
-        marginHorizontal: 5,
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
@@ -25,7 +24,7 @@ export const IconButton = ({ iconName, iconSize = 24, onPress, text }) => {
         color="white"
         size={iconSize}
       />
-      <Text style={{ color: "white", marginHorizontal: 5 }}>{text}</Text>
+      <Text style={{ color: "white", marginHorizontal: 5, textAlign: "center" }}>{text}</Text>
     </Button>
   );
 };

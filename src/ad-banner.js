@@ -5,13 +5,13 @@ import { isEnvironmentProduction } from "./environment";
 import secrets from "./secrets";
 
 export const AdBanner = () => {
-  const [shouldShowAd, setShouldShowAd] = useState(false);
+  const [shouldShowAd, setShouldShowAd] = useState(true);
 
   return (
     <>
       <View style={{ width: "100%", height: 3, backgroundColor: "white" }} />
       <AdMobBanner
-        style={!shouldShowAd ? { height: 0 } : undefined}
+        style={!shouldShowAd ? { height: 0 } : { alignItems: "center" }}
         bannerSize="smartBanner"
         servePersonalizedAds={false}
         adUnitID={

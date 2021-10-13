@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/core";
-import React, { useEffect, useState } from "react";
-import { BackHandler, Pressable, Text, View } from "react-native";
+import React from "react";
+import { Pressable, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { AdBanner } from "../../ad-banner";
 import { ControlBar } from "../../components/control-bar";
@@ -8,14 +8,17 @@ import { IconButton } from "../../components/icon-button";
 import { LoadingSpinner } from "../../components/loading-spinner";
 import { MainView } from "../../components/main-view";
 import { useBrightness } from "../../use-brightness";
+import { isSmallScreen } from "../../window";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
+import { useInitialBrightness } from "./hooks/use-initial-brightness";
+import { useLockScreen } from "./hooks/use-lock-screen";
+import { useUnlockCountDown } from "./hooks/use-unlock-count-down";
 import * as youtubeLinks from "./youtube-links";
 
 const VIEW_ID = "videoView";
 const DIMMED_SCREEN_BRIGHTNESS = 0.01;
 
 export const VideoView = ({ route }) => {
-  const nav = useNavigation();
   const { getBrightness, setBrightness } = useBrightness();
   const initialBrightness = useInitialBrightness({ getBrightness, setBrightness });
   const { isScreenLocked, unlockScreen, lockScreen } = useLockScreen({ setBrightness });
@@ -62,28 +65,39 @@ export const VideoView = ({ route }) => {
               }}
             />
           </MainView>
-          <ControlBar>
-            {isScreenLocked ? (
+          {isScreenLocked && (
+            <ControlBar>
               <Text style={{ color: "white", fontSize: 20, fontWeight: "bold", padding: 5 }}>
                 Screen is locked. Press and hold anywhere to unlock.
               </Text>
-            ) : (
-              <>
-                <IconButton iconName="lock" onPress={lockScreen} text="Lock Screen" />
-                <IconButton
-                  iconName="youtubeTv"
-                  onPress={() => youtubeLinks.toYoutubeVideo(route.params.videoId)}
-                  text="Watch on youtube"
+            </ControlBar>
+          )}
+          {!isScreenLocked && isSmallScreen && (
+            <>
+              <ControlBar>
+                <ViewOnYoutubeButton videoId={route.params.videoId} />
+                <ViewYoutubeChannelButton
+                  channelId={route.params.channelId}
+                  channelTitle={route.params.channelTitle}
                 />
-                <IconButton
-                  iconName="youtubeSubscription"
-                  onPress={() => youtubeLinks.toYoutubeChannel(route.params.channelId)}
-                  text={route.params.channelTitle}
-                />
-                <IconButton iconName="back" onPress={() => nav.navigate("homeView")} text="Back" />
-              </>
-            )}
-          </ControlBar>
+              </ControlBar>
+              <ControlBar>
+                <LockButton lockScreen={lockScreen} />
+                <BackButton />
+              </ControlBar>
+            </>
+          )}
+          {!isScreenLocked && !isSmallScreen && (
+            <ControlBar>
+              <LockButton lockScreen={lockScreen} />
+              <ViewOnYoutubeButton videoId={route.params.videoId} />
+              <ViewYoutubeChannelButton
+                channelId={route.params.channelId}
+                channelTitle={route.params.channelTitle}
+              />
+              <BackButton />
+            </ControlBar>
+          )}
         </View>
         <AdBanner />
       </ViewContainerWithStatusBar>
@@ -139,65 +153,27 @@ const ViewMask = ({ isScreenLocked, onPressIn, onPressOut, unlockCountDown }) =>
   );
 };
 
-const useInitialBrightness = ({ getBrightness, setBrightness }) => {
-  const [initialBrightness, setInitialBrightness] = useState(null);
+const LockButton = ({ lockScreen }) => (
+  <IconButton iconName="lock" onPress={lockScreen} text="Lock Screen" />
+);
 
-  useEffect(() => {
-    let brightnessToResetTo = null;
-    getBrightness().then((brightness) => {
-      brightnessToResetTo = brightness;
-      setInitialBrightness(brightness);
-    });
-    return async () => setBrightness(brightnessToResetTo);
-  }, []);
+const ViewOnYoutubeButton = ({ videoId }) => (
+  <IconButton
+    iconName="youtubeTv"
+    onPress={() => youtubeLinks.toYoutubeVideo(videoId)}
+    text="Watch on youtube"
+  />
+);
 
-  return initialBrightness;
-};
+const ViewYoutubeChannelButton = ({ channelId, channelTitle }) => (
+  <IconButton
+    iconName="youtubeSubscription"
+    onPress={() => youtubeLinks.toYoutubeChannel(channelId)}
+    text={channelTitle}
+  />
+);
 
-const useLockScreen = ({ setBrightness }) => {
-  const [isScreenLocked, setIsScreenLocked] = useState(false);
-
-  useEffect(() => {
-    if (isScreenLocked) {
-      setBrightness(isScreenLocked ? DIMMED_SCREEN_BRIGHTNESS : initialBrightness);
-    }
-  }, [isScreenLocked]);
-
-  useEffect(() => {
-    if (isScreenLocked) {
-      const backHandler = BackHandler.addEventListener("hardwareBackPress", () => isScreenLocked);
-      return () => backHandler.remove();
-    }
-  }, [isScreenLocked]);
-
-  return {
-    isScreenLocked,
-    unlockScreen: () => setIsScreenLocked(false),
-    lockScreen: () => setIsScreenLocked(true),
-  };
-};
-
-const useUnlockCountDown = (isScreenLocked, unlockScreen) => {
-  const [unlockCountDown, setUnlockCountDown] = useState(-1);
-
-  const shouldStartUnlockCountdown = unlockCountDown > 0;
-  useEffect(() => {
-    if (shouldStartUnlockCountdown) {
-      const interval = setInterval(() => setUnlockCountDown((value) => value - 1), 1000);
-      return () => clearInterval(interval);
-    }
-  }, [isScreenLocked, shouldStartUnlockCountdown]);
-
-  useEffect(() => {
-    if (isScreenLocked && unlockCountDown === 0) {
-      setUnlockCountDown(-1);
-      unlockScreen();
-    }
-  }, [unlockCountDown]);
-
-  return {
-    unlockCountDown,
-    startUnlockCountDown: () => setUnlockCountDown(4),
-    resetUnlockCountDown: () => setUnlockCountDown(-1),
-  };
+const BackButton = () => {
+  const nav = useNavigation();
+  return <IconButton iconName="back" onPress={() => nav.navigate("homeView")} text="Back" />;
 };

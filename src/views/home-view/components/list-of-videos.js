@@ -1,15 +1,12 @@
 import { useNavigation } from "@react-navigation/core";
 import React from "react";
-import { Dimensions } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { FullScreenLoadingSpinner } from "../../../components/full-screen-loading-spinner";
-import { LoadingSpinner } from "../../../components/loading-spinner";
+import { windowWidth } from "../../../window";
 import { useColumnCount } from "../hooks/use-column-count";
 import { useHasSortOrderChanged } from "../hooks/use-has-sort-order-changed";
 import { useOrderedVideos } from "../hooks/use-ordered-videos";
 import { VideoButton } from "./video-button";
-
-const windowWidth = Dimensions.get("window").width;
 
 export const ListOfVideos = ({ videos, sortOrder, zoomModifier }) => {
   const nav = useNavigation();

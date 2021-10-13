@@ -9,6 +9,7 @@ import { IconButton } from "../../components/icon-button";
 import { MainView } from "../../components/main-view";
 import { useIsAppStateActive } from "../../use-app-state";
 import { requestBrightnessPermissions } from "../../use-brightness";
+import { isSmallScreen } from "../../window";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { FilterModal } from "./components/filter-modal";
 import { ListOfVideos } from "./components/list-of-videos";
@@ -22,7 +23,7 @@ export const HomeView = () => {
   const videos = useRequestVideos();
   const { sortOrder, nextSortOrder } = useVideoSortOrder();
   const { zoomModifier, toggleZoomModifier } = useZoomModifier();
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const { isFilerModalOpen, showFilterModal, hideFilterModal } = useIsFilterModalVisible();
 
   const isAppActive = useIsAppStateActive();
   const [shouldRequestPermission, setShouldRequestPermission] = useState(false);
@@ -53,40 +54,34 @@ export const HomeView = () => {
       <MainView>
         <ListOfVideos videos={filteredVideos} sortOrder={sortOrder} zoomModifier={zoomModifier} />
         <FilterModal
-          isOpen={isSearchModalOpen}
+          isOpen={isFilerModalOpen}
           orderedChannelNames={orderedChannelNames}
           channelsToFilterBy={channelsToFilterBy}
           onSelectChannel={toggleChannelToFilterBy}
           onClearAllChannels={clearChannelsToFilterBy}
-          onDismissModal={() => setIsSearchModalOpen(false)}
+          onDismissModal={hideFilterModal}
         />
       </MainView>
-      <ControlBar>
-        <IconButton
-          iconName="search"
-          iconSize={20}
-          onPress={() => setIsSearchModalOpen(!isSearchModalOpen)}
-          text="Filter By Channel"
-        />
-        <IconButton
-          iconName="sortOrder"
-          iconSize={20}
-          onPress={nextSortOrder}
-          text={sortOrder.name}
-        />
-        <IconButton
-          iconName={isZoomedIn ? "zoomOut" : "zoomIn"}
-          onPress={toggleZoomModifier}
-          text={isZoomedIn ? "Zoom Out" : "Zoom In"}
-        />
-        {shouldRequestPermission && (
-          <IconButton
-            iconName="shieldKey"
-            onPress={requestBrightnessPermissions}
-            text="Give System Permission"
-          />
-        )}
-      </ControlBar>
+      {isSmallScreen ? (
+        <>
+          <ControlBar>
+            <FilterModalButton openSearchModal={showFilterModal} />
+            <SortButton nextSortOrder={nextSortOrder} sortOrderDescription={sortOrder.name} />
+          </ControlBar>
+          <ControlBar>
+            <ZoomButton isZoomedIn={isZoomedIn} toggleZoomModifier={toggleZoomModifier} />
+            <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
+          </ControlBar>
+        </>
+      ) : (
+        <ControlBar>
+          <FilterModalButton openSearchModal={showFilterModal} />
+          <SortButton nextSortOrder={nextSortOrder} sortOrderDescription={sortOrder.name} />
+          <ZoomButton isZoomedIn={isZoomedIn} toggleZoomModifier={toggleZoomModifier} />
+          <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
+        </ControlBar>
+      )}
+
       <AdBanner />
     </ViewContainerWithStatusBar>
   );
@@ -118,3 +113,43 @@ const useFilteredVideos = (videos) => {
     clearChannelsToFilterBy: () => setChannelsToFilterBy([]),
   };
 };
+
+const useIsFilterModalVisible = () => {
+  const [isFilerModalOpen, setisFilerModalOpen] = useState(false);
+
+  return {
+    isFilerModalOpen,
+    showFilterModal: () => setisFilerModalOpen(true),
+    hideFilterModal: () => setisFilerModalOpen(false),
+  };
+};
+
+const ZoomButton = ({ isZoomedIn, toggleZoomModifier }) => (
+  <IconButton
+    iconName={isZoomedIn ? "zoomOut" : "zoomIn"}
+    onPress={toggleZoomModifier}
+    text={isZoomedIn ? "Zoom Out" : "Zoom In"}
+  />
+);
+
+const PermissionsButton = ({ shouldRequestPermission }) =>
+  shouldRequestPermission ? (
+    <IconButton
+      iconName="shieldKey"
+      onPress={requestBrightnessPermissions}
+      text="Give System Permission"
+    />
+  ) : null;
+
+const FilterModalButton = ({ openSearchModal }) => (
+  <IconButton iconName="search" iconSize={20} onPress={openSearchModal} text="Filter By Channel" />
+);
+
+const SortButton = ({ nextSortOrder, sortOrderDescription }) => (
+  <IconButton
+    iconName="sortOrder"
+    iconSize={20}
+    onPress={nextSortOrder}
+    text={sortOrderDescription}
+  />
+);

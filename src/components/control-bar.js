@@ -7,7 +7,6 @@ export const ControlBar = (props) => (
       flexDirection: "row",
       justifyContent: "space-around",
       alignItems: "center",
-      height: "12%",
     }}
     {...props}
   />

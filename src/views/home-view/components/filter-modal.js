@@ -3,6 +3,7 @@ import React, { useMemo } from "react";
 import { Modal, Text, View, ScrollView } from "react-native";
 import { Button } from "../../../components/button";
 import { Icon } from "../../../icons";
+import { isSmallScreen } from "../../../window";
 
 export const FilterModal = ({
   isOpen,
@@ -68,7 +69,7 @@ export const FilterModal = ({
               flexDirection: "row",
               justifyContent: "space-around",
               paddingHorizontal: "5%",
-              width: "60%",
+              width: isSmallScreen ? "100%" : "60%",
             }}
           >
             <ActionButton
