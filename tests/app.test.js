@@ -1245,6 +1245,42 @@ describe("App", () => {
       );
     });
 
+    it("provides a button which opens the youtube video on youtube", async () => {
+      jest.spyOn(Linking, "openURL");
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      await asyncPressEvent(
+        getButtonByText(within(screen.getByTestId("videoView")), "Watch on youtube")
+      );
+
+      expect(Linking.openURL).toHaveBeenCalledTimes(1);
+      expect(Linking.openURL).toHaveBeenCalledWith(`https://www.youtube.com/watch?v=123`);
+    });
+
     it("locks the screen when the lock button is pressed", async () => {
       const getBackHandlerCallback = mockBackHandlerCallback();
 

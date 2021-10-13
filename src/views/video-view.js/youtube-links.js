@@ -1,6 +1,9 @@
 import * as Linking from "expo-linking";
 import { locale } from "../../environment";
 
+export const toYoutubeVideo = (videoId) =>
+  Linking.openURL(`https://www.youtube.com/watch?v=${videoId}`);
+
 export const toYoutubeChannel = (channelId) =>
   Linking.openURL(`https://www.youtube.com/channel/${channelId}`);
 

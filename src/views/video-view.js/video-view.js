@@ -71,6 +71,11 @@ export const VideoView = ({ route }) => {
               <>
                 <IconButton iconName="lock" onPress={lockScreen} text="Lock Screen" />
                 <IconButton
+                  iconName="youtubeTv"
+                  onPress={() => youtubeLinks.toYoutubeVideo(route.params.videoId)}
+                  text="Watch on youtube"
+                />
+                <IconButton
                   iconName="youtubeSubscription"
                   onPress={() => youtubeLinks.toYoutubeChannel(route.params.channelId)}
                   text={route.params.channelTitle}

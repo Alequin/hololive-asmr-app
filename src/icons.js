@@ -39,6 +39,7 @@ const ICON_OPTIONS = {
   clear: customIcon(MaterialIcons, "clear"),
   lock: customIcon(Entypo, "lock"),
   shieldKey: customIcon(MaterialCommunityIcons, "shield-key"),
+  youtubeTv: customIcon(MaterialCommunityIcons, "youtube-tv"),
 };
 
 const TestIdElement = (props) => <View {...props} />;
