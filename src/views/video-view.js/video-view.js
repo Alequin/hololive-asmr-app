@@ -67,7 +67,15 @@ export const VideoView = ({ route }) => {
           </MainView>
           {isScreenLocked && (
             <ControlBar>
-              <Text style={{ color: "white", fontSize: 20, fontWeight: "bold", padding: 5 }}>
+              <Text
+                style={{
+                  color: "white",
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  padding: 5,
+                  textAlign: "center",
+                }}
+              >
                 Screen is locked. Press and hold anywhere to unlock.
               </Text>
             </ControlBar>
