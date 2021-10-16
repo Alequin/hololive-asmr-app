@@ -20,11 +20,12 @@ import { useOrderedVideos } from "./hooks/use-ordered-videos";
 import { useRequestVideos } from "./hooks/use-request-videos";
 import { useVideoSortOrder } from "./hooks/use-sort-video-order";
 import { useViewMode } from "./hooks/use-view-mode";
+import { ErrorRequestingVideosMessage } from "./components/error-requesting-videos-message";
 
 const VIEW_ID = "homeView";
 
 export const HomeView = () => {
-  const videos = useRequestVideos();
+  const { videos, isRefreshing, refreshVideos, error: errorRequestingVideos } = useRequestVideos();
   const { sortOrder, nextSortOrder } = useVideoSortOrder();
   const { isFilerModalOpen, showFilterModal, hideFilterModal } = useIsFilterModalVisible();
   const { isDetailedViewMode, toggleDetailedViewMode } = useViewMode();
@@ -47,7 +48,14 @@ export const HomeView = () => {
   const orderedVideos = useOrderedVideos(filteredVideos, sortOrder);
   const hasSortOrderChanged = useHasSortOrderChanged(sortOrder);
 
-  const isPageLoading = !orderedVideos || !sortOrder || isNil(isDetailedViewMode);
+  if (!isRefreshing && errorRequestingVideos)
+    return (
+      <ViewContainerWithStatusBar testID={VIEW_ID}>
+        <ErrorRequestingVideosMessage onPressRefresh={refreshVideos} />
+      </ViewContainerWithStatusBar>
+    );
+
+  const isPageLoading = !orderedVideos || !sortOrder || isNil(isDetailedViewMode) || isRefreshing;
   if (isPageLoading)
     return (
       <ViewContainerWithStatusBar testID={VIEW_ID}>

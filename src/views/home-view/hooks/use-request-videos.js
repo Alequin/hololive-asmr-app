@@ -9,28 +9,53 @@ export const VIDEO_CACHE_LIFE_TIME = 1000 * 60 * 10;
 export const useRequestVideos = () => {
   const isAppActive = useIsAppStateActive();
   const [videos, setVideos] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastApiCallTime, setLastApiCallTime] = useState(Date.now());
+  const [hasLoadedCache, setHasLoadedCache] = useState(false);
+  const [cacheError, setCacheError] = useState(null);
+  const [apiError, setApiError] = useState(null);
 
-  const updateVideosIfRequired = useCallback(async (currentVideos) => {
-    const updatedVideos = await requestVideos();
-    setLastApiCallTime(Date.now());
-    if (isEqual(currentVideos, updatedVideos)) return;
-    setVideos(updatedVideos);
-    await cachedVideos.save(updatedVideos);
+  const updateVideosIfRequired = useCallback(
+    async (currentVideos) => {
+      let updatedVideos = null;
+      try {
+        updatedVideos = await requestVideos();
+      } finally {
+        setIsRefreshing(false);
+      }
+      setLastApiCallTime(Date.now());
+      if (isEqual(currentVideos, updatedVideos)) return currentVideos;
+      setVideos(updatedVideos);
+      return updatedVideos;
+    },
+    [apiError]
+  );
+
+  useEffect(() => {
+    // On mount request cached videos and make an api call to get most recent videos
+    (async () => {
+      let loadedVideos = null;
+      try {
+        // Use cached videos on initial load
+        loadedVideos = await cachedVideos.load();
+        setVideos(loadedVideos || null);
+      } catch (error) {
+        setCacheError(error);
+      } finally {
+        setHasLoadedCache(true);
+      }
+
+      try {
+        await updateVideosIfRequired(loadedVideos);
+      } catch (error) {
+        setApiError(error);
+      }
+    })();
   }, []);
 
   useEffect(() => {
-    // Use cached videos on initial load
-    cachedVideos.load().then(async (loadedVideos) => {
-      setVideos(loadedVideos || null);
-      // Once cache has set videos make a request to see if there are changes to the videos
-      await updateVideosIfRequired(loadedVideos);
-    });
-  }, []);
-
-  useEffect(() => {
+    // Make more calls to check it there are new videos on every interval
     if (isAppActive) {
-      // Make more calls to check it there are new videos on every interval
       const interval = setIncrementalInterval(
         async () => updateVideosIfRequired(videos),
         VIDEO_CACHE_LIFE_TIME
@@ -46,7 +71,31 @@ export const useRequestVideos = () => {
     }
   }, [isAppActive]);
 
-  return videos;
+  useEffect(() => {
+    // Save the current videos to the cache where appropriate
+    if (hasLoadedCache && videos) cachedVideos.save(videos);
+  }, [hasLoadedCache, videos]);
+
+  useEffect(() => {
+    if (videos) {
+      // reset error states if videos are available
+      setCacheError(false);
+      setApiError(false);
+    }
+  }, [Boolean(videos)]);
+
+  useEffect(() => {
+    if (isRefreshing)
+      // Fake a delay to allow the interface to show a spinner and reduce how often users can spam retry
+      new Promise((r) => setTimeout(r, 2000)).then(() => updateVideosIfRequired(videos));
+  }, [isRefreshing]);
+
+  return {
+    videos,
+    isRefreshing,
+    error: hasLoadedCache && !videos && (apiError || cacheError),
+    refreshVideos: useCallback(async () => setIsRefreshing(true), []),
+  };
 };
 
 const setIncrementalInterval = (callback, interval) => {

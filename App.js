@@ -10,13 +10,19 @@ export const App = () => {
   useMemo(() => {
     // If user has not used the app before make a call to the api
     // to wake them up and speed up the first request for videos
-    firstLoadState.load().then((hasUserLoadedTheAppBefore) => {
-      if (!hasUserLoadedTheAppBefore) {
+    firstLoadState
+      .load()
+      .then((hasUserLoadedTheAppBefore) => {
+        if (!hasUserLoadedTheAppBefore) {
+          turnApiOn();
+          requestBrightnessPermissions();
+          firstLoadState.save(true);
+        }
+      })
+      .catch(() => {
         turnApiOn();
         requestBrightnessPermissions();
-        firstLoadState.save(true);
-      }
-    });
+      });
   }, []);
 
   useEffect(() => {});

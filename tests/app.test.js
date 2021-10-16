@@ -156,6 +156,32 @@ describe("App", () => {
       expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(0);
     });
 
+    it("requests permission to change the system brightness when the app starts and there is an issue check if this is the first load of the app", async () => {
+      jest.spyOn(asyncStorage.firstLoadState, "load").mockRejectedValue(null);
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+    });
+
     it("shows the expected detailed content in the video buttons", async () => {
       const apiPromise = Promise.resolve([
         {
@@ -362,9 +388,7 @@ describe("App", () => {
       expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(2);
 
       // Switch to the more detailed view
-      console.count();
       await asyncPressEvent(getButtonByText(screen, "More Details"));
-      console.count();
 
       expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(3);
     });
@@ -880,6 +904,118 @@ describe("App", () => {
       );
     });
 
+    it("uses the cached videos when there is a issue requesting videos from the api", async () => {
+      jest.spyOn(asyncStorage.cachedVideos, "load").mockResolvedValue([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      const apiPromise = Promise.reject();
+      fetch.mockResolvedValue({
+        status: 400,
+        json: () => apiPromise,
+      });
+
+      jest.spyOn(requestVideos, "requestVideos");
+
+      const screen = await asyncRender(<App />);
+
+      expect(asyncStorage.cachedVideos.load).toHaveBeenCalledTimes(1);
+      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
+
+      // Shows 1 videos as the cache contained 1 and the api call failed
+      expect(within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton")).toHaveLength(
+        1
+      );
+    });
+
+    it("shows an error message if the api query fails and there is no cache", async () => {
+      jest.spyOn(asyncStorage.cachedVideos, "load").mockRejectedValue(null);
+
+      const apiPromise = Promise.reject();
+      fetch.mockResolvedValue({
+        status: 400,
+        json: () => apiPromise,
+      });
+
+      jest.spyOn(requestVideos, "requestVideos");
+
+      const screen = await asyncRender(<App />);
+
+      expect(asyncStorage.cachedVideos.load).toHaveBeenCalledTimes(1);
+      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
+
+      // Shows an error message when no videos can be loaded
+      expect(screen.queryByText("Sorry, there was an issue requesting the videos")).toBeTruthy();
+      expect(screen.queryByText("Press anywhere to refresh and try again")).toBeTruthy();
+      expect(screen.queryByTestId("refreshIcon")).toBeTruthy();
+    });
+
+    it("allows the user to manually recall the api for videos in the case of an error", async () => {
+      jest.spyOn(asyncStorage.cachedVideos, "load").mockRejectedValue(null);
+
+      fetch.mockResolvedValue({
+        status: 400,
+        json: () => Promise.reject(),
+      });
+
+      jest.spyOn(requestVideos, "requestVideos");
+
+      const screen = await asyncRender(<App />);
+
+      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () =>
+          Promise.resolve([
+            {
+              video_id: "123",
+              channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+              channel_title: "Fauna",
+              published_at: "2021-10-06T20:21:31Z",
+              video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+              channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+              video_title: "video 1",
+            },
+            {
+              video_id: "234",
+              channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+              channel_title: "Sana",
+              published_at: "2021-10-06T20:21:31Z",
+              video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+              channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+              video_title: "video 2",
+            },
+            {
+              video_id: "345",
+              channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+              channel_title: "Ina",
+              published_at: "2021-10-06T20:21:31Z",
+              video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+              channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+              video_title: "video 3",
+            },
+          ]),
+      });
+
+      // Press the error button to re-request videos from the api
+      await asyncPressEvent(
+        getButtonByText(screen, "Sorry, there was an issue requesting the videos")
+      );
+
+      silenceAllErrorLogs();
+      await waitForExpect(() => expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2));
+      enableAllErrorLogs();
+    });
+
     it("saves the sort order index when the user modifies it", async () => {
       jest.spyOn(asyncStorage.sortOrderState, "save");
       const apiPromise = Promise.resolve([
@@ -973,6 +1109,62 @@ describe("App", () => {
 
       expect(asyncStorage.sortOrderState.load).toHaveBeenCalledTimes(1);
       expect(getButtonByText(screen, "Z to A")).toBeTruthy();
+    });
+
+    it("defaults the sort order to sort newest to oldest if there is an issue loading the cache", async () => {
+      jest.spyOn(asyncStorage.sortOrderState, "load").mockRejectedValue(null);
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-11-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-12-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+
+      expect(within(videoButtons[0]).queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+      });
+      expect(within(videoButtons[1]).queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+      });
+      expect(within(videoButtons[2]).queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+      });
     });
 
     it("allows the user to filter the visible videos by channel name", async () => {
@@ -1308,11 +1500,6 @@ describe("App", () => {
       // Checks again after the app goes from the background to active
       expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(2);
     });
-
-    it.todo("falls back to the cached videos if the api query fails");
-    it.todo("shows an error message if the api query fails and there is no cache");
-
-    it.todo("the sort order defaults to 0 if there is an issue loading the cached state");
   });
 
   describe("Video View", () => {
