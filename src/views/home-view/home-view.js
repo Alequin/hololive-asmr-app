@@ -1,4 +1,5 @@
 import * as Brightness from "expo-brightness";
+import isNil from "lodash/isNil";
 import isEmpty from "lodash/isEmpty";
 import uniq from "lodash/uniq";
 import React, { useEffect, useMemo, useState } from "react";
@@ -11,19 +12,22 @@ import { useIsAppStateActive } from "../../use-app-state";
 import { requestBrightnessPermissions } from "../../use-brightness";
 import { isSmallScreen } from "../../window";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
+import { DetailedVideoList } from "./components/detailed-video-list";
 import { FilterModal } from "./components/filter-modal";
-import { ListOfVideos } from "./components/list-of-videos";
+import { ThumbnailVideoList } from "./components/thumbnail-video-list";
+import { useHasSortOrderChanged } from "./hooks/use-has-sort-order-changed";
+import { useOrderedVideos } from "./hooks/use-ordered-videos";
 import { useRequestVideos } from "./hooks/use-request-videos";
 import { useVideoSortOrder } from "./hooks/use-sort-video-order";
-import { useZoomModifier, ZOOMED_IN_MODIFIER } from "./hooks/use-zoom-modifier";
+import { useViewMode } from "./hooks/use-view-mode";
 
 const VIEW_ID = "homeView";
 
 export const HomeView = () => {
   const videos = useRequestVideos();
   const { sortOrder, nextSortOrder } = useVideoSortOrder();
-  const { zoomModifier, toggleZoomModifier } = useZoomModifier();
   const { isFilerModalOpen, showFilterModal, hideFilterModal } = useIsFilterModalVisible();
+  const { isDetailedViewMode, toggleDetailedViewMode } = useViewMode();
 
   const isAppActive = useIsAppStateActive();
   const [shouldRequestPermission, setShouldRequestPermission] = useState(false);
@@ -40,19 +44,28 @@ export const HomeView = () => {
     [videos]
   );
 
-  const isLoading = !filteredVideos || !zoomModifier || !sortOrder || !orderedChannelNames;
-  if (isLoading)
+  const orderedVideos = useOrderedVideos(filteredVideos, sortOrder);
+  const hasSortOrderChanged = useHasSortOrderChanged(sortOrder);
+
+  const isPageLoading = !orderedVideos || !sortOrder || isNil(isDetailedViewMode);
+  if (isPageLoading)
     return (
       <ViewContainerWithStatusBar testID={VIEW_ID}>
         <FullScreenLoadingSpinner />
       </ViewContainerWithStatusBar>
     );
 
-  const isZoomedIn = zoomModifier === ZOOMED_IN_MODIFIER;
+  const isVideoViewLoading = hasSortOrderChanged;
   return (
     <ViewContainerWithStatusBar testID={VIEW_ID}>
       <MainView>
-        <ListOfVideos videos={filteredVideos} sortOrder={sortOrder} zoomModifier={zoomModifier} />
+        {isVideoViewLoading && <FullScreenLoadingSpinner />}
+        {!isVideoViewLoading &&
+          (isDetailedViewMode ? (
+            <DetailedVideoList videos={orderedVideos} />
+          ) : (
+            <ThumbnailVideoList videos={orderedVideos} />
+          ))}
         <FilterModal
           isOpen={isFilerModalOpen}
           orderedChannelNames={orderedChannelNames}
@@ -69,7 +82,10 @@ export const HomeView = () => {
             <SortButton nextSortOrder={nextSortOrder} sortOrderDescription={sortOrder.name} />
           </ControlBar>
           <ControlBar>
-            <ZoomButton isZoomedIn={isZoomedIn} toggleZoomModifier={toggleZoomModifier} />
+            <ViewModeButton
+              isDetailedViewMode={isDetailedViewMode}
+              toggleViewMode={toggleDetailedViewMode}
+            />
             <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
           </ControlBar>
         </>
@@ -77,7 +93,10 @@ export const HomeView = () => {
         <ControlBar>
           <FilterModalButton openSearchModal={showFilterModal} />
           <SortButton nextSortOrder={nextSortOrder} sortOrderDescription={sortOrder.name} />
-          <ZoomButton isZoomedIn={isZoomedIn} toggleZoomModifier={toggleZoomModifier} />
+          <ViewModeButton
+            isDetailedViewMode={isDetailedViewMode}
+            toggleViewMode={toggleDetailedViewMode}
+          />
           <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
         </ControlBar>
       )}
@@ -124,11 +143,11 @@ const useIsFilterModalVisible = () => {
   };
 };
 
-const ZoomButton = ({ isZoomedIn, toggleZoomModifier }) => (
+const ViewModeButton = ({ isDetailedViewMode, toggleViewMode }) => (
   <IconButton
-    iconName={isZoomedIn ? "zoomOut" : "zoomIn"}
-    onPress={toggleZoomModifier}
-    text={isZoomedIn ? "Zoom Out" : "Zoom In"}
+    iconName={isDetailedViewMode ? "zoomOut" : "zoomIn"}
+    onPress={toggleViewMode}
+    text={isDetailedViewMode ? "Less Details" : "More Details"}
   />
 );
 

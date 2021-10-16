@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import isNil from "lodash/isNil";
 
 const newStorageItem = (storageKey) => ({
   save: async (valueToSave) => {
@@ -6,15 +7,15 @@ const newStorageItem = (storageKey) => ({
   },
   load: async () => {
     const item = await AsyncStorage.getItem(storageKey);
-    return item ? JSON.parse(item) : null;
+    return item && JSON.parse(item);
   },
   clear: async () => AsyncStorage.removeItem(storageKey),
 });
 
 export const cachedVideos = newStorageItem("CACHED_VIDEOS");
 
-export const zoomModifierState = newStorageItem("ZOOM_MODIFIER_STATE");
-
 export const sortOrderState = newStorageItem("SORT_ORDER_STATE");
 
 export const firstLoadState = newStorageItem("FIRST_LOAD_STATE");
+
+export const viewModeState = newStorageItem("VIEW_MODE");

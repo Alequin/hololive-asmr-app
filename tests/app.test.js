@@ -30,16 +30,13 @@ import * as asyncStorage from "../src/async-storage";
 import * as requestVideos from "../src/external-requests/request-videos";
 import secrets from "../src/secrets";
 import * as showToast from "../src/show-toast";
-import {
-  ZOOMED_IN_MODIFIER,
-  ZOOMED_OUT_MODIFIER,
-} from "../src/views/home-view/hooks/use-zoom-modifier";
 import { mockBackHandlerCallback } from "./mock-back-handler-callback";
 import {
   asyncPressEvent,
   asyncRender,
   buttonProps,
   enableAllErrorLogs,
+  getButtonByChildTestId,
   getButtonByText,
   silenceAllErrorLogs,
 } from "./test-utils";
@@ -51,8 +48,8 @@ describe("App", () => {
     jest.clearAllMocks();
     jest.spyOn(asyncStorage.cachedVideos, "load").mockResolvedValue(undefined);
     jest.spyOn(asyncStorage.sortOrderState, "load").mockResolvedValue(undefined);
-    jest.spyOn(asyncStorage.zoomModifierState, "load").mockResolvedValue(undefined);
     jest.spyOn(asyncStorage.firstLoadState, "load").mockResolvedValue(undefined);
+    jest.spyOn(asyncStorage.viewModeState, "load").mockResolvedValue(undefined);
     jest.spyOn(Brightness, "requestPermissionsAsync").mockResolvedValue({ granted: true });
     jest.spyOn(Brightness, "getPermissionsAsync").mockResolvedValue({ granted: true });
     jest.spyOn(Brightness, "getBrightnessAsync").mockResolvedValue(1);
@@ -69,7 +66,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -78,7 +75,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -87,7 +84,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -116,7 +113,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -142,7 +139,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -159,34 +156,34 @@ describe("App", () => {
       expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(0);
     });
 
-    it("shows the expected thumbnails on the video buttons", async () => {
+    it("shows the expected detailed content in the video buttons", async () => {
       const apiPromise = Promise.resolve([
         {
           video_id: "123",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
+          channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          video_title: "video 1",
         },
         {
           video_id: "234",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
+          channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          video_title: "video 2",
         },
         {
           video_id: "345",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
+          channel_title: "Ina",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          video_title: "video 3",
         },
       ]);
 
@@ -202,15 +199,327 @@ describe("App", () => {
 
       const videoButtons = within(homeView).queryAllByTestId("videoButton");
 
-      expect(within(videoButtons[0]).queryByTestId("videoImageBackground").props.source).toEqual({
+      const button1 = within(videoButtons[0]);
+      expect(button1.queryByTestId("videoImageBackground").props.source).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
-      expect(within(videoButtons[1]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(button1.queryByText("video 1")).toBeTruthy();
+      expect(button1.queryByTestId("channelImage").props.source).toEqual({
+        uri: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+      });
+      expect(button1.queryByText("Fauna")).toBeTruthy();
+
+      const button2 = within(videoButtons[1]);
+      expect(button2.queryByTestId("videoImageBackground").props.source).toEqual({
         uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
       });
-      expect(within(videoButtons[2]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(button2.queryByText("video 2")).toBeTruthy();
+      expect(button2.queryByTestId("channelImage").props.source).toEqual({
+        uri: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+      });
+      expect(button2.queryByText("Sana")).toBeTruthy();
+
+      const button3 = within(videoButtons[2]);
+      expect(button3.queryByTestId("videoImageBackground").props.source).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
+      expect(button3.queryByText("video 3")).toBeTruthy();
+      expect(button3.queryByTestId("channelImage").props.source).toEqual({
+        uri: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+      });
+      expect(button3.queryByText("Ina")).toBeTruthy();
+    });
+
+    it("allows the user to see a less detailed view of the list of videos", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Fauna",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          video_title: "video 1",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          video_title: "video 2",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ina",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          video_title: "video 3",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Switch to the less detailed view
+      await asyncPressEvent(getButtonByText(screen, "Less Details"));
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+
+      // Confirm thumbnails are visible and nothing else
+      const button1 = within(videoButtons[0]);
+      expect(button1.queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+      });
+      expect(button1.queryByText("video 1")).not.toBeTruthy();
+      expect(button1.queryByTestId("channelImage")).not.toBeTruthy();
+      expect(button1.queryByText("Fauna")).not.toBeTruthy();
+
+      const button2 = within(videoButtons[1]);
+      expect(button2.queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+      });
+      expect(button2.queryByText("video 2")).not.toBeTruthy();
+      expect(button2.queryByTestId("channelImage")).not.toBeTruthy();
+      expect(button2.queryByText("Sana")).not.toBeTruthy();
+
+      const button3 = within(videoButtons[2]);
+      expect(button3.queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+      });
+      expect(button3.queryByText("video 3")).not.toBeTruthy();
+      expect(button3.queryByTestId("channelImage")).not.toBeTruthy();
+      expect(button3.queryByText("Ina")).not.toBeTruthy();
+
+      // Switch to the more detailed view
+      await asyncPressEvent(getButtonByText(screen, "More Details"));
+      // Confirm all details are back
+      const detailedButton1 = within(within(homeView).queryAllByTestId("videoButton")[0]);
+      expect(detailedButton1.queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+      });
+      expect(detailedButton1.queryByText("video 1")).toBeTruthy();
+      expect(detailedButton1.queryByTestId("channelImage")).toBeTruthy();
+      expect(detailedButton1.queryByText("Fauna")).toBeTruthy();
+    });
+
+    it("saves the current view mode as the user modifies it", async () => {
+      jest.spyOn(asyncStorage.viewModeState, "save");
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Fauna",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          video_title: "video 1",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          video_title: "video 2",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ina",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          video_title: "video 3",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(1);
+
+      // Switch to the less detailed view
+      await asyncPressEvent(getButtonByText(screen, "Less Details"));
+
+      expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(2);
+
+      // Switch to the more detailed view
+      console.count();
+      await asyncPressEvent(getButtonByText(screen, "More Details"));
+      console.count();
+
+      expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(3);
+    });
+
+    it("loads the saved value for the view mode on mount", async () => {
+      jest.spyOn(asyncStorage.viewModeState, "load").mockResolvedValue(false);
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Fauna",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          video_title: "video 1",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          video_title: "video 2",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ina",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          video_title: "video 3",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Confirm option to switch to more details is available
+      expect(getButtonByText(screen, "More Details")).toBeTruthy();
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+
+      // Confirm less details mode is on by checking thumbnails are visible and nothing else
+      const button1 = within(videoButtons[0]);
+      expect(button1.queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+      });
+      expect(button1.queryByText("video 1")).not.toBeTruthy();
+      expect(button1.queryByTestId("channelImage")).not.toBeTruthy();
+      expect(button1.queryByText("Fauna")).not.toBeTruthy();
+
+      const button2 = within(videoButtons[1]);
+      expect(button2.queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+      });
+      expect(button2.queryByText("video 2")).not.toBeTruthy();
+      expect(button2.queryByTestId("channelImage")).not.toBeTruthy();
+      expect(button2.queryByText("Sana")).not.toBeTruthy();
+
+      const button3 = within(videoButtons[2]);
+      expect(button3.queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+      });
+      expect(button3.queryByText("video 3")).not.toBeTruthy();
+      expect(button3.queryByTestId("channelImage")).not.toBeTruthy();
+      expect(button3.queryByText("Ina")).not.toBeTruthy();
+    });
+    it("defaults to the details view mode if there is an error while loading the cache", async () => {
+      jest.spyOn(asyncStorage.viewModeState, "load").mockRejectedValue(null);
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Fauna",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          video_title: "video 1",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          video_title: "video 2",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ina",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          video_title: "video 3",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Confirm option to switch to less details is available
+      expect(getButtonByText(screen, "Less Details")).toBeTruthy();
+
+      // Confirm the default mode is the more detail view mode
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+
+      const button1 = within(videoButtons[0]);
+      expect(button1.queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+      });
+      expect(button1.queryByText("video 1")).toBeTruthy();
+      expect(button1.queryByTestId("channelImage").props.source).toEqual({
+        uri: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+      });
+      expect(button1.queryByText("Fauna")).toBeTruthy();
+
+      const button2 = within(videoButtons[1]);
+      expect(button2.queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+      });
+      expect(button2.queryByText("video 2")).toBeTruthy();
+      expect(button2.queryByTestId("channelImage").props.source).toEqual({
+        uri: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+      });
+      expect(button2.queryByText("Sana")).toBeTruthy();
+
+      const button3 = within(videoButtons[2]);
+      expect(button3.queryByTestId("videoImageBackground").props.source).toEqual({
+        uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+      });
+      expect(button3.queryByText("video 3")).toBeTruthy();
+      expect(button3.queryByTestId("channelImage").props.source).toEqual({
+        uri: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+      });
+      expect(button3.queryByText("Ina")).toBeTruthy();
     });
 
     it("provides a button which allows the user to give permission for the app to update brightness when it has not already been given", async () => {
@@ -222,7 +531,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -255,7 +564,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -283,7 +592,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -292,7 +601,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-11-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -301,7 +610,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-12-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -338,7 +647,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Gura",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -347,7 +656,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Sana",
           published_at: "2021-11-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -356,7 +665,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Fauna",
           published_at: "2021-12-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -471,7 +780,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -480,7 +789,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -489,7 +798,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -516,7 +825,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -528,7 +837,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -537,7 +846,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -546,7 +855,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -571,117 +880,6 @@ describe("App", () => {
       );
     });
 
-    it("changes the display of the zoom button when it is pressed", async () => {
-      const apiPromise = Promise.resolve([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
-
-      const homeView = screen.queryByTestId("homeView");
-
-      // Find and press zoom in button
-      const zoomInButton = getButtonByText(within(homeView), "Zoom In");
-      expect(zoomInButton).toBeTruthy();
-      expect(within(zoomInButton).queryByTestId("zoomInIcon")).toBeTruthy();
-      await asyncPressEvent(zoomInButton);
-
-      // Confirm zoom in button is gone
-      expect(within(zoomInButton).queryByTestId("zoomInIcon")).not.toBeTruthy();
-
-      // Find and press zoom out button
-      const zoomOutButton = getButtonByText(within(homeView), "Zoom Out");
-      expect(zoomOutButton).toBeTruthy();
-      expect(within(zoomOutButton).queryByTestId("zoomOutIcon")).toBeTruthy();
-      await asyncPressEvent(zoomOutButton);
-    });
-
-    it("saves the zoom level when the user modifies it", async () => {
-      jest.spyOn(asyncStorage.zoomModifierState, "save");
-
-      const apiPromise = Promise.resolve([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
-
-      const homeView = screen.queryByTestId("homeView");
-
-      // Store initial zoom state
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(ZOOMED_OUT_MODIFIER);
-
-      // Find and press zoom in button
-      await asyncPressEvent(getButtonByText(within(homeView), "Zoom In"));
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(2);
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(ZOOMED_IN_MODIFIER);
-
-      // Find and press zoom out button
-      await asyncPressEvent(getButtonByText(within(homeView), "Zoom Out"));
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(3);
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(ZOOMED_OUT_MODIFIER);
-
-      // Find and press zoom in button again
-      await asyncPressEvent(getButtonByText(within(homeView), "Zoom In"));
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledTimes(4);
-      expect(asyncStorage.zoomModifierState.save).toHaveBeenCalledWith(ZOOMED_IN_MODIFIER);
-    });
-
-    it("loads the saved zoom level on mount", async () => {
-      jest.spyOn(asyncStorage.zoomModifierState, "load").mockResolvedValue(ZOOMED_OUT_MODIFIER);
-
-      const apiPromise = Promise.resolve([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
-
-      expect(asyncStorage.zoomModifierState.load).toHaveBeenCalledTimes(1);
-      expect(getButtonByText(screen, "Zoom In")).toBeTruthy();
-    });
-
     it("saves the sort order index when the user modifies it", async () => {
       jest.spyOn(asyncStorage.sortOrderState, "save");
       const apiPromise = Promise.resolve([
@@ -690,7 +888,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Gura",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -699,7 +897,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Sana",
           published_at: "2021-11-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -708,7 +906,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Fauna",
           published_at: "2021-12-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -759,7 +957,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -784,7 +982,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "fauna-thumbnail.jpg",
+          video_thumbnail_url: "fauna-thumbnail.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -793,7 +991,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "sana-thumbnail.jpg",
+          video_thumbnail_url: "sana-thumbnail.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -802,7 +1000,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Kiara",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "kiara-thumbnail.jpg",
+          video_thumbnail_url: "kiara-thumbnail.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -836,33 +1034,48 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
 
       // Confirm all check boxes are blank
+      const modalId = "filterModal";
       expect(
-        within(getButtonByText(screen, "Fauna")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
       expect(
-        within(getButtonByText(screen, "Sana")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Sana")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
       expect(
-        within(getButtonByText(screen, "Kiara")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
 
-      await asyncPressEvent(getButtonByText(screen, "Sana"));
-      await asyncPressEvent(getButtonByText(screen, "Kiara"));
+      await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Sana"));
+      await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara"));
 
       // Confirm the selected check boxes have been updated
       expect(
-        within(getButtonByText(screen, "Fauna")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
 
       expect(
-        within(getButtonByText(screen, "Sana")).queryByTestId("checkboxMarkedIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Sana")).queryByTestId(
+          "checkboxMarkedIcon"
+        )
       ).toBeTruthy();
       expect(
-        within(getButtonByText(screen, "Kiara")).queryByTestId("checkboxMarkedIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")).queryByTestId(
+          "checkboxMarkedIcon"
+        )
       ).toBeTruthy();
 
       // Return to the list of videos
-      await asyncPressEvent(getButtonByText(screen, "Back to Videos"));
+      await asyncPressEvent(
+        getButtonByText(within(screen.queryByTestId(modalId)), "Back to Videos")
+      );
 
       // Confirm the expected videos are visible and the others are not
       const updatedHomeView = screen.queryByTestId("homeView");
@@ -890,7 +1103,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "fauna-thumbnail.jpg",
+          video_thumbnail_url: "fauna-thumbnail.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -899,7 +1112,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "sana-thumbnail.jpg",
+          video_thumbnail_url: "sana-thumbnail.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -908,7 +1121,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Kiara",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "kiara-thumbnail.jpg",
+          video_thumbnail_url: "kiara-thumbnail.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -931,44 +1144,66 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
 
       // Confirm all check boxes are blank
+
+      const modalId = "filterModal";
       expect(
-        within(getButtonByText(screen, "Fauna")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
       expect(
-        within(getButtonByText(screen, "Sana")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Sana")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
       expect(
-        within(getButtonByText(screen, "Kiara")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
 
       // Select all channels
-      await asyncPressEvent(getButtonByText(screen, "Fauna"));
-      await asyncPressEvent(getButtonByText(screen, "Sana"));
-      await asyncPressEvent(getButtonByText(screen, "Kiara"));
+      await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna"));
+      await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Sana"));
+      await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara"));
 
       // Confirm the selected check boxes have been updated
       expect(
-        within(getButtonByText(screen, "Fauna")).queryByTestId("checkboxMarkedIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna")).queryByTestId(
+          "checkboxMarkedIcon"
+        )
       ).toBeTruthy();
       expect(
-        within(getButtonByText(screen, "Sana")).queryByTestId("checkboxMarkedIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Sana")).queryByTestId(
+          "checkboxMarkedIcon"
+        )
       ).toBeTruthy();
       expect(
-        within(getButtonByText(screen, "Kiara")).queryByTestId("checkboxMarkedIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")).queryByTestId(
+          "checkboxMarkedIcon"
+        )
       ).toBeTruthy();
 
       // Clear all selected
-      await asyncPressEvent(getButtonByText(screen, "Clear all Selected"));
+      await asyncPressEvent(
+        getButtonByText(within(screen.queryByTestId(modalId)), "Clear all Selected")
+      );
 
       // Confirm all check boxes are blank
       expect(
-        within(getButtonByText(screen, "Fauna")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
       expect(
-        within(getButtonByText(screen, "Sana")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Sana")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
       expect(
-        within(getButtonByText(screen, "Kiara")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
     });
 
@@ -979,7 +1214,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "fauna-thumbnail.jpg",
+          video_thumbnail_url: "fauna-thumbnail.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -988,7 +1223,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "sana-thumbnail.jpg",
+          video_thumbnail_url: "sana-thumbnail.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -997,7 +1232,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Kiara",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "kiara-thumbnail.jpg",
+          video_thumbnail_url: "kiara-thumbnail.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1020,18 +1255,28 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
 
       // Confirm all check boxes are blank
+      const filterModal = screen.queryByTestId("filterModal");
+
       expect(
-        within(getButtonByText(screen, "Fauna")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(filterModal), "Fauna")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
       expect(
-        within(getButtonByText(screen, "Sana")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(filterModal), "Sana")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
       expect(
-        within(getButtonByText(screen, "Kiara")).queryByTestId("checkboxBlankOutlineIcon")
+        within(getButtonByText(within(filterModal), "Kiara")).queryByTestId(
+          "checkboxBlankOutlineIcon"
+        )
       ).toBeTruthy();
 
       // Confirm the button is disabled
-      expect(buttonProps(getButtonByText(screen, "Clear all Selected")).disabled).toBe(true);
+      expect(buttonProps(getButtonByText(within(filterModal), "Clear all Selected")).disabled).toBe(
+        true
+      );
     });
 
     it("checks the permissions to modify the brightness when the app state changes from background and active", async () => {
@@ -1042,7 +1287,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1063,6 +1308,11 @@ describe("App", () => {
       // Checks again after the app goes from the background to active
       expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(2);
     });
+
+    it.todo("falls back to the cached videos if the api query fails");
+    it.todo("shows an error message if the api query fails and there is no cache");
+
+    it.todo("the sort order defaults to 0 if there is an issue loading the cached state");
   });
 
   describe("Video View", () => {
@@ -1073,7 +1323,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1103,7 +1353,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1142,7 +1392,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1179,7 +1429,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1216,7 +1466,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1254,7 +1504,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1290,7 +1540,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1348,7 +1598,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1384,7 +1634,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1455,7 +1705,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1554,7 +1804,7 @@ describe("App", () => {
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
-          thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },

@@ -21,6 +21,7 @@ export const FilterModal = ({
       visible={isOpen}
     >
       <View
+        testID="filterModal"
         style={{
           width: "100%",
           height: "100%",
