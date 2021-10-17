@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export const useUnlockCountDown = (isScreenLocked, unlockScreen) => {
+export const useUnlockCountDown = () => {
   const [unlockCountDown, setUnlockCountDown] = useState(-1);
 
   const shouldStartUnlockCountdown = unlockCountDown > 0;
@@ -9,14 +9,7 @@ export const useUnlockCountDown = (isScreenLocked, unlockScreen) => {
       const interval = setInterval(() => setUnlockCountDown((value) => value - 1), 1000);
       return () => clearInterval(interval);
     }
-  }, [isScreenLocked, shouldStartUnlockCountdown]);
-
-  useEffect(() => {
-    if (isScreenLocked && unlockCountDown === 0) {
-      setUnlockCountDown(-1);
-      unlockScreen();
-    }
-  }, [unlockCountDown]);
+  }, [shouldStartUnlockCountdown]);
 
   return {
     unlockCountDown,

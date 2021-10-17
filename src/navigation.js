@@ -5,39 +5,33 @@ import { Pressable, Text, View } from "react-native";
 import { AdBanner } from "./ad-banner";
 import { AppContext } from "./app-context";
 import { LoadingSpinner } from "./components/loading-spinner";
-import { useBrightness } from "./use-brightness";
 import { HomeView } from "./views/home-view/home-view";
-import { useInitialBrightness } from "./views/video-view.js/hooks/use-initial-brightness";
 import { useLockScreen } from "./views/video-view.js/hooks/use-lock-screen";
-import { useUnlockCountDown } from "./views/video-view.js/hooks/use-unlock-count-down";
 import { VideoView } from "./views/video-view.js/video-view";
 
 const Stack = createNativeStackNavigator();
-const DIMMED_SCREEN_BRIGHTNESS = 0.01;
 
 export const Navigation = () => {
-  const { getBrightness, setBrightness } = useBrightness();
-  const initialBrightness = useInitialBrightness({ getBrightness, setBrightness });
-  const { isScreenLocked, unlockScreen, lockScreen } = useLockScreen({ setBrightness });
-  const { unlockCountDown, startUnlockCountDown, resetUnlockCountDown } = useUnlockCountDown(
+  const {
     isScreenLocked,
-    unlockScreen
-  );
+    unlockCountDown,
+    lockScreen,
+    startUnlockingScreen,
+    resetUnlockCountDown,
+  } = useLockScreen();
 
   return (
-    <AppContext.Provider value={{ isScreenLocked, lockScreen }}>
+    <AppContext.Provider
+      value={{
+        isScreenLocked,
+        lockScreen,
+      }}
+    >
       <ViewMask
         isScreenLocked={isScreenLocked}
         unlockCountDown={unlockCountDown}
-        onPressIn={async () => {
-          await setBrightness(initialBrightness);
-          startUnlockCountDown();
-        }}
-        onPressOut={async () => {
-          resetUnlockCountDown();
-          if (!isScreenLocked) return;
-          await setBrightness(DIMMED_SCREEN_BRIGHTNESS);
-        }}
+        onPressIn={startUnlockingScreen}
+        onPressOut={resetUnlockCountDown}
       />
       <NavigationContainer>
         <Stack.Navigator>

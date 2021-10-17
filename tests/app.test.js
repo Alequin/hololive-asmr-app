@@ -2260,51 +2260,5 @@ describe("App", () => {
       await waitForElementToBeRemoved(() => screen.queryByTestId("lockScreen"));
       enableAllErrorLogs();
     }, 10000);
-
-    it("resets the screen brightness when going back from the video view to the home view", async () => {
-      const apiPromise = Promise.resolve([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
-
-      // Start on the home view
-      const homeView = screen.queryByTestId("homeView");
-      expect(homeView).toBeTruthy();
-
-      const videoButtons = within(homeView).queryAllByTestId("videoButton");
-      await asyncPressEvent(videoButtons[0]);
-
-      // Visit the video view
-      const videoView = screen.queryByTestId("videoView");
-      expect(videoView).toBeTruthy();
-
-      // Resets the brightness
-      jest.clearAllMocks();
-      // Press back to return to the home view
-      await asyncPressEvent(getButtonByText(within(videoView), "Back"));
-
-      // Confirm the screens brightness is increased while holding the view mask
-      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
-      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
-      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
-    });
-
-    it.todo("shows all the expected buttons on full screen mode");
-    it.todo("all the button on full screen mode work as expected");
   });
 });
