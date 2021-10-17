@@ -2,6 +2,7 @@ import React from "react";
 import { Image, Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { Button } from "../../../components/button";
+import { ChannelThumbnail } from "../../../components/channel-thumbnail";
 import { windowHeight } from "../../../window";
 import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
 
@@ -74,15 +75,7 @@ const DetailedVideoButton = ({
             width: "100%",
           }}
         >
-          <Image
-            testID="channelImage"
-            style={{
-              width: channelThumbnailSize,
-              height: channelThumbnailSize,
-              borderRadius: 1000,
-            }}
-            source={{ uri: channelThumbnailUrl }}
-          />
+          <ChannelThumbnail channelThumbnailUrl={channelThumbnailUrl} size={channelThumbnailSize} />
           <Text style={{ color: "white", textAlign: "center", margin: 5, width: "100%" }}>
             {channelTitle}
           </Text>

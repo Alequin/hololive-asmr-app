@@ -2,8 +2,9 @@ import isEmpty from "lodash/isEmpty";
 import orderBy from "lodash/orderBy";
 import uniqBy from "lodash/uniqBy";
 import React, { useMemo } from "react";
-import { Image, Modal, ScrollView, Text, View } from "react-native";
+import { Modal, ScrollView, Text, View } from "react-native";
 import { Button } from "../../../components/button";
+import { ChannelButton } from "../../../components/channel-button";
 import { Icon } from "../../../icons";
 import { isSmallScreen } from "../../../window";
 
@@ -110,36 +111,12 @@ const ChannelOptionButton = ({ onSelect, isSelected, channelTitle, channelThumbn
       }}
       elevation={isSelected ? 10 : 0}
     >
-      <Button
-        style={{
-          borderColor: isSelected ? "black" : "#808080",
-          borderWidth: 1,
-          backgroundColor: isSelected ? "#ffffff" : "#ffffffE6",
-          borderRadius: 1000,
-          flexDirection: "row",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
+      <ChannelButton
+        channelTitle={channelTitle}
+        channelThumbnailUrl={channelThumbnailUrl}
+        isSelected={isSelected}
         onPress={onSelect}
-      >
-        <Image
-          testID="channelImage"
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 1000,
-          }}
-          source={{ uri: channelThumbnailUrl }}
-        />
-        <Text
-          style={{
-            fontWeight: isSelected ? "bold" : "normal",
-            marginHorizontal: 10,
-          }}
-        >
-          {channelTitle}
-        </Text>
-      </Button>
+      />
     </View>
   );
 };

@@ -4,6 +4,8 @@ import { Image, Pressable, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { AdBanner } from "../../ad-banner";
 import { Button } from "../../components/button";
+import { ChannelButton } from "../../components/channel-button";
+import { ChannelThumbnail } from "../../components/channel-thumbnail";
 import { ControlBar } from "../../components/control-bar";
 import { IconButton } from "../../components/icon-button";
 import { LoadingSpinner } from "../../components/loading-spinner";
@@ -157,30 +159,13 @@ export const VideoView = ({
                     padding: 10,
                   }}
                 >
-                  <Button
+                  <ChannelButton
+                    variant="black"
+                    channelTitle={channelTitle}
+                    channelThumbnailUrl={channelThumbnailUrl}
                     onPress={toYoutubeChannel}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      backgroundColor: "#282828",
-                      borderRadius: 1000,
-                    }}
                     hitSlop={{ left: 30, right: 30, bottom: 0, top: 0 }}
-                  >
-                    <Image
-                      testID="channelImage"
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 1000,
-                      }}
-                      source={{ uri: channelThumbnailUrl }}
-                    />
-                    <Text style={{ color: "white", textAlign: "center", margin: 10 }}>
-                      {channelTitle}
-                    </Text>
-                  </Button>
+                  />
                 </View>
               )}
             </ControlBar>
