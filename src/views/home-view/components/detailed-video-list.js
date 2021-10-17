@@ -5,6 +5,7 @@ import { Button } from "../../../components/button";
 import { ChannelThumbnail } from "../../../components/channel-thumbnail";
 import { windowHeight } from "../../../window";
 import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
+import { dateString } from "./date-string";
 
 export const DetailedVideoList = ({ videos }) => {
   const navigateToVideoView = useNavigateToVideoView();
@@ -22,6 +23,7 @@ export const DetailedVideoList = ({ videos }) => {
           channelTitle={item.channel_title}
           channelThumbnailUrl={item.channel_thumbnail_url}
           videoThumbnailUrl={item.video_thumbnail_url}
+          publishDate={dateString(new Date(item.published_at))}
           size={windowHeight * 0.5}
           onSelectVideo={() => navigateToVideoView(item)}
         />
@@ -37,6 +39,7 @@ const DetailedVideoButton = ({
   channelThumbnailUrl,
   size,
   onSelectVideo,
+  publishDate,
 }) => {
   const buttonPadding = 10;
   const thumbnailSize = size - buttonPadding * 2;
@@ -61,24 +64,30 @@ const DetailedVideoButton = ({
         style={{
           flex: 1,
           justifyContent: "space-between",
-          padding: 7,
+          padding: 5,
         }}
       >
         <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }} numberOfLines={3}>
           {title}
         </Text>
-        <View
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            flexWrap: "wrap",
-            width: "100%",
-          }}
-        >
-          <ChannelThumbnail channelThumbnailUrl={channelThumbnailUrl} size={channelThumbnailSize} />
-          <Text style={{ color: "white", textAlign: "center", margin: 5, width: "100%" }}>
-            {channelTitle}
-          </Text>
+        <View>
+          <View
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              flexWrap: "wrap",
+              width: "100%",
+            }}
+          >
+            <ChannelThumbnail
+              channelThumbnailUrl={channelThumbnailUrl}
+              size={channelThumbnailSize}
+            />
+            <Text style={{ color: "white", textAlign: "center", width: "100%" }}>
+              {channelTitle}
+            </Text>
+          </View>
+          <Text style={{ color: "white", textAlign: "center", width: "100%" }}>{publishDate}</Text>
         </View>
       </View>
     </Button>

@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { firstLoadState } from "./src/async-storage";
 import { turnApiOn } from "./src/external-requests/turn-api-on";
@@ -24,8 +24,6 @@ export const App = () => {
         requestBrightnessPermissions();
       });
   }, []);
-
-  useEffect(() => {});
 
   return (
     <>

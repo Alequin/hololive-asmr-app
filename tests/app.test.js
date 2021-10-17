@@ -197,7 +197,7 @@ describe("App", () => {
           video_id: "234",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Sana",
-          published_at: "2021-10-06T20:21:31Z",
+          published_at: "2020-01-05T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
           channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
           video_title: "video 2",
@@ -206,7 +206,7 @@ describe("App", () => {
           video_id: "345",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ina",
-          published_at: "2021-10-06T20:21:31Z",
+          published_at: "2019-12-31T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
           channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
           video_title: "video 3",
@@ -234,6 +234,7 @@ describe("App", () => {
         uri: "https://i.ytimg.com/channel/123/mqdefault.jpg",
       });
       expect(button1.queryByText("Fauna")).toBeTruthy();
+      expect(button1.queryByText("6 Oct 2021")).toBeTruthy();
 
       const button2 = within(videoButtons[1]);
       expect(button2.queryByTestId("videoImageBackground").props.source).toEqual({
@@ -244,6 +245,7 @@ describe("App", () => {
         uri: "https://i.ytimg.com/channel/234/mqdefault.jpg",
       });
       expect(button2.queryByText("Sana")).toBeTruthy();
+      expect(button2.queryByText("5 Jan 2020")).toBeTruthy();
 
       const button3 = within(videoButtons[2]);
       expect(button3.queryByTestId("videoImageBackground").props.source).toEqual({
@@ -254,6 +256,7 @@ describe("App", () => {
         uri: "https://i.ytimg.com/channel/345/mqdefault.jpg",
       });
       expect(button3.queryByText("Ina")).toBeTruthy();
+      expect(button3.queryByText("31 Dec 2019")).toBeTruthy();
     });
 
     it("allows the user to see a less detailed view of the list of videos", async () => {
