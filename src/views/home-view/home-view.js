@@ -2,7 +2,6 @@ import * as Brightness from "expo-brightness";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import React, { useEffect, useMemo, useState } from "react";
-import { AdBanner } from "../../ad-banner";
 import { ControlBar } from "../../components/control-bar";
 import { FullScreenLoadingSpinner } from "../../components/full-screen-loading-spinner";
 import { IconButton } from "../../components/icon-button";
@@ -102,8 +101,6 @@ export const HomeView = () => {
           <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
         </ControlBar>
       )}
-
-      <AdBanner />
     </ViewContainerWithStatusBar>
   );
 };
