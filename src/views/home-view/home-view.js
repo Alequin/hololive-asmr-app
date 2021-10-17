@@ -152,7 +152,7 @@ const useIsFilterModalVisible = () => {
 };
 
 const ViewModeButton = ({ isDetailedViewMode, toggleViewMode }) => (
-  <IconButton
+  <HomeViewIconButton
     iconName={isDetailedViewMode ? "zoomOut" : "zoomIn"}
     onPress={toggleViewMode}
     text={isDetailedViewMode ? "Less Details" : "More Details"}
@@ -161,7 +161,7 @@ const ViewModeButton = ({ isDetailedViewMode, toggleViewMode }) => (
 
 const PermissionsButton = ({ shouldRequestPermission }) =>
   shouldRequestPermission ? (
-    <IconButton
+    <HomeViewIconButton
       iconName="shieldKey"
       onPress={requestBrightnessPermissions}
       text="Give System Permission"
@@ -169,14 +169,32 @@ const PermissionsButton = ({ shouldRequestPermission }) =>
   ) : null;
 
 const FilterModalButton = ({ openSearchModal }) => (
-  <IconButton iconName="search" iconSize={20} onPress={openSearchModal} text="Filter By Channel" />
+  <HomeViewIconButton
+    iconName="search"
+    iconSize={20}
+    onPress={openSearchModal}
+    text="Filter By Channel"
+  />
 );
 
 const SortButton = ({ nextSortOrder, sortOrderDescription }) => (
-  <IconButton
+  <HomeViewIconButton
     iconName="sortOrder"
     iconSize={20}
     onPress={nextSortOrder}
     text={sortOrderDescription}
+  />
+);
+
+const HomeViewIconButton = (props) => (
+  <IconButton
+    {...props}
+    style={{
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 10,
+      maxWidth: isSmallScreen ? "50%" : "25%",
+    }}
   />
 );

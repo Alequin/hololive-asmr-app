@@ -1533,45 +1533,6 @@ describe("App", () => {
       expect(videoView).toBeTruthy();
     });
 
-    it("allows the user to use the back button to return to the home view", async () => {
-      const apiPromise = Promise.resolve([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
-
-      // Start on the home view
-      const homeView = screen.queryByTestId("homeView");
-      expect(homeView).toBeTruthy();
-
-      const videoButtons = within(homeView).queryAllByTestId("videoButton");
-      await asyncPressEvent(videoButtons[0]);
-
-      // Visit the video view
-      const videoView = screen.queryByTestId("videoView");
-      expect(videoView).toBeTruthy();
-
-      await asyncPressEvent(getButtonByText(within(videoView), "Back"));
-
-      // Return to the home view
-      expect(screen.queryByTestId("homeView")).toBeTruthy();
-      expect(screen.queryByTestId("videoView")).not.toBeTruthy();
-    });
-
     it("shows the selected video on the video view inside a webview", async () => {
       const apiPromise = Promise.resolve([
         {
@@ -1644,9 +1605,7 @@ describe("App", () => {
       });
     });
 
-    it("provides a button which opens the youtube channel the video is connected with", async () => {
-      jest.spyOn(Linking, "openURL");
-
+    it("is able to switch between half screen and full screen video modes", async () => {
       const apiPromise = Promise.resolve([
         {
           video_id: "123",
@@ -1672,14 +1631,273 @@ describe("App", () => {
       const videoButtons = within(homeView).queryAllByTestId("videoButton");
       await asyncPressEvent(videoButtons[0]);
 
-      await asyncPressEvent(
-        getButtonByText(within(screen.getByTestId("videoView")), "Ceres Fauna Ch. hololive-EN")
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      // Default to half screen mode
+      expect(within(videoView).queryByTestId("embeddedVideoContainer").props.style.width).toBe(
+        "75%"
       );
+
+      // Switch to full screen mode
+      await asyncPressEvent(getButtonByText(within(videoView), "Full Screen"));
+      expect(within(videoView).queryByTestId("embeddedVideoContainer").props.style.width).toBe(
+        "87%"
+      );
+
+      // Switch back to half screen mode
+      await asyncPressEvent(getButtonByChildTestId(within(videoView), "fullscreenIcon"));
+      expect(within(videoView).queryByTestId("embeddedVideoContainer").props.style.width).toBe(
+        "75%"
+      );
+    });
+
+    it("allows the user to use the back button to return to the home view", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      // Start on the home view
+      const homeView = screen.queryByTestId("homeView");
+      expect(homeView).toBeTruthy();
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      // Visit the video view
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      await asyncPressEvent(getButtonByText(within(videoView), "Back"));
+
+      // Return to the home view
+      expect(screen.queryByTestId("homeView")).toBeTruthy();
+      expect(screen.queryByTestId("videoView")).not.toBeTruthy();
+    });
+
+    it("allows the user to use the back button to return to the home view which in full screen mode", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      // Start on the home view
+      const homeView = screen.queryByTestId("homeView");
+      expect(homeView).toBeTruthy();
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      // Visit the video view
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      // Switch to full screen mode
+      await asyncPressEvent(getButtonByText(within(videoView), "Full Screen"));
+
+      await asyncPressEvent(getButtonByChildTestId(within(videoView), "arrowBackIcon"));
+
+      // Return to the home view
+      expect(screen.queryByTestId("homeView")).toBeTruthy();
+      expect(screen.queryByTestId("videoView")).not.toBeTruthy();
+    });
+
+    it("shows the video title", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      expect(
+        within(videoView).queryByText(
+          "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil"
+        )
+      ).toBeTruthy();
+    });
+
+    it("hides the video title in full screen mode", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      expect(
+        within(videoView).queryByText(
+          "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil"
+        )
+      ).toBeTruthy();
+
+      // Switch to full screen mode
+      await asyncPressEvent(getButtonByText(within(videoView), "Full Screen"));
+
+      expect(
+        within(videoView).queryByText(
+          "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil"
+        )
+      ).not.toBeTruthy();
+    });
+
+    it("provides a button which opens the youtube channel the video is connected with", async () => {
+      jest.spyOn(Linking, "openURL");
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const channelButton = getButtonByText(
+        within(screen.getByTestId("videoView")),
+        "Ceres Fauna Ch. hololive-EN"
+      );
+      expect(within(channelButton).queryByTestId("channelImage").props.source).toEqual({
+        uri: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+      });
+
+      await asyncPressEvent(channelButton);
 
       expect(Linking.openURL).toHaveBeenCalledTimes(1);
       expect(Linking.openURL).toHaveBeenCalledWith(
         `https://www.youtube.com/channel/UCO_aKKYxn4tvrqPjcTzZ6EQ`
       );
+    });
+
+    it("hides the button which opens the youtube channel in full screen mode", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      expect(
+        getButtonByText(within(screen.getByTestId("videoView")), "Ceres Fauna Ch. hololive-EN")
+      ).toBeTruthy();
+
+      // Switch to full screen mode
+      await asyncPressEvent(getButtonByText(within(videoView), "Full Screen"));
+
+      expect(
+        getButtonByText(within(screen.getByTestId("videoView")), "Ceres Fauna Ch. hololive-EN")
+      ).not.toBeTruthy();
     });
 
     it("provides a button which opens the youtube video on youtube", async () => {
@@ -1718,6 +1936,45 @@ describe("App", () => {
       expect(Linking.openURL).toHaveBeenCalledWith(`https://www.youtube.com/watch?v=123`);
     });
 
+    it("provides a button which opens the youtube video on youtube in full screen mode", async () => {
+      jest.spyOn(Linking, "openURL");
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      // Switch to full screen mode
+      await asyncPressEvent(getButtonByText(screen, "Full Screen"));
+
+      await asyncPressEvent(
+        getButtonByChildTestId(within(screen.getByTestId("videoView")), "youtubeTvIcon")
+      );
+
+      expect(Linking.openURL).toHaveBeenCalledTimes(1);
+      expect(Linking.openURL).toHaveBeenCalledWith(`https://www.youtube.com/watch?v=123`);
+    });
+
     it("locks the screen when the lock button is pressed", async () => {
       const getBackHandlerCallback = mockBackHandlerCallback();
 
@@ -1750,6 +2007,67 @@ describe("App", () => {
       expect(videoView).toBeTruthy();
 
       await asyncPressEvent(getButtonByText(within(videoView), "Lock Screen"));
+
+      const lockedVideoView = screen.queryByTestId("videoView");
+      const viewMask = screen.queryByTestId("lockScreen");
+
+      // Confirm locked view mask is visible
+      expect(viewMask).toBeTruthy();
+
+      // Confirm the view mask and the video view have the correct zIndex values to disable all controls
+      expect(lockedVideoView.props.style[1][1].zIndex).toBe(1);
+      expect(viewMask.props.style.zIndex).toBe(2);
+
+      // Confirm locked message is visible
+      expect(
+        within(lockedVideoView).queryByText("Screen is locked. Press and hold anywhere to unlock.")
+      ).toBeTruthy();
+
+      // Confirm the screens brightness is dimmed
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalled();
+      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
+      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0.01]);
+
+      // Confirm the backhandler is disabling the hardware back button by always returning true
+      expect(BackHandler.addEventListener).toHaveBeenCalledTimes(2);
+      expect(getBackHandlerCallback()()).toBe(true);
+    });
+
+    it("locks the screen when the lock button is pressed", async () => {
+      const getBackHandlerCallback = mockBackHandlerCallback();
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      await asyncPressEvent(videoButtons[0]);
+
+      const videoView = screen.queryByTestId("videoView");
+      expect(videoView).toBeTruthy();
+
+      // Switch to full screen mode
+      await asyncPressEvent(getButtonByText(screen, "Full Screen"));
+
+      await asyncPressEvent(getButtonByChildTestId(within(videoView), "lockIcon"));
 
       const lockedVideoView = screen.queryByTestId("videoView");
       const viewMask = screen.queryByTestId("lockScreen");
@@ -2026,5 +2344,8 @@ describe("App", () => {
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
     });
+
+    it.todo("shows all the expected buttons on full screen mode");
+    it.todo("all the button on full screen mode work as expected");
   });
 });

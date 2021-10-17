@@ -1,14 +1,14 @@
-import { useNavigation } from "@react-navigation/core";
 import React from "react";
 import { Image } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { Button } from "../../../components/button";
 import { windowWidth } from "../../../window";
+import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
 
 const COLUMN_COUNT = 7;
 
 export const ThumbnailVideoList = ({ videos }) => {
-  const nav = useNavigation();
+  const navigateToVideoView = useNavigateToVideoView();
 
   return (
     <FlatList
@@ -21,13 +21,7 @@ export const ThumbnailVideoList = ({ videos }) => {
         <ThumbnailVideoButton
           size={windowWidth / COLUMN_COUNT}
           thumbnailUrl={item.video_thumbnail_url}
-          onSelectVideo={() =>
-            nav.navigate("videoView", {
-              videoId: item.video_id,
-              channelTitle: item.channel_title,
-              channelId: item.channel_id,
-            })
-          }
+          onSelectVideo={() => navigateToVideoView(item)}
         />
       )}
     />

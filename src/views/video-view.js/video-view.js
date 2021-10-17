@@ -1,16 +1,17 @@
 import { useNavigation } from "@react-navigation/core";
-import React from "react";
-import { Pressable, Text, View } from "react-native";
+import React, { useCallback, useState } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { AdBanner } from "../../ad-banner";
+import { Button } from "../../components/button";
 import { ControlBar } from "../../components/control-bar";
 import { IconButton } from "../../components/icon-button";
 import { LoadingSpinner } from "../../components/loading-spinner";
 import { MainView } from "../../components/main-view";
 import { useBrightness } from "../../use-brightness";
-import { isSmallScreen } from "../../window";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { useInitialBrightness } from "./hooks/use-initial-brightness";
+import { useIsFullScreenMode } from "./hooks/use-is-full-screen-mode";
 import { useLockScreen } from "./hooks/use-lock-screen";
 import { useUnlockCountDown } from "./hooks/use-unlock-count-down";
 import * as youtubeLinks from "./youtube-links";
@@ -18,7 +19,12 @@ import * as youtubeLinks from "./youtube-links";
 const VIEW_ID = "videoView";
 const DIMMED_SCREEN_BRIGHTNESS = 0.01;
 
-export const VideoView = ({ route }) => {
+export const VideoView = ({
+  route: {
+    params: { channelId, channelTitle, videoId, channelThumbnailUrl, videoTitle },
+  },
+}) => {
+  const nav = useNavigation();
   const { getBrightness, setBrightness } = useBrightness();
   const initialBrightness = useInitialBrightness({ getBrightness, setBrightness });
   const { isScreenLocked, unlockScreen, lockScreen } = useLockScreen({ setBrightness });
@@ -26,6 +32,8 @@ export const VideoView = ({ route }) => {
     isScreenLocked,
     unlockScreen
   );
+  const { isFullScreenMode, toggleFullScreenMode } = useIsFullScreenMode();
+  const { toYoutubeVideo, toYoutubeChannel } = useYoutubeLinks(videoId, channelId);
 
   return (
     <>
@@ -51,59 +59,130 @@ export const VideoView = ({ route }) => {
         }}
       >
         <View style={{ flex: 1, height: "100%" }}>
-          <MainView
-            style={{
-              paddingHorizontal: 20,
-            }}
-          >
-            <WebView
-              testID="embeddedVideo"
-              style={{ width: "100%", height: "100%", backgroundColor: "#000" }}
-              originWhitelist={["*"]}
-              source={{
-                uri: youtubeLinks.youtubeEmbeddedVideoUri(route.params.videoId),
-              }}
-            />
-          </MainView>
-          {isScreenLocked && (
-            <ControlBar>
+          <MainView>
+            {!isFullScreenMode && (
               <Text
+                style={{ color: "white", textAlign: "center", fontSize: 16, paddingBottom: 10 }}
+              >
+                {videoTitle}
+              </Text>
+            )}
+            <View
+              style={{
+                flexDirection: "row",
+                flex: 1,
+              }}
+            >
+              <SideBar>
+                {isFullScreenMode ? (
+                  <>
+                    <FullViewIconButtons iconName="fullscreen" onPress={toggleFullScreenMode} />
+                    <FullViewIconButtons iconName="lock" onPress={lockScreen} />
+                  </>
+                ) : (
+                  <>
+                    <HalfViewIconButton
+                      iconName="fullscreen"
+                      onPress={toggleFullScreenMode}
+                      text="Full Screen"
+                    />
+                    <HalfViewIconButton iconName="lock" onPress={lockScreen} text="Lock Screen" />
+                  </>
+                )}
+              </SideBar>
+              <View
+                testID="embeddedVideoContainer"
                 style={{
-                  color: "white",
-                  fontSize: 18,
-                  fontWeight: "bold",
-                  padding: 5,
-                  textAlign: "center",
+                  width: isFullScreenMode ? "87%" : "75%",
+                  height: "100%",
+                  backgroundColor: "#000",
+                  borderWidth: 1,
+                  borderColor: "white",
                 }}
               >
-                Screen is locked. Press and hold anywhere to unlock.
-              </Text>
-            </ControlBar>
-          )}
-          {!isScreenLocked && isSmallScreen && (
-            <>
-              <ControlBar>
-                <ViewOnYoutubeButton videoId={route.params.videoId} />
-                <ViewYoutubeChannelButton
-                  channelId={route.params.channelId}
-                  channelTitle={route.params.channelTitle}
+                <WebView
+                  testID="embeddedVideo"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "#000",
+                  }}
+                  originWhitelist={["*"]}
+                  source={{
+                    uri: youtubeLinks.youtubeEmbeddedVideoUri(videoId),
+                  }}
                 />
-              </ControlBar>
-              <ControlBar>
-                <LockButton lockScreen={lockScreen} />
-                <BackButton />
-              </ControlBar>
-            </>
-          )}
-          {!isScreenLocked && !isSmallScreen && (
+              </View>
+              <SideBar>
+                {isFullScreenMode ? (
+                  <>
+                    <FullViewIconButtons iconName="youtubeTv" onPress={toYoutubeVideo} />
+                    <FullViewIconButtons iconName="back" onPress={nav.goBack} />
+                  </>
+                ) : (
+                  <>
+                    <HalfViewIconButton
+                      iconName="youtubeTv"
+                      onPress={toYoutubeVideo}
+                      text="Watch on youtube"
+                    />
+                    <HalfViewIconButton iconName="back" onPress={nav.goBack} text="Back" />
+                  </>
+                )}
+              </SideBar>
+            </View>
+          </MainView>
+          {(isScreenLocked || !isFullScreenMode) && (
             <ControlBar>
-              <LockButton lockScreen={lockScreen} />
-              <ViewOnYoutubeButton videoId={route.params.videoId} />
-              <ViewYoutubeChannelButton
-                channelId={route.params.channelId}
-                channelTitle={route.params.channelTitle}
-              />
-              <BackButton />
+              {isScreenLocked && (
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 18,
+                    fontWeight: "bold",
+                    padding: 5,
+                    textAlign: "center",
+                  }}
+                >
+                  Screen is locked. Press and hold anywhere to unlock.
+                </Text>
+              )}
+              {!isFullScreenMode && !isScreenLocked && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "100%",
+                    padding: 10,
+                  }}
+                >
+                  <Button
+                    onPress={toYoutubeChannel}
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "#282828",
+                      borderRadius: 1000,
+                    }}
+                    hitSlop={{ left: 30, right: 30, bottom: 0, top: 0 }}
+                  >
+                    <Image
+                      testID="channelImage"
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 1000,
+                      }}
+                      source={{ uri: channelThumbnailUrl }}
+                    />
+                    <Text style={{ color: "white", textAlign: "center", margin: 10 }}>
+                      {channelTitle}
+                    </Text>
+                  </Button>
+                </View>
+              )}
             </ControlBar>
           )}
         </View>
@@ -161,27 +240,21 @@ const ViewMask = ({ isScreenLocked, onPressIn, onPressOut, unlockCountDown }) =>
   );
 };
 
-const LockButton = ({ lockScreen }) => (
-  <IconButton iconName="lock" onPress={lockScreen} text="Lock Screen" />
+const SideBar = (props) => <View style={{ flex: 1, justifyContent: "space-around" }} {...props} />;
+
+const HalfViewIconButton = (props) => (
+  <IconButton {...props} style={{ justifyContent: "space-between", padding: 5 }} />
 );
 
-const ViewOnYoutubeButton = ({ videoId }) => (
+const FullViewIconButtons = (props) => (
   <IconButton
-    iconName="youtubeTv"
-    onPress={() => youtubeLinks.toYoutubeVideo(videoId)}
-    text="Watch on youtube"
+    {...props}
+    iconSize={26}
+    style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
   />
 );
 
-const ViewYoutubeChannelButton = ({ channelId, channelTitle }) => (
-  <IconButton
-    iconName="youtubeSubscription"
-    onPress={() => youtubeLinks.toYoutubeChannel(channelId)}
-    text={channelTitle}
-  />
-);
-
-const BackButton = () => {
-  const nav = useNavigation();
-  return <IconButton iconName="back" onPress={() => nav.navigate("homeView")} text="Back" />;
-};
+const useYoutubeLinks = (videoId, channelId) => ({
+  toYoutubeVideo: useCallback(() => youtubeLinks.toYoutubeVideo(videoId), [videoId]),
+  toYoutubeChannel: useCallback(() => youtubeLinks.toYoutubeChannel(channelId), [channelId]),
+});

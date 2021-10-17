@@ -12,6 +12,11 @@ export const getButtonByText = (screen, innerText) => {
   return buttons.find((button) => within(button).queryByText(innerText));
 };
 
+export const getButtonByChildTestId = (screen, childTestId) => {
+  const buttons = screen.getAllByRole("button");
+  return buttons.find((button) => within(button).queryByTestId(childTestId));
+};
+
 export const buttonProps = (buttonComponent) => buttonComponent.parent.parent.parent.parent.props;
 
 export const silenceAllErrorLogs = () => {

@@ -1,21 +1,11 @@
 import React from "react";
 import { Text } from "react-native";
 import { Icon } from "../icons";
-import { isSmallScreen } from "../window";
 import { Button } from "./button";
 
-export const IconButton = ({ iconName, iconSize = 24, onPress, text }) => {
+export const IconButton = ({ iconName, iconSize = 24, onPress, text, style }) => {
   return (
-    <Button
-      onPress={onPress}
-      style={{
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 10,
-        maxWidth: isSmallScreen ? "50%" : "25%",
-      }}
-    >
+    <Button onPress={onPress} style={style}>
       <Icon
         style={{
           alignItems: "center",
@@ -25,7 +15,9 @@ export const IconButton = ({ iconName, iconSize = 24, onPress, text }) => {
         color="white"
         size={iconSize}
       />
-      <Text style={{ color: "white", marginHorizontal: 5, textAlign: "center" }}>{text}</Text>
+      {text && (
+        <Text style={{ color: "white", marginHorizontal: 5, textAlign: "center" }}>{text}</Text>
+      )}
     </Button>
   );
 };

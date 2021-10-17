@@ -1,4 +1,3 @@
-import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -29,7 +28,6 @@ const customIcon =
 
 const ICON_OPTIONS = {
   back: customIcon(Ionicons, "arrow-back"),
-  youtubeSubscription: customIcon(MaterialCommunityIcons, "youtube-subscription"),
   sortOrder: customIcon(FontAwesome, "sort-amount-asc"),
   zoomIn: customIcon(Feather, "zoom-in"),
   zoomOut: customIcon(Feather, "zoom-out"),
@@ -37,10 +35,11 @@ const ICON_OPTIONS = {
   blankCheckBox: customIcon(MaterialCommunityIcons, "checkbox-blank-outline"),
   markedCheckBox: customIcon(MaterialCommunityIcons, "checkbox-marked"),
   clear: customIcon(MaterialIcons, "clear"),
-  lock: customIcon(Entypo, "lock"),
+  lock: customIcon(MaterialCommunityIcons, "lock"),
   shieldKey: customIcon(MaterialCommunityIcons, "shield-key"),
   youtubeTv: customIcon(MaterialCommunityIcons, "youtube-tv"),
   refresh: customIcon(FontAwesome, "refresh"),
+  fullscreen: customIcon(MaterialCommunityIcons, "fullscreen"),
 };
 
 const TestIdElement = (props) => <View {...props} />;

@@ -9,7 +9,7 @@ export const AdBanner = () => {
 
   return (
     <>
-      <View style={{ width: "100%", height: 3, backgroundColor: "white" }} />
+      <View style={{ width: "100%", height: 1, backgroundColor: "white" }} />
       <AdMobBanner
         style={!shouldShowAd ? { height: 0 } : { alignItems: "center" }}
         bannerSize="smartBanner"
