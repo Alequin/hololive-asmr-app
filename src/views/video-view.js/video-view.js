@@ -97,7 +97,7 @@ export const VideoView = ({
                   height: "100%",
                   backgroundColor: "#000",
                   borderWidth: 1,
-                  borderColor: "white",
+                  borderColor: "#ffffffBF",
                 }}
               >
                 <WebView

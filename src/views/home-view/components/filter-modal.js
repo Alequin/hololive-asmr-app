@@ -1,18 +1,25 @@
 import isEmpty from "lodash/isEmpty";
+import orderBy from "lodash/orderBy";
+import uniqBy from "lodash/uniqBy";
 import React, { useMemo } from "react";
-import { Modal, Text, View, ScrollView } from "react-native";
+import { Image, Modal, ScrollView, Text, View } from "react-native";
 import { Button } from "../../../components/button";
 import { Icon } from "../../../icons";
 import { isSmallScreen } from "../../../window";
 
 export const FilterModal = ({
   isOpen,
-  orderedChannelNames,
+  videos,
   onDismissModal,
   onSelectChannel,
   onClearAllChannels,
   channelsToFilterBy,
 }) => {
+  const orderedChannels = useMemo(
+    () => (videos ? orderBy(getChannelsFromVideos(videos), "channelTitle") : null),
+    [videos]
+  );
+
   return (
     <Modal
       style={{ width: "100%", height: "100%" }}
@@ -34,7 +41,7 @@ export const FilterModal = ({
           style={{
             width: "90%",
             height: "80%",
-            backgroundColor: "white",
+            backgroundColor: "#ffffffE6",
             borderRadius: 50,
             padding: 5,
             paddingTop: 20,
@@ -46,19 +53,19 @@ export const FilterModal = ({
               style={{
                 flexDirection: "row",
                 flexWrap: "wrap",
-                marginTop: 10,
                 justifyContent: "center",
               }}
             >
-              {orderedChannelNames.map((channelName) => {
+              {orderedChannels.map(({ channelTitle, channelThumbnailUrl }) => {
                 return (
                   <ChannelOptionButton
-                    key={channelName}
-                    channelName={channelName}
-                    onSelect={() => onSelectChannel(channelName)}
+                    key={channelTitle}
+                    channelTitle={channelTitle}
+                    channelThumbnailUrl={channelThumbnailUrl}
+                    onSelect={() => onSelectChannel(channelTitle)}
                     isSelected={useMemo(
-                      () => channelsToFilterBy.includes(channelName),
-                      [channelsToFilterBy, channelName]
+                      () => channelsToFilterBy.includes(channelTitle),
+                      [channelsToFilterBy, channelTitle]
                     )}
                   />
                 );
@@ -87,34 +94,53 @@ export const FilterModal = ({
   );
 };
 
-const ChannelOptionButton = ({ onSelect, isSelected, channelName }) => {
+const getChannelsFromVideos = (videos) =>
+  uniqBy(videos, "channel_title").map(({ channel_thumbnail_url, channel_title }) => ({
+    channelTitle: channel_title,
+    channelThumbnailUrl: channel_thumbnail_url,
+  }));
+
+const ChannelOptionButton = ({ onSelect, isSelected, channelTitle, channelThumbnailUrl }) => {
   return (
-    <Button
+    <View
       style={{
-        flexDirection: "row",
-        alignItems: "center",
-        margin: 2,
-        borderColor: "black",
-        borderWidth: 1,
-        padding: 5,
-        borderRadius: 10,
+        margin: 4,
+        marginHorizontal: isSelected ? 1 : 4,
+        borderRadius: 1000,
       }}
-      onPress={onSelect}
+      elevation={isSelected ? 10 : 0}
     >
-      <Icon
-        name={isSelected ? "markedCheckBox" : "blankCheckBox"}
-        style={{ marginRight: 5 }}
-        size={16}
-      />
-      <Text
+      <Button
         style={{
-          fontSize: 16,
-          fontWeight: isSelected ? "bold" : "normal",
+          borderColor: isSelected ? "black" : "#808080",
+          borderWidth: 1,
+          backgroundColor: isSelected ? "#ffffff" : "#ffffffE6",
+          borderRadius: 1000,
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
         }}
+        onPress={onSelect}
       >
-        {channelName}
-      </Text>
-    </Button>
+        <Image
+          testID="channelImage"
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 1000,
+          }}
+          source={{ uri: channelThumbnailUrl }}
+        />
+        <Text
+          style={{
+            fontWeight: isSelected ? "bold" : "normal",
+            marginHorizontal: 10,
+          }}
+        >
+          {channelTitle}
+        </Text>
+      </Button>
+    </View>
   );
 };
 

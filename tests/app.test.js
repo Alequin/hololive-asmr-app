@@ -1225,44 +1225,31 @@ describe("App", () => {
       // Open filter by channels modal
       await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
 
-      // Confirm all check boxes are blank
+      // Confirm all options are unselected
       const modalId = "filterModal";
       expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+      ).toBe("normal");
+      expect(within(screen.queryByTestId(modalId)).queryByText("Sana").props.style.fontWeight).toBe(
+        "normal"
+      );
       expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Sana")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
-      expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+      ).toBe("normal");
 
       await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Sana"));
       await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara"));
 
-      // Confirm the selected check boxes have been updated
+      // Confirm the selected options have been updated
       expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
-
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+      ).toBe("normal");
+      expect(within(screen.queryByTestId(modalId)).queryByText("Sana").props.style.fontWeight).toBe(
+        "bold"
+      );
       expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Sana")).queryByTestId(
-          "checkboxMarkedIcon"
-        )
-      ).toBeTruthy();
-      expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")).queryByTestId(
-          "checkboxMarkedIcon"
-        )
-      ).toBeTruthy();
+        within(screen.queryByTestId(modalId)).queryByText("Kiara").props.style.fontWeight
+      ).toBe("bold");
 
       // Return to the list of videos
       await asyncPressEvent(
@@ -1335,68 +1322,50 @@ describe("App", () => {
       // Open filter by channels modal
       await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
 
-      // Confirm all check boxes are blank
+      // Confirm all options are unselected
 
       const modalId = "filterModal";
       expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+      ).toBe("normal");
+      expect(within(screen.queryByTestId(modalId)).queryByText("Sana").props.style.fontWeight).toBe(
+        "normal"
+      );
       expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Sana")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
-      expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+      ).toBe("normal");
 
       // Select all channels
       await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna"));
       await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Sana"));
       await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara"));
 
-      // Confirm the selected check boxes have been updated
+      // Confirm the selected options have been updated
       expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna")).queryByTestId(
-          "checkboxMarkedIcon"
-        )
-      ).toBeTruthy();
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+      ).toBe("bold");
+      expect(within(screen.queryByTestId(modalId)).queryByText("Sana").props.style.fontWeight).toBe(
+        "bold"
+      );
       expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Sana")).queryByTestId(
-          "checkboxMarkedIcon"
-        )
-      ).toBeTruthy();
-      expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")).queryByTestId(
-          "checkboxMarkedIcon"
-        )
-      ).toBeTruthy();
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+      ).toBe("bold");
 
       // Clear all selected
       await asyncPressEvent(
         getButtonByText(within(screen.queryByTestId(modalId)), "Clear all Selected")
       );
 
-      // Confirm all check boxes are blank
+      // Confirm all options are unselected
       expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+      ).toBe("normal");
+      expect(within(screen.queryByTestId(modalId)).queryByText("Sana").props.style.fontWeight).toBe(
+        "normal"
+      );
       expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Sana")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
-      expect(
-        within(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+      ).toBe("normal");
     });
 
     it("disables the 'Clear all Selected' button when no channels are selected", async () => {
@@ -1446,24 +1415,12 @@ describe("App", () => {
       // Open filter by channels modal
       await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
 
-      // Confirm all check boxes are blank
+      // Confirm all options are unselected
       const filterModal = screen.queryByTestId("filterModal");
 
-      expect(
-        within(getButtonByText(within(filterModal), "Fauna")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
-      expect(
-        within(getButtonByText(within(filterModal), "Sana")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
-      expect(
-        within(getButtonByText(within(filterModal), "Kiara")).queryByTestId(
-          "checkboxBlankOutlineIcon"
-        )
-      ).toBeTruthy();
+      expect(within(filterModal).queryByText("Fauna").props.style.fontWeight).toBe("normal");
+      expect(within(filterModal).queryByText("Sana").props.style.fontWeight).toBe("normal");
+      expect(within(filterModal).queryByText("Fauna").props.style.fontWeight).toBe("normal");
 
       // Confirm the button is disabled
       expect(buttonProps(getButtonByText(within(filterModal), "Clear all Selected")).disabled).toBe(
@@ -1500,6 +1457,8 @@ describe("App", () => {
       // Checks again after the app goes from the background to active
       expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(2);
     });
+
+    it.todo("shows channel thumbnails in the filer modal");
   });
 
   describe("Video View", () => {

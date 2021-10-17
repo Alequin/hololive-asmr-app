@@ -32,8 +32,6 @@ const ICON_OPTIONS = {
   zoomIn: customIcon(Feather, "zoom-in"),
   zoomOut: customIcon(Feather, "zoom-out"),
   search: customIcon(FontAwesome5, "search"),
-  blankCheckBox: customIcon(MaterialCommunityIcons, "checkbox-blank-outline"),
-  markedCheckBox: customIcon(MaterialCommunityIcons, "checkbox-marked"),
   clear: customIcon(MaterialIcons, "clear"),
   lock: customIcon(MaterialCommunityIcons, "lock"),
   shieldKey: customIcon(MaterialCommunityIcons, "shield-key"),

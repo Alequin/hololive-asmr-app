@@ -1,7 +1,6 @@
 import * as Brightness from "expo-brightness";
-import isNil from "lodash/isNil";
 import isEmpty from "lodash/isEmpty";
-import uniq from "lodash/uniq";
+import isNil from "lodash/isNil";
 import React, { useEffect, useMemo, useState } from "react";
 import { AdBanner } from "../../ad-banner";
 import { ControlBar } from "../../components/control-bar";
@@ -13,6 +12,7 @@ import { requestBrightnessPermissions } from "../../use-brightness";
 import { isSmallScreen } from "../../window";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { DetailedVideoList } from "./components/detailed-video-list";
+import { ErrorRequestingVideosMessage } from "./components/error-requesting-videos-message";
 import { FilterModal } from "./components/filter-modal";
 import { ThumbnailVideoList } from "./components/thumbnail-video-list";
 import { useHasSortOrderChanged } from "./hooks/use-has-sort-order-changed";
@@ -20,7 +20,6 @@ import { useOrderedVideos } from "./hooks/use-ordered-videos";
 import { useRequestVideos } from "./hooks/use-request-videos";
 import { useVideoSortOrder } from "./hooks/use-sort-video-order";
 import { useViewMode } from "./hooks/use-view-mode";
-import { ErrorRequestingVideosMessage } from "./components/error-requesting-videos-message";
 
 const VIEW_ID = "homeView";
 
@@ -39,11 +38,6 @@ export const HomeView = () => {
 
   const { filteredVideos, channelsToFilterBy, toggleChannelToFilterBy, clearChannelsToFilterBy } =
     useFilteredVideos(videos);
-
-  const orderedChannelNames = useMemo(
-    () => (videos ? getChannelNamesFromVideos(videos).sort() : null),
-    [videos]
-  );
 
   const orderedVideos = useOrderedVideos(filteredVideos, sortOrder);
   const hasSortOrderChanged = useHasSortOrderChanged(sortOrder);
@@ -76,7 +70,7 @@ export const HomeView = () => {
           ))}
         <FilterModal
           isOpen={isFilerModalOpen}
-          orderedChannelNames={orderedChannelNames}
+          videos={videos}
           channelsToFilterBy={channelsToFilterBy}
           onSelectChannel={toggleChannelToFilterBy}
           onClearAllChannels={clearChannelsToFilterBy}
@@ -113,9 +107,6 @@ export const HomeView = () => {
     </ViewContainerWithStatusBar>
   );
 };
-
-const getChannelNamesFromVideos = (videos) =>
-  uniq(videos.map(({ channel_title }) => channel_title));
 
 const useFilteredVideos = (videos) => {
   const [channelsToFilterBy, setChannelsToFilterBy] = useState([]);
