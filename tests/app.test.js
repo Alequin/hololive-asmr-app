@@ -1275,6 +1275,73 @@ describe("App", () => {
       });
     });
 
+    it("shows channel thumbnails in the filer modal", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Fauna",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "fauna-thumbnail.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "sana-thumbnail.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Kiara",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "kiara-thumbnail.jpg",
+          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      // Open filter by channels modal
+      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+
+      // Confirm all the thumbnails are visible
+      const filterModal = screen.queryByTestId("filterModal");
+      expect(
+        within(getButtonByText(within(filterModal), "Fauna")).queryByTestId("channelImage").props
+          .source
+      ).toEqual({
+        uri: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+      });
+      expect(
+        within(getButtonByText(within(filterModal), "Sana")).queryByTestId("channelImage").props
+          .source
+      ).toEqual({
+        uri: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+      });
+      expect(
+        within(getButtonByText(within(filterModal), "Kiara")).queryByTestId("channelImage").props
+          .source
+      ).toEqual({
+        uri: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+      });
+    });
+
     it("clears the selected filtered channels when the 'Clear all Selected' is pressed", async () => {
       const apiPromise = Promise.resolve([
         {
@@ -1457,8 +1524,6 @@ describe("App", () => {
       // Checks again after the app goes from the background to active
       expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(2);
     });
-
-    it.todo("shows channel thumbnails in the filer modal");
   });
 
   describe("Video View", () => {
