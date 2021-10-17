@@ -128,7 +128,7 @@ export const VideoView = ({
                   textAlign: "center",
                 }}
               >
-                Screen is locked. Press and hold anywhere to unlock.
+                Screen is locked. Press anywhere to unlock
               </Text>
             )}
             {!isFullScreenMode && !isScreenLocked && (

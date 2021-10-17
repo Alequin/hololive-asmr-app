@@ -1,24 +1,21 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React from "react";
+import React, { useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { AdBanner } from "./ad-banner";
 import { AppContext } from "./app-context";
 import { LoadingSpinner } from "./components/loading-spinner";
 import { HomeView } from "./views/home-view/home-view";
-import { useLockScreen } from "./views/video-view.js/hooks/use-lock-screen";
+import {
+  INITIAL_UNLOCK_COUNTDOWN,
+  useLockScreen,
+} from "./views/video-view.js/hooks/use-lock-screen";
 import { VideoView } from "./views/video-view.js/video-view";
 
 const Stack = createNativeStackNavigator();
 
 export const Navigation = () => {
-  const {
-    isScreenLocked,
-    unlockCountDown,
-    lockScreen,
-    startUnlockingScreen,
-    resetUnlockCountDown,
-  } = useLockScreen();
+  const { isScreenLocked, unlockPressCount, lockScreen, onPressLockScreen } = useLockScreen();
 
   return (
     <AppContext.Provider
@@ -29,9 +26,8 @@ export const Navigation = () => {
     >
       <ViewMask
         isScreenLocked={isScreenLocked}
-        unlockCountDown={unlockCountDown}
-        onPressIn={startUnlockingScreen}
-        onPressOut={resetUnlockCountDown}
+        unlockPressCount={unlockPressCount}
+        onPress={onPressLockScreen}
       />
       <NavigationContainer>
         <Stack.Navigator>
@@ -55,10 +51,20 @@ export const Navigation = () => {
   );
 };
 
-const ViewMask = ({ isScreenLocked, onPressIn, onPressOut, unlockCountDown }) => {
+const ViewMask = ({ isScreenLocked, unlockPressCount, onPress }) => {
   if (!isScreenLocked) return null;
 
-  const shouldShowUnlockCountdown = unlockCountDown >= 0;
+  const shouldShowUnlockCountdown = unlockPressCount < INITIAL_UNLOCK_COUNTDOWN;
+  const unlockDots = useMemo(
+    () =>
+      new Array(INITIAL_UNLOCK_COUNTDOWN)
+        .fill(null)
+        .map((_, index) => ({
+          isActive: unlockPressCount <= index,
+        }))
+        .reverse(),
+    [unlockPressCount]
+  );
 
   return (
     <Pressable
@@ -69,8 +75,7 @@ const ViewMask = ({ isScreenLocked, onPressIn, onPressOut, unlockCountDown }) =>
         width: "100%",
         zIndex: 2,
       }}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
+      onPress={onPress}
       android_disableSound
     >
       <View
@@ -89,16 +94,44 @@ const ViewMask = ({ isScreenLocked, onPressIn, onPressOut, unlockCountDown }) =>
             style={{
               justifyContent: "center",
               alignItems: "center",
+              width: "100%",
             }}
           >
             <Text style={{ color: "white", fontSize: 16, fontWeight: "bold" }}>Unlocking</Text>
             <LoadingSpinner style={{ margin: 20 }} />
-            <Text
-              style={{ color: "white", fontSize: 16, fontWeight: "bold" }}
-            >{`Continue holding for ${Math.ceil(unlockCountDown)} seconds`}</Text>
+            <Text style={{ color: "white", fontSize: 16, fontWeight: "bold" }}>
+              {pressToUnlockMessage(unlockPressCount)}
+            </Text>
+            <View
+              style={{
+                height: 20,
+                width: "50%",
+                maxWidth: 300,
+                flexDirection: "row",
+                justifyContent: "space-around",
+                alignItems: "center",
+                margin: 20,
+              }}
+            >
+              {unlockDots.map(({ isActive }, index) => (
+                <View
+                  key={index}
+                  style={{
+                    width: 20,
+                    height: 20,
+                    backgroundColor: "white",
+                    borderRadius: 1000,
+                    opacity: isActive ? 1 : 0.25,
+                  }}
+                />
+              ))}
+            </View>
           </View>
         ) : null}
       </View>
     </Pressable>
   );
 };
+
+const pressToUnlockMessage = (unlockPressCount) =>
+  `Press anywhere ${unlockPressCount} more ${unlockPressCount > 1 ? "times" : "time"}`;

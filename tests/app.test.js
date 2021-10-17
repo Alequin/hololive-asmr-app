@@ -2047,68 +2047,7 @@ describe("App", () => {
 
       // Confirm locked message is visible
       expect(
-        within(lockedVideoView).queryByText("Screen is locked. Press and hold anywhere to unlock.")
-      ).toBeTruthy();
-
-      // Confirm the screens brightness is dimmed
-      expect(Brightness.getPermissionsAsync).toHaveBeenCalled();
-      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
-      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0.01]);
-
-      // Confirm the backhandler is disabling the hardware back button by always returning true
-      expect(BackHandler.addEventListener).toHaveBeenCalledTimes(2);
-      expect(getBackHandlerCallback()()).toBe(true);
-    });
-
-    it("locks the screen when the lock button is pressed", async () => {
-      const getBackHandlerCallback = mockBackHandlerCallback();
-
-      const apiPromise = Promise.resolve([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
-
-      const homeView = screen.queryByTestId("homeView");
-
-      const videoButtons = within(homeView).queryAllByTestId("videoButton");
-      await asyncPressEvent(videoButtons[0]);
-
-      const videoView = screen.queryByTestId("videoView");
-      expect(videoView).toBeTruthy();
-
-      // Switch to full screen mode
-      await asyncPressEvent(getButtonByText(screen, "Full Screen"));
-
-      await asyncPressEvent(getButtonByChildTestId(within(videoView), "lockIcon"));
-
-      const lockedVideoView = screen.queryByTestId("videoView");
-      const viewMask = screen.queryByTestId("lockScreen");
-
-      // Confirm locked view mask is visible
-      expect(viewMask).toBeTruthy();
-
-      // Confirm the view mask and the video view have the correct zIndex values to disable all controls
-      expect(lockedVideoView.props.style[1][1].zIndex).toBe(1);
-      expect(viewMask.props.style.zIndex).toBe(2);
-
-      // Confirm locked message is visible
-      expect(
-        within(lockedVideoView).queryByText("Screen is locked. Press and hold anywhere to unlock.")
+        within(lockedVideoView).queryByText("Screen is locked. Press anywhere to unlock")
       ).toBeTruthy();
 
       // Confirm the screens brightness is dimmed
@@ -2159,7 +2098,7 @@ describe("App", () => {
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(0);
     });
 
-    it("allows the user to unlock the screen by pressing and holding the view mask", async () => {
+    it("allows the user to unlock the screen by pressing the screen multiple times", async () => {
       const apiPromise = Promise.resolve([
         {
           video_id: "123",
@@ -2197,38 +2136,34 @@ describe("App", () => {
 
       // Press and hold the view mask to unlock
       jest.clearAllMocks();
-      await act(() => buttonProps(viewMask).onPressIn());
+      await asyncPressEvent(viewMask);
 
       // Confirm the screens brightness is increased while holding the view mask
-      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
 
-      silenceAllErrorLogs();
-      await waitForExpect(() => {
-        expect(screen.queryByText("Unlocking")).toBeTruthy();
-        expect(screen.queryByText("Continue holding for 4 seconds")).toBeTruthy();
-      });
+      expect(screen.queryByText("Unlocking")).toBeTruthy();
+      expect(screen.queryByText("Press anywhere 4 more times")).toBeTruthy();
 
-      await waitForExpect(() => {
-        expect(screen.queryByText("Unlocking")).toBeTruthy();
-        expect(screen.queryByText("Continue holding for 3 seconds")).toBeTruthy();
-      });
+      await asyncPressEvent(viewMask);
 
-      await waitForExpect(() => {
-        expect(screen.queryByText("Unlocking")).toBeTruthy();
-        expect(screen.queryByText("Continue holding for 2 seconds")).toBeTruthy();
-      });
+      expect(screen.queryByText("Unlocking")).toBeTruthy();
+      expect(screen.queryByText("Press anywhere 3 more times")).toBeTruthy();
 
-      await waitForExpect(() => {
-        expect(screen.queryByText("Unlocking")).toBeTruthy();
-        expect(screen.queryByText("Continue holding for 1 seconds")).toBeTruthy();
-      });
+      await asyncPressEvent(viewMask);
 
-      // Unlocks the screen after 5 seconds have passed
-      await waitForElementToBeRemoved(() => screen.queryByTestId("lockScreen"));
-      enableAllErrorLogs();
-    }, 10000);
+      expect(screen.queryByText("Unlocking")).toBeTruthy();
+      expect(screen.queryByText("Press anywhere 2 more times")).toBeTruthy();
+
+      await asyncPressEvent(viewMask);
+
+      expect(screen.queryByText("Unlocking")).toBeTruthy();
+      expect(screen.queryByText("Press anywhere 1 more time")).toBeTruthy();
+
+      await asyncPressEvent(viewMask);
+
+      expect(screen.queryByTestId("lockScreen")).not.toBeTruthy();
+    });
 
     it("allows the user to stop unlocking the screen and then start unlocking again", async () => {
       const apiPromise = Promise.resolve([
@@ -2266,67 +2201,31 @@ describe("App", () => {
       // Confirm locked view mask is visible
       expect(viewMask).toBeTruthy();
 
-      // Press and hold the view mask to unlock
+      // Press view mask to start unlocking
       jest.clearAllMocks();
-      await act(() => buttonProps(viewMask).onPressIn());
+      await asyncPressEvent(viewMask);
 
       // Confirm the screens brightness is increased while holding the view mask
-      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
 
+      // Press a few times to continue unlocking
+      expect(screen.queryByText("Unlocking")).toBeTruthy();
+      expect(screen.queryByText("Press anywhere 4 more times")).toBeTruthy();
+
+      await asyncPressEvent(viewMask);
+
+      expect(screen.queryByText("Unlocking")).toBeTruthy();
+      expect(screen.queryByText("Press anywhere 3 more times")).toBeTruthy();
+
+      // Stop pressing and wait for the press count message to vanish
       silenceAllErrorLogs();
-      await waitForExpect(() => {
-        expect(screen.queryByText("Unlocking")).toBeTruthy();
-        expect(screen.queryByText("Continue holding for 4 seconds")).toBeTruthy();
-      });
-
-      await waitForExpect(() => {
-        expect(screen.queryByText("Unlocking")).toBeTruthy();
-        expect(screen.queryByText("Continue holding for 3 seconds")).toBeTruthy();
-      });
-
-      // Stop pressing on the view mask
-      jest.clearAllMocks();
-      await act(() => buttonProps(viewMask).onPressOut());
-
-      // Confirm the screens brightness is decreased again
-      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
-      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
-      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0.01]);
-
-      // Press and hold the view mask again to unlock
-      jest.clearAllMocks();
-      await act(() => buttonProps(viewMask).onPressIn());
-
-      // Confirm the screens brightness is increased while holding the view mask
-      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
-      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
-      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
-
-      await waitForExpect(() => {
-        expect(screen.queryByText("Unlocking")).toBeTruthy();
-        expect(screen.queryByText("Continue holding for 4 seconds")).toBeTruthy();
-      });
-
-      await waitForExpect(() => {
-        expect(screen.queryByText("Unlocking")).toBeTruthy();
-        expect(screen.queryByText("Continue holding for 3 seconds")).toBeTruthy();
-      });
-
-      await waitForExpect(() => {
-        expect(screen.queryByText("Unlocking")).toBeTruthy();
-        expect(screen.queryByText("Continue holding for 2 seconds")).toBeTruthy();
-      });
-
-      await waitForExpect(() => {
-        expect(screen.queryByText("Unlocking")).toBeTruthy();
-        expect(screen.queryByText("Continue holding for 1 seconds")).toBeTruthy();
-      });
-
-      // Unlocks the screen after 5 seconds have passed
-      await waitForElementToBeRemoved(() => screen.queryByTestId("lockScreen"));
+      await waitForElementToBeRemoved(() => screen.queryByText("Press anywhere 3 more times"));
       enableAllErrorLogs();
-    }, 10000);
+
+      // Confirm the brightness is reduced again
+      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(2);
+      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0.01]);
+    });
   });
 });

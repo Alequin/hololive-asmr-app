@@ -1,27 +1,39 @@
 import { useCallback, useEffect, useState } from "react";
 import { BackHandler } from "react-native";
 import { useBrightness } from "../../../use-brightness";
-import { useUnlockCountDown } from "./use-unlock-count-down";
 
+export const INITIAL_UNLOCK_COUNTDOWN = 5;
 const DIMMED_SCREEN_BRIGHTNESS = 0.01;
 
 export const useLockScreen = () => {
   const [preLockScreenBrightness, setPreLockScreenBrightness] = useState(null);
   const { getBrightness, setBrightness } = useBrightness();
+
   const [isScreenLocked, setIsScreenLocked] = useState(false);
+  const [unlockPressCount, setUnlockPressCount] = useState(INITIAL_UNLOCK_COUNTDOWN);
 
   const unlockScreen = useCallback(async () => {
     setIsScreenLocked(false);
     await setBrightness(preLockScreenBrightness);
-  }, [setBrightness]);
+  }, [preLockScreenBrightness]);
 
-  const { unlockCountDown, startUnlockCountDown, resetUnlockCountDown } = useUnlockCountDown();
+  const resetUnlockCount = useCallback(() => setUnlockPressCount(INITIAL_UNLOCK_COUNTDOWN), []);
 
   useEffect(() => {
-    if (isScreenLocked) {
-      setBrightness(isScreenLocked ? DIMMED_SCREEN_BRIGHTNESS : initialBrightness);
+    const timeout = setTimeout(async () => {
+      resetUnlockCount();
+      await setBrightness(DIMMED_SCREEN_BRIGHTNESS);
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [unlockPressCount, resetUnlockCount]);
+
+  useEffect(() => {
+    const shouldUnlock = unlockPressCount <= 0;
+    if (shouldUnlock) {
+      unlockScreen();
+      resetUnlockCount();
     }
-  }, [isScreenLocked]);
+  }, [unlockPressCount, resetUnlockCount]);
 
   useEffect(() => {
     if (isScreenLocked) {
@@ -30,32 +42,19 @@ export const useLockScreen = () => {
     }
   }, [isScreenLocked]);
 
-  useEffect(() => {
-    if (isScreenLocked && unlockCountDown === 0) {
-      resetUnlockCountDown();
-      unlockScreen();
-    }
-  }, [unlockCountDown]);
-
   return {
     isScreenLocked,
-    unlockCountDown,
-    resetUnlockCountDown: async () => {
-      resetUnlockCountDown();
-      if (!isScreenLocked) return;
-      await setBrightness(DIMMED_SCREEN_BRIGHTNESS);
-    },
-    startUnlockingScreen: useCallback(async () => {
-      await setBrightness(preLockScreenBrightness);
-      startUnlockCountDown();
-    }, [setBrightness, preLockScreenBrightness]),
-    unlockScreen: () => {
-      resetUnlockCountDown();
-      unlockScreen();
-    },
+    unlockPressCount,
     lockScreen: useCallback(async () => {
       setPreLockScreenBrightness(await getBrightness());
       setIsScreenLocked(true);
-    }, []),
+      await setBrightness(DIMMED_SCREEN_BRIGHTNESS);
+    }, [getBrightness, setBrightness]),
+    onPressLockScreen: useCallback(async () => {
+      if (unlockPressCount === INITIAL_UNLOCK_COUNTDOWN) {
+        await setBrightness(preLockScreenBrightness);
+      }
+      setUnlockPressCount((count) => count - 1);
+    }, [unlockPressCount, setBrightness, preLockScreenBrightness]),
   };
 };
