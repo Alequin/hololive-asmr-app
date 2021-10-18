@@ -101,7 +101,7 @@ export const VideoView = ({
               {isFullScreenMode ? (
                 <>
                   <FullViewIconButtons iconName="youtubeTv" onPress={toYoutubeVideo} />
-                  <FullViewIconButtons iconName="back" onPress={nav.goBack} />
+                  <FullViewIconButtons iconName="back" onPress={() => nav.goBack()} />
                 </>
               ) : (
                 <>
@@ -110,7 +110,7 @@ export const VideoView = ({
                     onPress={toYoutubeVideo}
                     text="Watch on youtube"
                   />
-                  <HalfViewIconButton iconName="back" onPress={nav.goBack} text="Back" />
+                  <HalfViewIconButton iconName="back" onPress={() => nav.goBack()} text="Back" />
                 </>
               )}
             </SideBar>
