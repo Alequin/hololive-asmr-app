@@ -2,6 +2,7 @@ import * as Brightness from "expo-brightness";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import React, { useEffect, useMemo, useState } from "react";
+import { AdBanner } from "../../ad-banner";
 import { ControlBar } from "../../components/control-bar";
 import { FullScreenLoadingSpinner } from "../../components/full-screen-loading-spinner";
 import { IconButton } from "../../components/icon-button";
@@ -41,66 +42,64 @@ export const HomeView = () => {
   const orderedVideos = useOrderedVideos(filteredVideos, sortOrder);
   const hasSortOrderChanged = useHasSortOrderChanged(sortOrder);
 
-  if (!isRefreshing && errorRequestingVideos)
-    return (
-      <ViewContainerWithStatusBar testID={VIEW_ID}>
-        <ErrorRequestingVideosMessage onPressRefresh={refreshVideos} />
-      </ViewContainerWithStatusBar>
-    );
+  const isError = !isRefreshing && errorRequestingVideos;
 
-  const isPageLoading = !orderedVideos || !sortOrder || isNil(isDetailedViewMode) || isRefreshing;
-  if (isPageLoading)
-    return (
-      <ViewContainerWithStatusBar testID={VIEW_ID}>
-        <FullScreenLoadingSpinner />
-      </ViewContainerWithStatusBar>
-    );
-
+  const isPageLoading =
+    !isError && (!orderedVideos || !sortOrder || isNil(isDetailedViewMode) || isRefreshing);
+  const canShowHomeView = !isError && !isPageLoading;
   const isVideoViewLoading = hasSortOrderChanged;
+
   return (
     <ViewContainerWithStatusBar testID={VIEW_ID}>
-      <MainView>
-        {isVideoViewLoading && <FullScreenLoadingSpinner />}
-        {!isVideoViewLoading &&
-          (isDetailedViewMode ? (
-            <DetailedVideoList videos={orderedVideos} />
-          ) : (
-            <ThumbnailVideoList videos={orderedVideos} />
-          ))}
-        <FilterModal
-          isOpen={isFilerModalOpen}
-          videos={videos}
-          channelsToFilterBy={channelsToFilterBy}
-          onSelectChannel={toggleChannelToFilterBy}
-          onClearAllChannels={clearChannelsToFilterBy}
-          onDismissModal={hideFilterModal}
-        />
-      </MainView>
-      {isSmallScreen ? (
+      {isError && <ErrorRequestingVideosMessage onPressRefresh={refreshVideos} />}
+      {isPageLoading && <FullScreenLoadingSpinner />}
+      {canShowHomeView && (
         <>
-          <ControlBar>
-            <FilterModalButton openSearchModal={showFilterModal} />
-            <SortButton nextSortOrder={nextSortOrder} sortOrderDescription={sortOrder.name} />
-          </ControlBar>
-          <ControlBar>
-            <ViewModeButton
-              isDetailedViewMode={isDetailedViewMode}
-              toggleViewMode={toggleDetailedViewMode}
+          <MainView>
+            {isVideoViewLoading && <FullScreenLoadingSpinner />}
+            {!isVideoViewLoading &&
+              (isDetailedViewMode ? (
+                <DetailedVideoList videos={orderedVideos} />
+              ) : (
+                <ThumbnailVideoList videos={orderedVideos} />
+              ))}
+            <FilterModal
+              isOpen={isFilerModalOpen}
+              videos={videos}
+              channelsToFilterBy={channelsToFilterBy}
+              onSelectChannel={toggleChannelToFilterBy}
+              onClearAllChannels={clearChannelsToFilterBy}
+              onDismissModal={hideFilterModal}
             />
-            <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
-          </ControlBar>
+          </MainView>
+          {isSmallScreen ? (
+            <>
+              <ControlBar>
+                <FilterModalButton openSearchModal={showFilterModal} />
+                <SortButton nextSortOrder={nextSortOrder} sortOrderDescription={sortOrder.name} />
+              </ControlBar>
+              <ControlBar>
+                <ViewModeButton
+                  isDetailedViewMode={isDetailedViewMode}
+                  toggleViewMode={toggleDetailedViewMode}
+                />
+                <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
+              </ControlBar>
+            </>
+          ) : (
+            <ControlBar>
+              <FilterModalButton openSearchModal={showFilterModal} />
+              <SortButton nextSortOrder={nextSortOrder} sortOrderDescription={sortOrder.name} />
+              <ViewModeButton
+                isDetailedViewMode={isDetailedViewMode}
+                toggleViewMode={toggleDetailedViewMode}
+              />
+              <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
+            </ControlBar>
+          )}
         </>
-      ) : (
-        <ControlBar>
-          <FilterModalButton openSearchModal={showFilterModal} />
-          <SortButton nextSortOrder={nextSortOrder} sortOrderDescription={sortOrder.name} />
-          <ViewModeButton
-            isDetailedViewMode={isDetailedViewMode}
-            toggleViewMode={toggleDetailedViewMode}
-          />
-          <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
-        </ControlBar>
       )}
+      <AdBanner />
     </ViewContainerWithStatusBar>
   );
 };

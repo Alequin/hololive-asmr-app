@@ -45,7 +45,6 @@ export const Navigation = () => {
             }}
           />
         </Stack.Navigator>
-        <AdBanner />
       </NavigationContainer>
     </AppContext.Provider>
   );
