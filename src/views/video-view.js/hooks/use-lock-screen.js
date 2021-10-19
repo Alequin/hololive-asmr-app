@@ -3,7 +3,7 @@ import { BackHandler } from "react-native";
 import { useBrightness } from "../../../use-brightness";
 
 export const INITIAL_UNLOCK_COUNTDOWN = 5;
-const DIMMED_SCREEN_BRIGHTNESS = 0.01;
+const DIMMED_SCREEN_BRIGHTNESS = 0;
 
 export const useLockScreen = () => {
   const [preLockScreenBrightness, setPreLockScreenBrightness] = useState(null);

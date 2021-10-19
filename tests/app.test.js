@@ -2053,7 +2053,7 @@ describe("App", () => {
       // Confirm the screens brightness is dimmed
       expect(Brightness.getPermissionsAsync).toHaveBeenCalled();
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
-      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0.01]);
+      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0]);
 
       // Confirm the backhandler is disabling the hardware back button by always returning true
       expect(BackHandler.addEventListener).toHaveBeenCalledTimes(2);
@@ -2225,7 +2225,7 @@ describe("App", () => {
 
       // Confirm the brightness is reduced again
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(2);
-      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0.01]);
+      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0]);
     });
   });
 });
