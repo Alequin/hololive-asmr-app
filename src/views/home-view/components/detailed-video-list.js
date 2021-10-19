@@ -1,14 +1,20 @@
 import React from "react";
-import { Image, Text, View } from "react-native";
+import { Image, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { Button } from "../../../components/button";
 import { ChannelThumbnail } from "../../../components/channel-thumbnail";
-import { windowHeight } from "../../../window";
+import { StyledText } from "../../../styled-text";
+import { isSmallScreen, windowHeight } from "../../../window";
 import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
 import { dateString } from "./date-string";
 
+const ONE_COLUMN = 1;
+const TWO_COLUMNS = 2;
+
 export const DetailedVideoList = ({ videos }) => {
   const navigateToVideoView = useNavigateToVideoView();
+
+  const columnCount = isSmallScreen ? ONE_COLUMN : TWO_COLUMNS;
 
   return (
     <FlatList
@@ -16,10 +22,11 @@ export const DetailedVideoList = ({ videos }) => {
       style={{ width: "100%", height: "100%" }}
       data={videos}
       keyExtractor={({ video_id }) => video_id}
-      numColumns={2}
+      numColumns={columnCount}
       renderItem={({ item }) => (
         <DetailedVideoButton
           title={item.video_title}
+          isSingleColumn={columnCount === ONE_COLUMN}
           channelTitle={item.channel_title}
           channelThumbnailUrl={item.channel_thumbnail_url}
           videoThumbnailUrl={item.video_thumbnail_url}
@@ -40,15 +47,20 @@ const DetailedVideoButton = ({
   size,
   onSelectVideo,
   publishDate,
+  isSingleColumn,
 }) => {
   const buttonPadding = 10;
   const thumbnailSize = size - buttonPadding * 2;
-  const channelThumbnailSize = thumbnailSize * 0.25;
 
   return (
     <Button
       testID="videoButton"
-      style={{ flexDirection: "row", width: "50%", height: size, padding: buttonPadding }}
+      style={{
+        flexDirection: "row",
+        width: isSingleColumn ? "100%" : "50%",
+        height: size,
+        padding: buttonPadding,
+      }}
       onPress={onSelectVideo}
     >
       <Image
@@ -67,9 +79,12 @@ const DetailedVideoButton = ({
           padding: 5,
         }}
       >
-        <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }} numberOfLines={3}>
+        <StyledText
+          style={{ color: "white", textAlign: "center", fontWeight: "bold" }}
+          numberOfLines={isSingleColumn ? 2 : 3}
+        >
           {title}
-        </Text>
+        </StyledText>
         <View>
           <View
             style={{
@@ -79,15 +94,14 @@ const DetailedVideoButton = ({
               width: "100%",
             }}
           >
-            <ChannelThumbnail
-              channelThumbnailUrl={channelThumbnailUrl}
-              size={channelThumbnailSize}
-            />
-            <Text style={{ color: "white", textAlign: "center", width: "100%" }}>
+            <ChannelThumbnail channelThumbnailUrl={channelThumbnailUrl} />
+            <StyledText style={{ color: "white", textAlign: "center", width: "100%" }}>
               {channelTitle}
-            </Text>
+            </StyledText>
           </View>
-          <Text style={{ color: "white", textAlign: "center", width: "100%" }}>{publishDate}</Text>
+          <StyledText style={{ color: "white", textAlign: "center", width: "100%" }}>
+            {publishDate}
+          </StyledText>
         </View>
       </View>
     </Button>

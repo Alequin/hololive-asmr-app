@@ -9,7 +9,6 @@ import { IconButton } from "../../components/icon-button";
 import { MainView } from "../../components/main-view";
 import { useIsAppStateActive } from "../../use-app-state";
 import { requestBrightnessPermissions } from "../../use-brightness";
-import { isSmallScreen } from "../../window";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { DetailedVideoList } from "./components/detailed-video-list";
 import { ErrorRequestingVideosMessage } from "./components/error-requesting-videos-message";
@@ -72,31 +71,15 @@ export const HomeView = () => {
               onDismissModal={hideFilterModal}
             />
           </MainView>
-          {isSmallScreen ? (
-            <>
-              <ControlBar>
-                <FilterModalButton openSearchModal={showFilterModal} />
-                <SortButton nextSortOrder={nextSortOrder} sortOrderDescription={sortOrder.name} />
-              </ControlBar>
-              <ControlBar>
-                <ViewModeButton
-                  isDetailedViewMode={isDetailedViewMode}
-                  toggleViewMode={toggleDetailedViewMode}
-                />
-                <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
-              </ControlBar>
-            </>
-          ) : (
-            <ControlBar>
-              <FilterModalButton openSearchModal={showFilterModal} />
-              <SortButton nextSortOrder={nextSortOrder} sortOrderDescription={sortOrder.name} />
-              <ViewModeButton
-                isDetailedViewMode={isDetailedViewMode}
-                toggleViewMode={toggleDetailedViewMode}
-              />
-              <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
-            </ControlBar>
-          )}
+          <ControlBar>
+            <FilterModalButton openSearchModal={showFilterModal} />
+            <SortButton nextSortOrder={nextSortOrder} sortOrderDescription={sortOrder.name} />
+            <ViewModeButton
+              isDetailedViewMode={isDetailedViewMode}
+              toggleViewMode={toggleDetailedViewMode}
+            />
+            <PermissionsButton shouldRequestPermission={shouldRequestPermission} />
+          </ControlBar>
         </>
       )}
       <AdBanner />
@@ -181,7 +164,7 @@ const HomeViewIconButton = (props) => (
       justifyContent: "center",
       alignItems: "center",
       padding: 10,
-      maxWidth: isSmallScreen ? "50%" : "25%",
+      maxWidth: "25%",
     }}
   />
 );

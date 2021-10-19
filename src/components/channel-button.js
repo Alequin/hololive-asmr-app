@@ -1,5 +1,5 @@
 import React from "react";
-import { Text } from "react-native";
+import { StyledText } from "../styled-text";
 import { Button } from "./button";
 import { ChannelThumbnail } from "./channel-thumbnail";
 
@@ -43,7 +43,7 @@ export const ChannelButton = ({
       hitSlop={hitSlop}
     >
       <ChannelThumbnail channelThumbnailUrl={channelThumbnailUrl} />
-      <Text
+      <StyledText
         style={{
           color: activeVariant.textColor,
           fontWeight: isSelected ? "bold" : "normal",
@@ -51,7 +51,7 @@ export const ChannelButton = ({
         }}
       >
         {channelTitle}
-      </Text>
+      </StyledText>
     </Button>
   );
 };

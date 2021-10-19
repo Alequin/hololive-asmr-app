@@ -8,6 +8,8 @@ import { ControlBar } from "../../components/control-bar";
 import { IconButton } from "../../components/icon-button";
 import { MainView } from "../../components/main-view";
 import { StatusBar } from "../../components/status-bar";
+import { StyledText } from "../../styled-text";
+import { isSmallScreen } from "../../window";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { useIsFullScreenMode } from "./hooks/use-is-full-screen-mode";
 import * as youtubeLinks from "./youtube-links";
@@ -35,23 +37,24 @@ export const VideoView = ({
       }}
     >
       <StatusBar isHidden={isFullScreenMode} />
-      <View style={{ flex: 1, height: "100%" }}>
+      <View style={{ flex: 1, height: "100%", justifyContent: "space-between" }}>
         <MainView
           style={{
             flex: 80,
           }}
         >
           {!isFullScreenMode && (
-            <Text
+            <StyledText
               style={{
                 color: "white",
                 textAlign: "center",
-                fontSize: 16,
                 paddingBottom: 10,
+                paddingHorizontal: 10,
               }}
+              fontSize={15}
             >
               {videoTitle}
-            </Text>
+            </StyledText>
           )}
           <View
             style={{
@@ -79,18 +82,17 @@ export const VideoView = ({
             <View
               testID="embeddedVideoContainer"
               style={{
-                width: isFullScreenMode ? "87%" : "75%",
+                width: webViewWidth(isFullScreenMode),
                 height: "100%",
                 backgroundColor: "#000",
                 borderWidth: 1,
+                borderBottomWidth: 2,
                 borderColor: "#ffffffBF",
               }}
             >
               <WebView
                 testID="embeddedVideo"
                 style={{
-                  width: "100%",
-                  height: "100%",
                   backgroundColor: "#000",
                 }}
                 originWhitelist={["*"]}
@@ -119,19 +121,19 @@ export const VideoView = ({
           </View>
         </MainView>
         {(isScreenLocked || !isFullScreenMode) && (
-          <ControlBar style={{ flex: isFullScreenMode ? undefined : 20 }}>
+          <ControlBar style={{ flex: 20 }}>
             {isScreenLocked && (
-              <Text
+              <StyledText
+                fontSize={18}
                 style={{
                   color: "white",
-                  fontSize: 18,
                   fontWeight: "bold",
                   padding: 5,
                   textAlign: "center",
                 }}
               >
                 Screen is locked. Press anywhere to unlock
-              </Text>
+              </StyledText>
             )}
             {!isFullScreenMode && !isScreenLocked && (
               <View
@@ -177,3 +179,11 @@ const useYoutubeLinks = (videoId, channelId) => ({
   toYoutubeVideo: useCallback(() => youtubeLinks.toYoutubeVideo(videoId), [videoId]),
   toYoutubeChannel: useCallback(() => youtubeLinks.toYoutubeChannel(channelId), [channelId]),
 });
+
+const webViewWidth = (isFullScreenMode) => {
+  if (isSmallScreen) {
+    return isFullScreenMode ? "80%" : "60%";
+  }
+
+  return isFullScreenMode ? "87%" : "75%";
+};

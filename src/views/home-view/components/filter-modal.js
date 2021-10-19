@@ -2,10 +2,11 @@ import isEmpty from "lodash/isEmpty";
 import orderBy from "lodash/orderBy";
 import uniqBy from "lodash/uniqBy";
 import React, { useMemo } from "react";
-import { Modal, ScrollView, Text, View } from "react-native";
+import { Modal, ScrollView, View } from "react-native";
 import { Button } from "../../../components/button";
 import { ChannelButton } from "../../../components/channel-button";
 import { Icon } from "../../../icons";
+import { StyledText } from "../../../styled-text";
 import { isSmallScreen } from "../../../window";
 
 export const FilterModal = ({
@@ -135,6 +136,6 @@ const ActionButton = ({ icon, text, onPress, disabled }) => (
     disabled={disabled}
   >
     <Icon name={icon} size={22} style={{ marginRight: 5 }} />
-    <Text style={{ fontSize: 16 }}>{text}</Text>
+    <StyledText>{text}</StyledText>
   </Button>
 );

@@ -1,10 +1,10 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useMemo } from "react";
-import { Pressable, Text, View } from "react-native";
-import { AdBanner } from "./ad-banner";
+import { Pressable, View } from "react-native";
 import { AppContext } from "./app-context";
 import { LoadingSpinner } from "./components/loading-spinner";
+import { StyledText } from "./styled-text";
 import { HomeView } from "./views/home-view/home-view";
 import {
   INITIAL_UNLOCK_COUNTDOWN,
@@ -96,11 +96,13 @@ const ViewMask = ({ isScreenLocked, unlockPressCount, onPress }) => {
               width: "100%",
             }}
           >
-            <Text style={{ color: "white", fontSize: 16, fontWeight: "bold" }}>Unlocking</Text>
+            <StyledText style={{ color: "white", fontWeight: "bold" }} fontSize={16}>
+              Unlocking
+            </StyledText>
             <LoadingSpinner style={{ margin: 20 }} />
-            <Text style={{ color: "white", fontSize: 16, fontWeight: "bold" }}>
+            <StyledText style={{ color: "white", fontWeight: "bold" }} fontSize={16}>
               {pressToUnlockMessage(unlockPressCount)}
-            </Text>
+            </StyledText>
             <View
               style={{
                 height: 20,

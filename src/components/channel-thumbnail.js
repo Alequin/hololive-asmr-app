@@ -1,7 +1,10 @@
 import React from "react";
 import { Image } from "react-native";
+import { isSmallScreen } from "../window";
 
-export const ChannelThumbnail = ({ channelThumbnailUrl, size = 40 }) => {
+const BASE_SIZE = isSmallScreen ? 35 : 40;
+
+export const ChannelThumbnail = ({ channelThumbnailUrl, size = BASE_SIZE }) => {
   return (
     <Image
       testID="channelImage"

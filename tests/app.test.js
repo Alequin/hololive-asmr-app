@@ -1231,13 +1231,13 @@ describe("App", () => {
       // Confirm all options are unselected
       const modalId = "filterModal";
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
       ).toBe("normal");
-      expect(within(screen.queryByTestId(modalId)).queryByText("Sana").props.style.fontWeight).toBe(
-        "normal"
-      );
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1].fontWeight
+      ).toBe("normal");
+      expect(
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
       ).toBe("normal");
 
       await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Sana"));
@@ -1245,13 +1245,13 @@ describe("App", () => {
 
       // Confirm the selected options have been updated
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
       ).toBe("normal");
-      expect(within(screen.queryByTestId(modalId)).queryByText("Sana").props.style.fontWeight).toBe(
-        "bold"
-      );
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Kiara").props.style.fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1].fontWeight
+      ).toBe("bold");
+      expect(
+        within(screen.queryByTestId(modalId)).queryByText("Kiara").props.style[1].fontWeight
       ).toBe("bold");
 
       // Return to the list of videos
@@ -1396,13 +1396,13 @@ describe("App", () => {
 
       const modalId = "filterModal";
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
       ).toBe("normal");
-      expect(within(screen.queryByTestId(modalId)).queryByText("Sana").props.style.fontWeight).toBe(
-        "normal"
-      );
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1].fontWeight
+      ).toBe("normal");
+      expect(
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
       ).toBe("normal");
 
       // Select all channels
@@ -1412,13 +1412,13 @@ describe("App", () => {
 
       // Confirm the selected options have been updated
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
       ).toBe("bold");
-      expect(within(screen.queryByTestId(modalId)).queryByText("Sana").props.style.fontWeight).toBe(
-        "bold"
-      );
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1].fontWeight
+      ).toBe("bold");
+      expect(
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
       ).toBe("bold");
 
       // Clear all selected
@@ -1428,13 +1428,13 @@ describe("App", () => {
 
       // Confirm all options are unselected
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
       ).toBe("normal");
-      expect(within(screen.queryByTestId(modalId)).queryByText("Sana").props.style.fontWeight).toBe(
-        "normal"
-      );
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style.fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1].fontWeight
+      ).toBe("normal");
+      expect(
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
       ).toBe("normal");
     });
 
@@ -1487,10 +1487,9 @@ describe("App", () => {
 
       // Confirm all options are unselected
       const filterModal = screen.queryByTestId("filterModal");
-
-      expect(within(filterModal).queryByText("Fauna").props.style.fontWeight).toBe("normal");
-      expect(within(filterModal).queryByText("Sana").props.style.fontWeight).toBe("normal");
-      expect(within(filterModal).queryByText("Fauna").props.style.fontWeight).toBe("normal");
+      expect(within(filterModal).queryByText("Fauna").props.style[1].fontWeight).toBe("normal");
+      expect(within(filterModal).queryByText("Sana").props.style[1].fontWeight).toBe("normal");
+      expect(within(filterModal).queryByText("Fauna").props.style[1].fontWeight).toBe("normal");
 
       // Confirm the button is disabled
       expect(buttonProps(getButtonByText(within(filterModal), "Clear all Selected")).disabled).toBe(

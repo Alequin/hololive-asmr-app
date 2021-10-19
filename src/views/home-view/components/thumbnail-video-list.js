@@ -2,10 +2,10 @@ import React from "react";
 import { Image } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { Button } from "../../../components/button";
-import { windowWidth } from "../../../window";
+import { isSmallScreen, windowWidth } from "../../../window";
 import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
 
-const COLUMN_COUNT = 7;
+const COLUMN_COUNT = isSmallScreen ? 6 : 7;
 
 export const ThumbnailVideoList = ({ videos }) => {
   const navigateToVideoView = useNavigateToVideoView();
