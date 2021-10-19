@@ -7,6 +7,7 @@ import { ChannelButton } from "../../components/channel-button";
 import { ControlBar } from "../../components/control-bar";
 import { IconButton } from "../../components/icon-button";
 import { MainView } from "../../components/main-view";
+import { StatusBar } from "../../components/status-bar";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { useIsFullScreenMode } from "./hooks/use-is-full-screen-mode";
 import * as youtubeLinks from "./youtube-links";
@@ -33,6 +34,7 @@ export const VideoView = ({
         zIndex: isScreenLocked ? 1 : 2,
       }}
     >
+      <StatusBar isHidden={isFullScreenMode} />
       <View style={{ flex: 1, height: "100%" }}>
         <MainView
           style={{
