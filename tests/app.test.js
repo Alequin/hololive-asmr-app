@@ -1662,19 +1662,19 @@ describe("App", () => {
 
       // Default to half screen mode
       expect(within(videoView).queryByTestId("embeddedVideoContainer").props.style.width).toBe(
-        "75%"
+        "70%"
       );
 
       // Switch to full screen mode
       await asyncPressEvent(getButtonByText(within(videoView), "Full Screen"));
       expect(within(videoView).queryByTestId("embeddedVideoContainer").props.style.width).toBe(
-        "87%"
+        "85%"
       );
 
       // Switch back to half screen mode
       await asyncPressEvent(getButtonByChildTestId(within(videoView), "fullscreenIcon"));
       expect(within(videoView).queryByTestId("embeddedVideoContainer").props.style.width).toBe(
-        "75%"
+        "70%"
       );
     });
 

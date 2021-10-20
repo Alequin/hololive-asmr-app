@@ -2,10 +2,10 @@ import React from "react";
 import { Image } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { Button } from "../../../components/button";
-import { isSmallScreen, windowWidth } from "../../../window";
+import { isMiniScreen, windowWidth } from "../../../window";
 import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
 
-const COLUMN_COUNT = isSmallScreen ? 6 : 7;
+const COLUMN_COUNT = isMiniScreen() ? 6 : 7;
 
 export const ThumbnailVideoList = ({ videos }) => {
   const navigateToVideoView = useNavigateToVideoView();
@@ -19,7 +19,7 @@ export const ThumbnailVideoList = ({ videos }) => {
       keyExtractor={({ video_id }) => video_id}
       renderItem={({ item }) => (
         <ThumbnailVideoButton
-          size={windowWidth / COLUMN_COUNT}
+          size={windowWidth() / COLUMN_COUNT}
           thumbnailUrl={item.video_thumbnail_url}
           onSelectVideo={() => navigateToVideoView(item)}
         />

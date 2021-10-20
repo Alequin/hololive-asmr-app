@@ -4,7 +4,7 @@ import { FlatList } from "react-native-gesture-handler";
 import { Button } from "../../../components/button";
 import { ChannelThumbnail } from "../../../components/channel-thumbnail";
 import { StyledText } from "../../../styled-text";
-import { isSmallScreen, windowHeight } from "../../../window";
+import { isMiniScreen, SCREEN_SIZES, windowHeight, withScreenSize } from "../../../window";
 import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
 import { dateString } from "./date-string";
 
@@ -14,7 +14,7 @@ const TWO_COLUMNS = 2;
 export const DetailedVideoList = ({ videos }) => {
   const navigateToVideoView = useNavigateToVideoView();
 
-  const columnCount = isSmallScreen ? ONE_COLUMN : TWO_COLUMNS;
+  const columnCount = isMiniScreen() ? ONE_COLUMN : TWO_COLUMNS;
 
   return (
     <FlatList
@@ -31,7 +31,6 @@ export const DetailedVideoList = ({ videos }) => {
           channelThumbnailUrl={item.channel_thumbnail_url}
           videoThumbnailUrl={item.video_thumbnail_url}
           publishDate={dateString(new Date(item.published_at))}
-          size={windowHeight * 0.5}
           onSelectVideo={() => navigateToVideoView(item)}
         />
       )}
@@ -39,16 +38,27 @@ export const DetailedVideoList = ({ videos }) => {
   );
 };
 
+const SIZE_MODIFIER = withScreenSize({
+  [SCREEN_SIZES.small]: 0.45,
+  [SCREEN_SIZES.medium]: 0.4,
+  [SCREEN_SIZES.default]: 0.5,
+});
+
+const VIDEO_TITLE_LINE_COUNT = withScreenSize({
+  [SCREEN_SIZES.medium]: 2,
+  [SCREEN_SIZES.default]: 3,
+});
+
 const DetailedVideoButton = ({
   title,
   channelTitle,
   videoThumbnailUrl,
   channelThumbnailUrl,
-  size,
   onSelectVideo,
   publishDate,
   isSingleColumn,
 }) => {
+  const size = windowHeight() * SIZE_MODIFIER;
   const buttonPadding = 10;
   const thumbnailSize = size - buttonPadding * 2;
 
@@ -81,7 +91,7 @@ const DetailedVideoButton = ({
       >
         <StyledText
           style={{ color: "white", textAlign: "center", fontWeight: "bold" }}
-          numberOfLines={isSingleColumn ? 2 : 3}
+          numberOfLines={VIDEO_TITLE_LINE_COUNT}
         >
           {title}
         </StyledText>
@@ -95,7 +105,10 @@ const DetailedVideoButton = ({
             }}
           >
             <ChannelThumbnail channelThumbnailUrl={channelThumbnailUrl} />
-            <StyledText style={{ color: "white", textAlign: "center", width: "100%" }}>
+            <StyledText
+              style={{ color: "white", textAlign: "center", width: "100%", margin: 1 }}
+              numberOfLines={1}
+            >
               {channelTitle}
             </StyledText>
           </View>

@@ -7,7 +7,7 @@ import { Button } from "../../../components/button";
 import { ChannelButton } from "../../../components/channel-button";
 import { Icon } from "../../../icons";
 import { StyledText } from "../../../styled-text";
-import { isSmallScreen } from "../../../window";
+import { isMiniScreen } from "../../../window";
 
 export const FilterModal = ({
   isOpen,
@@ -79,7 +79,7 @@ export const FilterModal = ({
               flexDirection: "row",
               justifyContent: "space-around",
               paddingHorizontal: "5%",
-              width: isSmallScreen ? "100%" : "60%",
+              width: isMiniScreen() ? "100%" : "60%",
             }}
           >
             <ActionButton

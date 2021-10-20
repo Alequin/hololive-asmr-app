@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/core";
 import React, { useCallback, useContext } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { WebView } from "react-native-webview";
 import { AppContext } from "../../app-context";
 import { ChannelButton } from "../../components/channel-button";
@@ -9,7 +9,7 @@ import { IconButton } from "../../components/icon-button";
 import { MainView } from "../../components/main-view";
 import { StatusBar } from "../../components/status-bar";
 import { StyledText } from "../../styled-text";
-import { isSmallScreen } from "../../window";
+import { SCREEN_SIZES, withScreenSize } from "../../window";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { useIsFullScreenMode } from "./hooks/use-is-full-screen-mode";
 import * as youtubeLinks from "./youtube-links";
@@ -121,7 +121,7 @@ export const VideoView = ({
           </View>
         </MainView>
         {(isScreenLocked || !isFullScreenMode) && (
-          <ControlBar style={{ flex: 20 }}>
+          <ControlBar style={{ flex: isScreenLocked && isFullScreenMode ? 10 : 20 }}>
             {isScreenLocked && (
               <StyledText
                 fontSize={18}
@@ -164,7 +164,10 @@ export const VideoView = ({
 const SideBar = (props) => <View style={{ flex: 1, justifyContent: "space-around" }} {...props} />;
 
 const HalfViewIconButton = (props) => (
-  <IconButton {...props} style={{ justifyContent: "space-between", padding: 5 }} />
+  <IconButton
+    {...props}
+    style={{ justifyContent: "space-between", alignItems: "center", padding: 5 }}
+  />
 );
 
 const FullViewIconButtons = (props) => (
@@ -180,10 +183,19 @@ const useYoutubeLinks = (videoId, channelId) => ({
   toYoutubeChannel: useCallback(() => youtubeLinks.toYoutubeChannel(channelId), [channelId]),
 });
 
-const webViewWidth = (isFullScreenMode) => {
-  if (isSmallScreen) {
-    return isFullScreenMode ? "80%" : "60%";
-  }
+const HALF_SCREEN_VIDEO_WIDTH = withScreenSize({
+  [SCREEN_SIZES.mini]: "60%",
+  [SCREEN_SIZES.small]: "65%",
+  [SCREEN_SIZES.medium]: "70%",
+  [SCREEN_SIZES.default]: "75%",
+});
 
-  return isFullScreenMode ? "87%" : "75%";
+const FULL_SCREEN_VIDEO_WIDTH = withScreenSize({
+  [SCREEN_SIZES.small]: "80%",
+  [SCREEN_SIZES.medium]: "85%",
+  [SCREEN_SIZES.default]: "87%",
+});
+
+const webViewWidth = (isFullScreenMode) => {
+  return isFullScreenMode ? FULL_SCREEN_VIDEO_WIDTH : HALF_SCREEN_VIDEO_WIDTH;
 };
