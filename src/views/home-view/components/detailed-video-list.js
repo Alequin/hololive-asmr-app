@@ -1,6 +1,5 @@
 import React from "react";
-import { Image, View } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList, Image, View } from "react-native";
 import { Button } from "../../../components/button";
 import { ChannelThumbnail } from "../../../components/channel-thumbnail";
 import { StyledText } from "../../../styled-text";
@@ -10,11 +9,10 @@ import { dateString } from "./date-string";
 
 const ONE_COLUMN = 1;
 const TWO_COLUMNS = 2;
+const COLUMN_COUNT = isMiniScreen() ? ONE_COLUMN : TWO_COLUMNS;
 
 export const DetailedVideoList = ({ videos }) => {
   const navigateToVideoView = useNavigateToVideoView();
-
-  const columnCount = isMiniScreen() ? ONE_COLUMN : TWO_COLUMNS;
 
   return (
     <FlatList
@@ -22,11 +20,11 @@ export const DetailedVideoList = ({ videos }) => {
       style={{ width: "100%", height: "100%" }}
       data={videos}
       keyExtractor={({ video_id }) => video_id}
-      numColumns={columnCount}
+      numColumns={COLUMN_COUNT}
       renderItem={({ item }) => (
         <DetailedVideoButton
           title={item.video_title}
-          isSingleColumn={columnCount === ONE_COLUMN}
+          isSingleColumn={COLUMN_COUNT === ONE_COLUMN}
           channelTitle={item.channel_title}
           channelThumbnailUrl={item.channel_thumbnail_url}
           videoThumbnailUrl={item.video_thumbnail_url}

@@ -1,6 +1,5 @@
 import React from "react";
-import { Image } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
+import { Image, FlatList } from "react-native";
 import { Button } from "../../../components/button";
 import { isMiniScreen, windowWidth } from "../../../window";
 import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
