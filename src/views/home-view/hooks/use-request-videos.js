@@ -54,7 +54,7 @@ export const useRequestVideos = () => {
   }, []);
 
   useEffect(() => {
-    // Make more calls to check it there are new videos on every interval
+    // Make more calls to check if there are new videos on every interval
     if (isAppActive) {
       const interval = setIncrementalInterval(
         async () => updateVideosIfRequired(videos),
