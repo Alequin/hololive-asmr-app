@@ -20,24 +20,28 @@ export const useLockScreen = () => {
   const resetUnlockCount = useCallback(() => setUnlockPressCount(INITIAL_UNLOCK_COUNTDOWN), []);
 
   useEffect(() => {
-    const timeout = setTimeout(async () => {
-      resetUnlockCount();
-      await setBrightness(DIMMED_SCREEN_BRIGHTNESS);
-    }, 3000);
-    return () => clearTimeout(timeout);
-  }, [unlockPressCount, resetUnlockCount]);
+    // Clean unlock presses if enough time passes
+    if (isScreenLocked) {
+      const timeout = setTimeout(async () => {
+        resetUnlockCount();
+        await setBrightness(DIMMED_SCREEN_BRIGHTNESS);
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isScreenLocked, unlockPressCount, resetUnlockCount]);
 
   useEffect(() => {
-    const shouldUnlock = unlockPressCount <= 0;
-    if (shouldUnlock) {
+    // Unlock the screen if the press count is low enough
+    if (unlockPressCount <= 0) {
       unlockScreen();
       resetUnlockCount();
     }
   }, [unlockPressCount, resetUnlockCount]);
 
   useEffect(() => {
+    // Disable hardware back events while screen is locked
     if (isScreenLocked) {
-      const backHandler = BackHandler.addEventListener("hardwareBackPress", () => isScreenLocked);
+      const backHandler = BackHandler.addEventListener("hardwareBackPress", () => true);
       return () => backHandler.remove();
     }
   }, [isScreenLocked]);
