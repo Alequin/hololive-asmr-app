@@ -1,6 +1,6 @@
 import { googleMobileAdsAppId } from "./secrets.json";
 
-const version = 3;
+const version = 5;
 
 export default {
   name: "Hololive ASMR Catalog",
@@ -23,7 +23,7 @@ export default {
   android: {
     package: "com.just_for_fun.hololive_asmr_catalog",
     versionCode: version,
-    permissions: [], // Use minimum permissions (https://docs.expo.dev/versions/latest/config/app/#permissions)
+    permissions: ["WRITE_SETTINGS"], // Use minimum permissions (https://docs.expo.dev/versions/latest/config/app/#permissions)
     adaptiveIcon: {
       foregroundImage: "./assets/images/adaptive-icon.png",
       backgroundColor: "#000000",
