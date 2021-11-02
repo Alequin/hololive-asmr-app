@@ -3,13 +3,13 @@ import { showToast } from "./show-toast";
 
 export const useBrightness = () => {
   return {
-    getBrightness: async () =>
-      Brightness.getPermissionsAsync().then(
-        ({ granted }) => granted && Brightness.getBrightnessAsync()
-      ),
     setBrightness: async (brightnessLevel) =>
       Brightness.getPermissionsAsync().then(
         ({ granted }) => granted && Brightness.setBrightnessAsync(brightnessLevel)
+      ),
+    resetBrightness: async () =>
+      Brightness.getPermissionsAsync().then(
+        ({ granted }) => granted && Brightness.useSystemBrightnessAsync()
       ),
   };
 };

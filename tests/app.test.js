@@ -54,6 +54,7 @@ describe("App", () => {
     jest.spyOn(Brightness, "getPermissionsAsync").mockResolvedValue({ granted: true });
     jest.spyOn(Brightness, "getBrightnessAsync").mockResolvedValue(1);
     jest.spyOn(Brightness, "setBrightnessAsync").mockResolvedValue(undefined);
+    jest.spyOn(Brightness, "useSystemBrightnessAsync").mockResolvedValue(undefined);
     jest.spyOn(showToast, "showToast").mockImplementation(() => {});
     jest.spyOn(environment, "locale").mockImplementation(() => "en");
   });
@@ -2138,8 +2139,7 @@ describe("App", () => {
       await asyncPressEvent(viewMask);
 
       // Confirm the screens brightness is increased while holding the view mask
-      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
-      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
+      expect(Brightness.useSystemBrightnessAsync).toHaveBeenCalledTimes(1);
 
       expect(screen.queryByText("Unlocking")).toBeTruthy();
       expect(screen.queryByText("Press anywhere 4 more times")).toBeTruthy();
@@ -2205,8 +2205,7 @@ describe("App", () => {
       await asyncPressEvent(viewMask);
 
       // Confirm the screens brightness is increased while holding the view mask
-      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
-      expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([1]);
+      expect(Brightness.useSystemBrightnessAsync).toHaveBeenCalledTimes(1);
 
       // Press a few times to continue unlocking
       expect(screen.queryByText("Unlocking")).toBeTruthy();
@@ -2223,7 +2222,7 @@ describe("App", () => {
       enableAllErrorLogs();
 
       // Confirm the brightness is reduced again
-      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(2);
+      expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0]);
     });
   });

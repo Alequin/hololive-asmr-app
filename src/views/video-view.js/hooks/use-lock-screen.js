@@ -6,16 +6,15 @@ export const INITIAL_UNLOCK_COUNTDOWN = 5;
 const DIMMED_SCREEN_BRIGHTNESS = 0;
 
 export const useLockScreen = () => {
-  const [preLockScreenBrightness, setPreLockScreenBrightness] = useState(null);
-  const { getBrightness, setBrightness } = useBrightness();
+  const { setBrightness, resetBrightness } = useBrightness();
 
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [unlockPressCount, setUnlockPressCount] = useState(INITIAL_UNLOCK_COUNTDOWN);
 
   const unlockScreen = useCallback(async () => {
     setIsScreenLocked(false);
-    await setBrightness(preLockScreenBrightness);
-  }, [preLockScreenBrightness]);
+    resetBrightness();
+  }, []);
 
   const resetUnlockCount = useCallback(() => setUnlockPressCount(INITIAL_UNLOCK_COUNTDOWN), []);
 
@@ -34,7 +33,7 @@ export const useLockScreen = () => {
     // Unlock the screen if the press count is low enough
     if (unlockPressCount <= 0) {
       unlockScreen();
-      resetUnlockCount();
+      resetBrightness();
     }
   }, [unlockPressCount, resetUnlockCount]);
 
@@ -50,15 +49,13 @@ export const useLockScreen = () => {
     isScreenLocked,
     unlockPressCount,
     lockScreen: useCallback(async () => {
-      setPreLockScreenBrightness(await getBrightness());
       setIsScreenLocked(true);
       await setBrightness(DIMMED_SCREEN_BRIGHTNESS);
-    }, [getBrightness, setBrightness]),
+    }, [setBrightness]),
     onPressLockScreen: useCallback(async () => {
-      if (unlockPressCount === INITIAL_UNLOCK_COUNTDOWN) {
-        await setBrightness(preLockScreenBrightness);
-      }
+      if (unlockPressCount === INITIAL_UNLOCK_COUNTDOWN) await resetBrightness();
+
       setUnlockPressCount((count) => count - 1);
-    }, [unlockPressCount, setBrightness, preLockScreenBrightness]),
+    }, [unlockPressCount, setBrightness]),
   };
 };
