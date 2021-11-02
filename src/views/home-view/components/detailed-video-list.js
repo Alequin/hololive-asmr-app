@@ -3,28 +3,31 @@ import { FlatList, Image, View } from "react-native";
 import { Button } from "../../../components/button";
 import { ChannelThumbnail } from "../../../components/channel-thumbnail";
 import { StyledText } from "../../../styled-text";
+import { useOrientation } from "../../../use-orientation";
 import { isMiniScreen, SCREEN_SIZES, windowHeight, withScreenSize } from "../../../window";
 import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
 import { dateString } from "./date-string";
 
 const ONE_COLUMN = 1;
 const TWO_COLUMNS = 2;
-const COLUMN_COUNT = isMiniScreen() ? ONE_COLUMN : TWO_COLUMNS;
 
 export const DetailedVideoList = ({ videos }) => {
+  useOrientation(); // update state on orientation change to re-calc size values
   const navigateToVideoView = useNavigateToVideoView();
+  const columnCount = isMiniScreen() ? ONE_COLUMN : TWO_COLUMNS;
 
   return (
     <FlatList
+      key={`flatlist-${columnCount}-columns`} // force re-render if numColumns changes
       testID="videoList"
       style={{ width: "100%", height: "100%" }}
       data={videos}
       keyExtractor={({ video_id }) => video_id}
-      numColumns={COLUMN_COUNT}
+      numColumns={columnCount}
       renderItem={({ item }) => (
         <DetailedVideoButton
           title={item.video_title}
-          isSingleColumn={COLUMN_COUNT === ONE_COLUMN}
+          isSingleColumn={columnCount === ONE_COLUMN}
           channelTitle={item.channel_title}
           channelThumbnailUrl={item.channel_thumbnail_url}
           videoThumbnailUrl={item.video_thumbnail_url}
