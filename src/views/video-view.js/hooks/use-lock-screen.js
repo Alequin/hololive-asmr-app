@@ -11,11 +11,6 @@ export const useLockScreen = () => {
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [unlockPressCount, setUnlockPressCount] = useState(INITIAL_UNLOCK_COUNTDOWN);
 
-  const unlockScreen = useCallback(async () => {
-    setIsScreenLocked(false);
-    resetBrightness();
-  }, []);
-
   const resetUnlockCount = useCallback(() => setUnlockPressCount(INITIAL_UNLOCK_COUNTDOWN), []);
 
   useEffect(() => {
@@ -32,8 +27,9 @@ export const useLockScreen = () => {
   useEffect(() => {
     // Unlock the screen if the press count is low enough
     if (unlockPressCount <= 0) {
-      unlockScreen();
+      setIsScreenLocked(false);
       resetBrightness();
+      resetUnlockCount();
     }
   }, [unlockPressCount, resetUnlockCount]);
 
