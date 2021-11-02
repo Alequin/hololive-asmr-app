@@ -9,7 +9,7 @@ export const VIDEO_CACHE_LIFE_TIME = 1000 * 60 * 10;
 export const useRequestVideos = () => {
   const isAppActive = useIsAppStateActive();
   const [videos, setVideos] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshingVideosFromAPI, setIsRefreshingVideosFromAPI] = useState(false);
   const [lastApiCallTime, setLastApiCallTime] = useState(Date.now());
   const [hasLoadedCache, setHasLoadedCache] = useState(false);
   const [cacheError, setCacheError] = useState(null);
@@ -17,16 +17,17 @@ export const useRequestVideos = () => {
 
   const updateVideosIfRequired = useCallback(
     async (currentVideos) => {
-      let updatedVideos = null;
       try {
-        updatedVideos = await requestVideos();
+        const updatedVideos = await requestVideos();
+        setLastApiCallTime(Date.now());
+        if (isEqual(currentVideos, updatedVideos)) return currentVideos;
+        setVideos(updatedVideos);
+        return updatedVideos;
+      } catch (error) {
+        setApiError(error);
       } finally {
-        setIsRefreshing(false);
+        setIsRefreshingVideosFromAPI(false);
       }
-      setLastApiCallTime(Date.now());
-      if (isEqual(currentVideos, updatedVideos)) return currentVideos;
-      setVideos(updatedVideos);
-      return updatedVideos;
     },
     [apiError]
   );
@@ -45,11 +46,7 @@ export const useRequestVideos = () => {
         setHasLoadedCache(true);
       }
 
-      try {
-        await updateVideosIfRequired(loadedVideos);
-      } catch (error) {
-        setApiError(error);
-      }
+      await updateVideosIfRequired(loadedVideos);
     })();
   }, []);
 
@@ -85,16 +82,16 @@ export const useRequestVideos = () => {
   }, [Boolean(videos)]);
 
   useEffect(() => {
-    if (isRefreshing)
+    if (isRefreshingVideosFromAPI)
       // Fake a delay to allow the interface to show a spinner and reduce how often users can spam retry
       new Promise((r) => setTimeout(r, 2000)).then(() => updateVideosIfRequired(videos));
-  }, [isRefreshing]);
+  }, [isRefreshingVideosFromAPI]);
 
   return {
     videos,
-    isRefreshing,
+    isRefreshing: isRefreshingVideosFromAPI,
     error: hasLoadedCache && !videos && (apiError || cacheError),
-    refreshVideos: useCallback(async () => setIsRefreshing(true), []),
+    refreshVideos: useCallback(async () => setIsRefreshingVideosFromAPI(true), []),
   };
 };
 
