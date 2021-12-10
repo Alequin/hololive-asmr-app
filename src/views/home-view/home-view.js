@@ -112,12 +112,12 @@ const useFilteredVideos = (videos) => {
 };
 
 const useIsFilterModalVisible = () => {
-  const [isFilerModalOpen, setisFilerModalOpen] = useState(false);
+  const [isFilerModalOpen, setIsFilerModalOpen] = useState(false);
 
   return {
     isFilerModalOpen,
-    showFilterModal: () => setisFilerModalOpen(true),
-    hideFilterModal: () => setisFilerModalOpen(false),
+    showFilterModal: () => setIsFilerModalOpen(true),
+    hideFilterModal: () => setIsFilerModalOpen(false),
   };
 };
 

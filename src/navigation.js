@@ -51,8 +51,6 @@ export const Navigation = () => {
 };
 
 const ViewMask = ({ isScreenLocked, unlockPressCount, onPress }) => {
-  if (!isScreenLocked) return null;
-
   const shouldShowUnlockCountdown = unlockPressCount < INITIAL_UNLOCK_COUNTDOWN;
   const unlockDots = useMemo(
     () =>
@@ -64,6 +62,8 @@ const ViewMask = ({ isScreenLocked, unlockPressCount, onPress }) => {
         .reverse(),
     [unlockPressCount]
   );
+
+  if (!isScreenLocked) return null;
 
   return (
     <Pressable

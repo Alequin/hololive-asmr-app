@@ -1,5 +1,5 @@
 import isNil from "lodash/isNil";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { sortOrderState } from "../../../async-storage";
 
 const VIDEO_SORT_METHODS = [

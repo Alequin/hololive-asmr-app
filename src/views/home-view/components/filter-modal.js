@@ -65,10 +65,7 @@ export const FilterModal = ({
                     channelTitle={channelTitle}
                     channelThumbnailUrl={channelThumbnailUrl}
                     onSelect={() => onSelectChannel(channelTitle)}
-                    isSelected={useMemo(
-                      () => channelsToFilterBy.includes(channelTitle),
-                      [channelsToFilterBy, channelTitle]
-                    )}
+                    isSelected={channelsToFilterBy.includes(channelTitle)}
                   />
                 );
               })}
