@@ -47,8 +47,10 @@ export const useRequestVideos = (channelsToFilterBy, sortOrder) => {
         offset: videos?.length,
       });
 
-      setShouldDisableNextPageFetch(reqestedvideos.length === 0);
+      const wereThereMoreVideos = reqestedvideos.length > 0;
+      setShouldDisableNextPageFetch(!wereThereMoreVideos);
       updateVideos((videos) => [...videos, ...reqestedvideos]);
+      return wereThereMoreVideos;
     } catch (error) {
       setApiError(error);
     } finally {

@@ -19,6 +19,8 @@ const TWO_COLUMNS = 2;
 
 export const DetailedVideoList = ({ videos, fetchNextPageOfVideos }) => {
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
+  const [shouldShowloadingIndicator, setShouldShowloadingIndicator] =
+    useState(true);
 
   useOrientation(); // update state on orientation change to re-calc size values
   const navigateToVideoView = useNavigateToVideoView();
@@ -35,8 +37,9 @@ export const DetailedVideoList = ({ videos, fetchNextPageOfVideos }) => {
       onEndReached={async () => {
         if (isLoadingNextPage) return;
         setIsLoadingNextPage(true);
-        await fetchNextPageOfVideos();
+        const wereThereMoreVideos = await fetchNextPageOfVideos();
         setIsLoadingNextPage(false);
+        setShouldShowloadingIndicator(wereThereMoreVideos);
       }}
       renderItem={({ item }) => (
         <DetailedVideoButton
@@ -49,7 +52,9 @@ export const DetailedVideoList = ({ videos, fetchNextPageOfVideos }) => {
           onSelectVideo={() => navigateToVideoView(item)}
         />
       )}
-      ListFooterComponent={() => isLoadingNextPage && <LoadingSpinner />}
+      ListFooterComponent={() =>
+        shouldShowloadingIndicator && <LoadingSpinner />
+      }
     />
   );
 };
