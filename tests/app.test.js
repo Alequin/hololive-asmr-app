@@ -16,8 +16,19 @@ jest.mock("react-native/Libraries/AppState/AppState", () => {
     removeEventListener: jest.fn(),
   };
 });
+jest.mock("react-native/Libraries/AppState/AppState", () => {
+  return {
+    currentState: "active",
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  };
+});
 
-import { act, waitForElementToBeRemoved, within } from "@testing-library/react-native";
+import {
+  act,
+  waitForElementToBeRemoved,
+  within,
+} from "@testing-library/react-native";
 import * as Brightness from "expo-brightness";
 import * as Linking from "expo-linking";
 import { last } from "lodash";
@@ -28,6 +39,7 @@ import waitForExpect from "wait-for-expect";
 import { App } from "../App";
 import * as asyncStorage from "../src/async-storage";
 import * as requestVideos from "../src/external-requests/request-videos";
+import * as requestChannels from "../src/external-requests/request-channels";
 import secrets from "../src/secrets";
 import * as showToast from "../src/show-toast";
 import { mockBackHandlerCallback } from "./mock-back-handler-callback";
@@ -47,16 +59,28 @@ describe("App", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(asyncStorage.cachedVideos, "load").mockResolvedValue(undefined);
-    jest.spyOn(asyncStorage.sortOrderState, "load").mockResolvedValue(undefined);
-    jest.spyOn(asyncStorage.firstLoadState, "load").mockResolvedValue(undefined);
+    jest
+      .spyOn(asyncStorage.sortOrderState, "load")
+      .mockResolvedValue(undefined);
+    jest
+      .spyOn(asyncStorage.firstLoadState, "load")
+      .mockResolvedValue(undefined);
     jest.spyOn(asyncStorage.viewModeState, "load").mockResolvedValue(undefined);
-    jest.spyOn(Brightness, "requestPermissionsAsync").mockResolvedValue({ granted: true });
-    jest.spyOn(Brightness, "getPermissionsAsync").mockResolvedValue({ granted: true });
+    jest
+      .spyOn(Brightness, "requestPermissionsAsync")
+      .mockResolvedValue({ granted: true });
+    jest
+      .spyOn(Brightness, "getPermissionsAsync")
+      .mockResolvedValue({ granted: true });
     jest.spyOn(Brightness, "getBrightnessAsync").mockResolvedValue(1);
     jest.spyOn(Brightness, "setBrightnessAsync").mockResolvedValue(undefined);
-    jest.spyOn(Brightness, "useSystemBrightnessAsync").mockResolvedValue(undefined);
+    jest
+      .spyOn(Brightness, "useSystemBrightnessAsync")
+      .mockResolvedValue(undefined);
     jest.spyOn(showToast, "showToast").mockImplementation(() => {});
     jest.spyOn(environment, "locale").mockImplementation(() => "en");
+    jest.spyOn(requestVideos, "requestVideos");
+    jest.spyOn(requestChannels, "requestChannels");
   });
 
   describe("Home View", () => {
@@ -102,9 +126,12 @@ describe("App", () => {
       const homeView = screen.queryByTestId("homeView");
 
       expect(within(homeView).queryAllByTestId("videoButton")).toHaveLength(3);
-      expect(fetch).toHaveBeenCalledWith("https://hololive-asmr-server.herokuapp.com/videos", {
-        headers: { authToken: secrets.serverAuthToken },
-      });
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
     });
 
     it("requests permission to change the system brightness when the app starts", async () => {
@@ -191,7 +218,8 @@ describe("App", () => {
           channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/123/mqdefault.jpg",
           video_title: "video 1",
         },
         {
@@ -200,7 +228,8 @@ describe("App", () => {
           channel_title: "Sana",
           published_at: "2020-01-05T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/234/mqdefault.jpg",
           video_title: "video 2",
         },
         {
@@ -209,7 +238,8 @@ describe("App", () => {
           channel_title: "Ina",
           published_at: "2019-12-31T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/345/mqdefault.jpg",
           video_title: "video 3",
         },
       ]);
@@ -227,7 +257,9 @@ describe("App", () => {
       const videoButtons = within(homeView).queryAllByTestId("videoButton");
 
       const button1 = within(videoButtons[0]);
-      expect(button1.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button1.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
       expect(button1.queryByText("video 1")).toBeTruthy();
@@ -238,7 +270,9 @@ describe("App", () => {
       expect(button1.queryByText("6 Oct 2021")).toBeTruthy();
 
       const button2 = within(videoButtons[1]);
-      expect(button2.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button2.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
       });
       expect(button2.queryByText("video 2")).toBeTruthy();
@@ -249,7 +283,9 @@ describe("App", () => {
       expect(button2.queryByText("5 Jan 2020")).toBeTruthy();
 
       const button3 = within(videoButtons[2]);
-      expect(button3.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button3.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
       expect(button3.queryByText("video 3")).toBeTruthy();
@@ -268,7 +304,8 @@ describe("App", () => {
           channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/123/mqdefault.jpg",
           video_title: "video 1",
         },
         {
@@ -277,7 +314,8 @@ describe("App", () => {
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/234/mqdefault.jpg",
           video_title: "video 2",
         },
         {
@@ -286,7 +324,8 @@ describe("App", () => {
           channel_title: "Ina",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/345/mqdefault.jpg",
           video_title: "video 3",
         },
       ]);
@@ -308,7 +347,9 @@ describe("App", () => {
 
       // Confirm thumbnails are visible and nothing else
       const button1 = within(videoButtons[0]);
-      expect(button1.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button1.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
       expect(button1.queryByText("video 1")).not.toBeTruthy();
@@ -316,7 +357,9 @@ describe("App", () => {
       expect(button1.queryByText("Fauna")).not.toBeTruthy();
 
       const button2 = within(videoButtons[1]);
-      expect(button2.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button2.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
       });
       expect(button2.queryByText("video 2")).not.toBeTruthy();
@@ -324,7 +367,9 @@ describe("App", () => {
       expect(button2.queryByText("Sana")).not.toBeTruthy();
 
       const button3 = within(videoButtons[2]);
-      expect(button3.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button3.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
       expect(button3.queryByText("video 3")).not.toBeTruthy();
@@ -334,8 +379,12 @@ describe("App", () => {
       // Switch to the more detailed view
       await asyncPressEvent(getButtonByText(screen, "More Details"));
       // Confirm all details are back
-      const detailedButton1 = within(within(homeView).queryAllByTestId("videoButton")[0]);
-      expect(detailedButton1.queryByTestId("videoImageBackground").props.source).toEqual({
+      const detailedButton1 = within(
+        within(homeView).queryAllByTestId("videoButton")[0]
+      );
+      expect(
+        detailedButton1.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
       expect(detailedButton1.queryByText("video 1")).toBeTruthy();
@@ -353,7 +402,8 @@ describe("App", () => {
           channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/123/mqdefault.jpg",
           video_title: "video 1",
         },
         {
@@ -362,7 +412,8 @@ describe("App", () => {
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/234/mqdefault.jpg",
           video_title: "video 2",
         },
         {
@@ -371,7 +422,8 @@ describe("App", () => {
           channel_title: "Ina",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/345/mqdefault.jpg",
           video_title: "video 3",
         },
       ]);
@@ -407,7 +459,8 @@ describe("App", () => {
           channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/123/mqdefault.jpg",
           video_title: "video 1",
         },
         {
@@ -416,7 +469,8 @@ describe("App", () => {
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/234/mqdefault.jpg",
           video_title: "video 2",
         },
         {
@@ -425,7 +479,8 @@ describe("App", () => {
           channel_title: "Ina",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/345/mqdefault.jpg",
           video_title: "video 3",
         },
       ]);
@@ -447,7 +502,9 @@ describe("App", () => {
 
       // Confirm less details mode is on by checking thumbnails are visible and nothing else
       const button1 = within(videoButtons[0]);
-      expect(button1.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button1.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
       expect(button1.queryByText("video 1")).not.toBeTruthy();
@@ -455,7 +512,9 @@ describe("App", () => {
       expect(button1.queryByText("Fauna")).not.toBeTruthy();
 
       const button2 = within(videoButtons[1]);
-      expect(button2.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button2.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
       });
       expect(button2.queryByText("video 2")).not.toBeTruthy();
@@ -463,13 +522,16 @@ describe("App", () => {
       expect(button2.queryByText("Sana")).not.toBeTruthy();
 
       const button3 = within(videoButtons[2]);
-      expect(button3.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button3.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
       expect(button3.queryByText("video 3")).not.toBeTruthy();
       expect(button3.queryByTestId("channelImage")).not.toBeTruthy();
       expect(button3.queryByText("Ina")).not.toBeTruthy();
     });
+
     it("defaults to the details view mode if there is an error while loading the cache", async () => {
       jest.spyOn(asyncStorage.viewModeState, "load").mockRejectedValue(null);
 
@@ -480,7 +542,8 @@ describe("App", () => {
           channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/123/mqdefault.jpg",
           video_title: "video 1",
         },
         {
@@ -489,7 +552,8 @@ describe("App", () => {
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/234/mqdefault.jpg",
           video_title: "video 2",
         },
         {
@@ -498,7 +562,8 @@ describe("App", () => {
           channel_title: "Ina",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/345/mqdefault.jpg",
           video_title: "video 3",
         },
       ]);
@@ -520,7 +585,9 @@ describe("App", () => {
       const videoButtons = within(homeView).queryAllByTestId("videoButton");
 
       const button1 = within(videoButtons[0]);
-      expect(button1.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button1.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
       expect(button1.queryByText("video 1")).toBeTruthy();
@@ -530,7 +597,9 @@ describe("App", () => {
       expect(button1.queryByText("Fauna")).toBeTruthy();
 
       const button2 = within(videoButtons[1]);
-      expect(button2.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button2.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
       });
       expect(button2.queryByText("video 2")).toBeTruthy();
@@ -540,7 +609,9 @@ describe("App", () => {
       expect(button2.queryByText("Sana")).toBeTruthy();
 
       const button3 = within(videoButtons[2]);
-      expect(button3.queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        button3.queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
       expect(button3.queryByText("video 3")).toBeTruthy();
@@ -551,7 +622,9 @@ describe("App", () => {
     });
 
     it("provides a button which allows the user to give permission for the app to update brightness when it has not already been given", async () => {
-      jest.spyOn(Brightness, "getPermissionsAsync").mockResolvedValue({ granted: false });
+      jest
+        .spyOn(Brightness, "getPermissionsAsync")
+        .mockResolvedValue({ granted: false });
 
       const apiPromise = Promise.resolve([
         {
@@ -576,7 +649,10 @@ describe("App", () => {
       const homeView = screen.queryByTestId("homeView");
 
       // Confirm button is visible
-      const permissionButtons = getButtonByText(within(homeView), "Give System Permission");
+      const permissionButtons = getButtonByText(
+        within(homeView),
+        "Give System Permission"
+      );
       expect(permissionButtons).toBeTruthy();
 
       jest.clearAllMocks();
@@ -609,7 +685,10 @@ describe("App", () => {
       const homeView = screen.queryByTestId("homeView");
 
       // Confirm button is not visible
-      const permissionButtons = getButtonByText(within(homeView), "Give System Permission");
+      const permissionButtons = getButtonByText(
+        within(homeView),
+        "Give System Permission"
+      );
       expect(permissionButtons).not.toBeTruthy();
     });
 
@@ -656,13 +735,22 @@ describe("App", () => {
 
       const videoButtons = within(homeView).queryAllByTestId("videoButton");
 
-      expect(within(videoButtons[0]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(videoButtons[0]).queryByTestId("videoImageBackground").props
+          .source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
-      expect(within(videoButtons[1]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(videoButtons[1]).queryByTestId("videoImageBackground").props
+          .source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
       });
-      expect(within(videoButtons[2]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(videoButtons[2]).queryByTestId("videoImageBackground").props
+          .source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
     });
@@ -714,21 +802,24 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(screen, "Newest to Oldest"));
       expect(getButtonByText(screen, "Oldest to Newest")).toBeTruthy();
 
-      const oldestToNewestVideos = within(screen.queryByTestId("homeView")).queryAllByTestId(
-        "videoButton"
-      );
+      const oldestToNewestVideos = within(
+        screen.queryByTestId("homeView")
+      ).queryAllByTestId("videoButton");
       expect(
-        within(oldestToNewestVideos[0]).queryByTestId("videoImageBackground").props.source
+        within(oldestToNewestVideos[0]).queryByTestId("videoImageBackground")
+          .props.source
       ).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
       expect(
-        within(oldestToNewestVideos[1]).queryByTestId("videoImageBackground").props.source
+        within(oldestToNewestVideos[1]).queryByTestId("videoImageBackground")
+          .props.source
       ).toEqual({
         uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
       });
       expect(
-        within(oldestToNewestVideos[2]).queryByTestId("videoImageBackground").props.source
+        within(oldestToNewestVideos[2]).queryByTestId("videoImageBackground")
+          .props.source
       ).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
@@ -740,14 +831,22 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(screen, "Oldest to Newest"));
       expect(getButtonByText(screen, "A to Z")).toBeTruthy();
 
-      const aToZVideos = within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton");
-      expect(within(aToZVideos[0]).queryByTestId("videoImageBackground").props.source).toEqual({
+      const aToZVideos = within(
+        screen.queryByTestId("homeView")
+      ).queryAllByTestId("videoButton");
+      expect(
+        within(aToZVideos[0]).queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
-      expect(within(aToZVideos[1]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(aToZVideos[1]).queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
-      expect(within(aToZVideos[2]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(aToZVideos[2]).queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
       });
 
@@ -758,14 +857,22 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(screen, "A to Z"));
       expect(getButtonByText(screen, "Z to A")).toBeTruthy();
 
-      const zToAVideos = within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton");
-      expect(within(zToAVideos[0]).queryByTestId("videoImageBackground").props.source).toEqual({
+      const zToAVideos = within(
+        screen.queryByTestId("homeView")
+      ).queryAllByTestId("videoButton");
+      expect(
+        within(zToAVideos[0]).queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
       });
-      expect(within(zToAVideos[1]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(zToAVideos[1]).queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
-      expect(within(zToAVideos[2]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(zToAVideos[2]).queryByTestId("videoImageBackground").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
 
@@ -776,21 +883,24 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(screen, "Z to A"));
       expect(getButtonByText(screen, "Newest to Oldest")).toBeTruthy();
 
-      const newestToOldestVideos = within(screen.queryByTestId("homeView")).queryAllByTestId(
-        "videoButton"
-      );
+      const newestToOldestVideos = within(
+        screen.queryByTestId("homeView")
+      ).queryAllByTestId("videoButton");
       expect(
-        within(newestToOldestVideos[0]).queryByTestId("videoImageBackground").props.source
+        within(newestToOldestVideos[0]).queryByTestId("videoImageBackground")
+          .props.source
       ).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
       expect(
-        within(newestToOldestVideos[1]).queryByTestId("videoImageBackground").props.source
+        within(newestToOldestVideos[1]).queryByTestId("videoImageBackground")
+          .props.source
       ).toEqual({
         uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
       });
       expect(
-        within(newestToOldestVideos[2]).queryByTestId("videoImageBackground").props.source
+        within(newestToOldestVideos[2]).queryByTestId("videoImageBackground")
+          .props.source
       ).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
@@ -843,7 +953,9 @@ describe("App", () => {
       await act(() => apiPromise);
 
       expect(asyncStorage.cachedVideos.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.cachedVideos.save).toHaveBeenCalledWith(mockApiResponse);
+      expect(asyncStorage.cachedVideos.save).toHaveBeenCalledWith(
+        mockApiResponse
+      );
     });
 
     it("uses the cached videos but also make a call to the server as well to see if any videos have been updated", async () => {
@@ -903,9 +1015,9 @@ describe("App", () => {
       expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
 
       // Shows 3 videos even thought the cache contained 1 as the api call overrides the cache
-      expect(within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton")).toHaveLength(
-        3
-      );
+      expect(
+        within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton")
+      ).toHaveLength(3);
     });
 
     it("uses the cached videos when there is a issue requesting videos from the api", async () => {
@@ -935,9 +1047,9 @@ describe("App", () => {
       expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
 
       // Shows 1 videos as the cache contained 1 and the api call failed
-      expect(within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton")).toHaveLength(
-        1
-      );
+      expect(
+        within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton")
+      ).toHaveLength(1);
     });
 
     it("shows an error message if the api query fails and there is no cache", async () => {
@@ -957,8 +1069,12 @@ describe("App", () => {
       expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
 
       // Shows an error message when no videos can be loaded
-      expect(screen.queryByText("Sorry, there was an issue requesting the videos")).toBeTruthy();
-      expect(screen.queryByText("Press anywhere to refresh and try again")).toBeTruthy();
+      expect(
+        screen.queryByText("Sorry, there was an issue requesting the videos")
+      ).toBeTruthy();
+      expect(
+        screen.queryByText("Press anywhere to refresh and try again")
+      ).toBeTruthy();
       expect(screen.queryByTestId("refreshIcon")).toBeTruthy();
     });
 
@@ -986,7 +1102,8 @@ describe("App", () => {
               channel_title: "Fauna",
               published_at: "2021-10-06T20:21:31Z",
               video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-              channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+              channel_thumbnail_url:
+                "https://i.ytimg.com/channel/123/mqdefault.jpg",
               video_title: "video 1",
             },
             {
@@ -995,7 +1112,8 @@ describe("App", () => {
               channel_title: "Sana",
               published_at: "2021-10-06T20:21:31Z",
               video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-              channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
+              channel_thumbnail_url:
+                "https://i.ytimg.com/channel/234/mqdefault.jpg",
               video_title: "video 2",
             },
             {
@@ -1004,7 +1122,8 @@ describe("App", () => {
               channel_title: "Ina",
               published_at: "2021-10-06T20:21:31Z",
               video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-              channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
+              channel_thumbnail_url:
+                "https://i.ytimg.com/channel/345/mqdefault.jpg",
               video_title: "video 3",
             },
           ]),
@@ -1012,11 +1131,16 @@ describe("App", () => {
 
       // Press the error button to re-request videos from the api
       await asyncPressEvent(
-        getButtonByText(screen, "Sorry, there was an issue requesting the videos")
+        getButtonByText(
+          screen,
+          "Sorry, there was an issue requesting the videos"
+        )
       );
 
       silenceAllErrorLogs();
-      await waitForExpect(() => expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2));
+      await waitForExpect(() =>
+        expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2)
+      );
       enableAllErrorLogs();
     });
 
@@ -1160,19 +1284,28 @@ describe("App", () => {
 
       const videoButtons = within(homeView).queryAllByTestId("videoButton");
 
-      expect(within(videoButtons[0]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(videoButtons[0]).queryByTestId("videoImageBackground").props
+          .source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
       });
-      expect(within(videoButtons[1]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(videoButtons[1]).queryByTestId("videoImageBackground").props
+          .source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
       });
-      expect(within(videoButtons[2]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(videoButtons[2]).queryByTestId("videoImageBackground").props
+          .source
+      ).toEqual({
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
     });
 
     it("allows the user to filter the visible videos by channel name", async () => {
-      const apiPromise = Promise.resolve([
+      const videoApiPromise = Promise.resolve([
         {
           video_id: "123",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
@@ -1202,13 +1335,28 @@ describe("App", () => {
         },
       ]);
 
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
+
+      const channelApiPromise = Promise.resolve([
+        {
+          channel_title: "Fauna",
+        },
+        {
+          channel_title: "Sana",
+        },
+        {
+          channel_title: "Kiara",
+        },
+      ]);
+
+      jest
+        .spyOn(requestChannels, "requestChannels")
+        .mockReturnValue(channelApiPromise);
 
       const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
+      await act(() => videoApiPromise);
 
       const homeView = screen.queryByTestId("homeView");
 
@@ -1216,43 +1364,63 @@ describe("App", () => {
       expect(videoButtons).toHaveLength(3);
 
       // Confirm all videos are visible
-      expect(within(videoButtons[0]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(videoButtons[0]).queryByTestId("videoImageBackground").props
+          .source
+      ).toEqual({
         uri: "fauna-thumbnail.jpg",
       });
-      expect(within(videoButtons[1]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(videoButtons[1]).queryByTestId("videoImageBackground").props
+          .source
+      ).toEqual({
         uri: "sana-thumbnail.jpg",
       });
-      expect(within(videoButtons[2]).queryByTestId("videoImageBackground").props.source).toEqual({
+      expect(
+        within(videoButtons[2]).queryByTestId("videoImageBackground").props
+          .source
+      ).toEqual({
         uri: "kiara-thumbnail.jpg",
       });
 
       // Open filter by channels modal
       await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+      await act(() => channelApiPromise);
 
       // Confirm all options are unselected
       const modalId = "filterModal";
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props
+          .style[1].fontWeight
       ).toBe("normal");
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1]
+          .fontWeight
       ).toBe("normal");
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props
+          .style[1].fontWeight
       ).toBe("normal");
 
-      await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Sana"));
-      await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara"));
+      await asyncPressEvent(
+        getButtonByText(within(screen.queryByTestId(modalId)), "Sana")
+      );
+      await asyncPressEvent(
+        getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")
+      );
 
       // Confirm the selected options have been updated
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props
+          .style[1].fontWeight
       ).toBe("normal");
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1]
+          .fontWeight
       ).toBe("bold");
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Kiara").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Kiara").props
+          .style[1].fontWeight
       ).toBe("bold");
 
       // Return to the list of videos
@@ -1263,31 +1431,33 @@ describe("App", () => {
       // Confirm the expected videos are visible and the others are not
       const updatedHomeView = screen.queryByTestId("homeView");
 
-      const updatedVideoButtons = within(updatedHomeView).queryAllByTestId("videoButton");
+      const updatedVideoButtons =
+        within(updatedHomeView).queryAllByTestId("videoButton");
 
       // Confirm the expected videos are visible
       expect(updatedVideoButtons).toHaveLength(2);
       expect(
-        within(updatedVideoButtons[0]).queryByTestId("videoImageBackground").props.source
+        within(updatedVideoButtons[0]).queryByTestId("videoImageBackground")
+          .props.source
       ).toEqual({
         uri: "sana-thumbnail.jpg",
       });
       expect(
-        within(updatedVideoButtons[1]).queryByTestId("videoImageBackground").props.source
+        within(updatedVideoButtons[1]).queryByTestId("videoImageBackground")
+          .props.source
       ).toEqual({
         uri: "kiara-thumbnail.jpg",
       });
     });
 
-    it("shows channel thumbnails in the filer modal", async () => {
-      const apiPromise = Promise.resolve([
+    it("shows a loading indicator on the filter modal while waiting for the channels to load", async () => {
+      const videoApiPromise = Promise.resolve([
         {
           video_id: "123",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "fauna-thumbnail.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1297,7 +1467,6 @@ describe("App", () => {
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "sana-thumbnail.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/234/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
@@ -1307,47 +1476,283 @@ describe("App", () => {
           channel_title: "Kiara",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "kiara-thumbnail.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/345/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
       ]);
 
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
+
+      // Never resolve the channel request so it is always loading
+      const channelApiPromise = new Promise(() => {});
+
+      jest
+        .spyOn(requestChannels, "requestChannels")
+        .mockReturnValue(channelApiPromise);
 
       const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      expect(videoButtons).toHaveLength(3);
+      const modalId = "filterModal";
 
       // Open filter by channels modal
       await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
 
+      // Confirm the loading indicator is visible
+      expect(
+        within(screen.queryByTestId(modalId)).queryByTestId("loadingIndicator")
+      ).toBeTruthy();
+    });
+
+    it("shows an error message and retry button in the filter modal when there is an issue fetching the channels", async () => {
+      const videoApiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Fauna",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "fauna-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "sana-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Kiara",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "kiara-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
+
+      // Fail to fetch channels
+      jest
+        .spyOn(requestChannels, "requestChannels")
+        .mockRejectedValue("error fetching channels");
+
+      const screen = await asyncRender(<App />);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      expect(videoButtons).toHaveLength(3);
+      const modalId = "filterModal";
+
+      // Open filter by channels modal
+      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+
+      // Confirm the error message is visible
+      expect(
+        within(screen.queryByTestId(modalId)).queryByText(
+          "Sorry, there was an issue requesting the list of channels"
+        )
+      ).toBeTruthy();
+      expect(
+        getButtonByText(
+          within(screen.queryByTestId(modalId)),
+          "Press to refresh and try again"
+        )
+      ).toBeTruthy();
+    });
+
+    it("refetches the list of channels after an error if the user presses to request a refetch", async () => {
+      const videoApiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Fauna",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "fauna-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "sana-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Kiara",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "kiara-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
+
+      // Fail to fetch channels
+      jest
+        .spyOn(requestChannels, "requestChannels")
+        .mockRejectedValue("error fetching channels");
+
+      const screen = await asyncRender(<App />);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      expect(videoButtons).toHaveLength(3);
+      const modalId = "filterModal";
+
+      // Open filter by channels modal
+      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+
+      // Press the refresh button
+      jest.spyOn(requestChannels, "requestChannels").mockResolvedValue([
+        {
+          channel_title: "Fauna",
+        },
+        {
+          channel_title: "Sana",
+        },
+        {
+          channel_title: "Kiara",
+        },
+      ]);
+      await asyncPressEvent(
+        getButtonByText(
+          within(screen.queryByTestId(modalId)),
+          "Press to refresh and try again"
+        )
+      );
+
+      // Confirm the channels options are now visible
+      expect(
+        await within(screen.queryByTestId(modalId)).findByText("Fauna")
+      ).toBeTruthy();
+      expect(
+        within(screen.queryByTestId(modalId)).queryByText("Sana")
+      ).toBeTruthy();
+      expect(
+        within(screen.queryByTestId(modalId)).queryByText("Fauna")
+      ).toBeTruthy();
+    });
+
+    it("shows channel thumbnails in the filer modal", async () => {
+      const videoApiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Fauna",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "fauna-thumbnail.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "sana-thumbnail.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/234/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "345",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Kiara",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "kiara-thumbnail.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/345/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
+
+      const channelApiPromise = Promise.resolve([
+        {
+          channel_title: "Fauna",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/123/mqdefault.jpg",
+        },
+        {
+          channel_title: "Sana",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/234/mqdefault.jpg",
+        },
+        {
+          channel_title: "Kiara",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/345/mqdefault.jpg",
+        },
+      ]);
+
+      jest
+        .spyOn(requestChannels, "requestChannels")
+        .mockReturnValue(channelApiPromise);
+
+      const screen = await asyncRender(<App />);
+      await act(() => videoApiPromise);
+
+      // Open filter by channels modal
+      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+      await act(() => channelApiPromise);
+
       // Confirm all the thumbnails are visible
       const filterModal = screen.queryByTestId("filterModal");
       expect(
-        within(getButtonByText(within(filterModal), "Fauna")).queryByTestId("channelImage").props
-          .source
+        within(getButtonByText(within(filterModal), "Fauna")).queryByTestId(
+          "channelImage"
+        ).props.source
       ).toEqual({
         uri: "https://i.ytimg.com/channel/123/mqdefault.jpg",
       });
       expect(
-        within(getButtonByText(within(filterModal), "Sana")).queryByTestId("channelImage").props
-          .source
+        within(getButtonByText(within(filterModal), "Sana")).queryByTestId(
+          "channelImage"
+        ).props.source
       ).toEqual({
         uri: "https://i.ytimg.com/channel/234/mqdefault.jpg",
       });
       expect(
-        within(getButtonByText(within(filterModal), "Kiara")).queryByTestId("channelImage").props
-          .source
+        within(getButtonByText(within(filterModal), "Kiara")).queryByTestId(
+          "channelImage"
+        ).props.source
       ).toEqual({
         uri: "https://i.ytimg.com/channel/345/mqdefault.jpg",
       });
     });
 
     it("clears the selected filtered channels when the 'Clear all Selected' is pressed", async () => {
-      const apiPromise = Promise.resolve([
+      const videoApiPromise = Promise.resolve([
         {
           video_id: "123",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
@@ -1377,13 +1782,26 @@ describe("App", () => {
         },
       ]);
 
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
+
+      const channelApiPromise = Promise.resolve([
+        { channel_title: "Fauna" },
+        {
+          channel_title: "Sana",
+        },
+        {
+          channel_title: "Kiara",
+        },
+      ]);
+
+      jest
+        .spyOn(requestChannels, "requestChannels")
+        .mockReturnValue(channelApiPromise);
 
       const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
+      await act(() => videoApiPromise);
 
       const homeView = screen.queryByTestId("homeView");
 
@@ -1392,55 +1810,74 @@ describe("App", () => {
 
       // Open filter by channels modal
       await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+      await act(() => channelApiPromise);
 
       // Confirm all options are unselected
 
       const modalId = "filterModal";
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props
+          .style[1].fontWeight
       ).toBe("normal");
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1]
+          .fontWeight
       ).toBe("normal");
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props
+          .style[1].fontWeight
       ).toBe("normal");
 
       // Select all channels
-      await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Fauna"));
-      await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Sana"));
-      await asyncPressEvent(getButtonByText(within(screen.queryByTestId(modalId)), "Kiara"));
+      await asyncPressEvent(
+        getButtonByText(within(screen.queryByTestId(modalId)), "Fauna")
+      );
+      await asyncPressEvent(
+        getButtonByText(within(screen.queryByTestId(modalId)), "Sana")
+      );
+      await asyncPressEvent(
+        getButtonByText(within(screen.queryByTestId(modalId)), "Kiara")
+      );
 
       // Confirm the selected options have been updated
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props
+          .style[1].fontWeight
       ).toBe("bold");
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1]
+          .fontWeight
       ).toBe("bold");
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props
+          .style[1].fontWeight
       ).toBe("bold");
 
       // Clear all selected
       await asyncPressEvent(
-        getButtonByText(within(screen.queryByTestId(modalId)), "Clear all Selected")
+        getButtonByText(
+          within(screen.queryByTestId(modalId)),
+          "Clear all Selected"
+        )
       );
 
       // Confirm all options are unselected
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props
+          .style[1].fontWeight
       ).toBe("normal");
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Sana").props.style[1]
+          .fontWeight
       ).toBe("normal");
       expect(
-        within(screen.queryByTestId(modalId)).queryByText("Fauna").props.style[1].fontWeight
+        within(screen.queryByTestId(modalId)).queryByText("Fauna").props
+          .style[1].fontWeight
       ).toBe("normal");
     });
 
     it("disables the 'Clear all Selected' button when no channels are selected", async () => {
-      const apiPromise = Promise.resolve([
+      const videoApiPromise = Promise.resolve([
         {
           video_id: "123",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
@@ -1470,13 +1907,28 @@ describe("App", () => {
         },
       ]);
 
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
+
+      const channelApiPromise = Promise.resolve([
+        {
+          channel_title: "Fauna",
+        },
+        {
+          channel_title: "Sana",
+        },
+        {
+          channel_title: "Kiara",
+        },
+      ]);
+
+      jest
+        .spyOn(requestChannels, "requestChannels")
+        .mockReturnValue(channelApiPromise);
 
       const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
+      await act(() => videoApiPromise);
 
       const homeView = screen.queryByTestId("homeView");
 
@@ -1485,17 +1937,25 @@ describe("App", () => {
 
       // Open filter by channels modal
       await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+      await act(() => channelApiPromise);
 
       // Confirm all options are unselected
       const filterModal = screen.queryByTestId("filterModal");
-      expect(within(filterModal).queryByText("Fauna").props.style[1].fontWeight).toBe("normal");
-      expect(within(filterModal).queryByText("Sana").props.style[1].fontWeight).toBe("normal");
-      expect(within(filterModal).queryByText("Fauna").props.style[1].fontWeight).toBe("normal");
+      expect(
+        within(filterModal).queryByText("Fauna").props.style[1].fontWeight
+      ).toBe("normal");
+      expect(
+        within(filterModal).queryByText("Sana").props.style[1].fontWeight
+      ).toBe("normal");
+      expect(
+        within(filterModal).queryByText("Fauna").props.style[1].fontWeight
+      ).toBe("normal");
 
       // Confirm the button is disabled
-      expect(buttonProps(getButtonByText(within(filterModal), "Clear all Selected")).disabled).toBe(
-        true
-      );
+      expect(
+        buttonProps(getButtonByText(within(filterModal), "Clear all Selected"))
+          .disabled
+      ).toBe(true);
     });
 
     it("checks the permissions to modify the brightness when the app state changes from background and active", async () => {
@@ -1662,21 +2122,26 @@ describe("App", () => {
       expect(videoView).toBeTruthy();
 
       // Default to half screen mode
-      expect(within(videoView).queryByTestId("embeddedVideoContainer").props.style.width).toBe(
-        "70%"
-      );
+      expect(
+        within(videoView).queryByTestId("embeddedVideoContainer").props.style
+          .width
+      ).toBe("70%");
 
       // Switch to full screen mode
       await asyncPressEvent(getButtonByText(within(videoView), "Full Screen"));
-      expect(within(videoView).queryByTestId("embeddedVideoContainer").props.style.width).toBe(
-        "85%"
-      );
+      expect(
+        within(videoView).queryByTestId("embeddedVideoContainer").props.style
+          .width
+      ).toBe("85%");
 
       // Switch back to half screen mode
-      await asyncPressEvent(getButtonByChildTestId(within(videoView), "fullscreenIcon"));
-      expect(within(videoView).queryByTestId("embeddedVideoContainer").props.style.width).toBe(
-        "70%"
+      await asyncPressEvent(
+        getButtonByChildTestId(within(videoView), "fullscreenIcon")
       );
+      expect(
+        within(videoView).queryByTestId("embeddedVideoContainer").props.style
+          .width
+      ).toBe("70%");
     });
 
     it("allows the user to use the back button to return to the home view", async () => {
@@ -1753,7 +2218,9 @@ describe("App", () => {
       // Switch to full screen mode
       await asyncPressEvent(getButtonByText(within(videoView), "Full Screen"));
 
-      await asyncPressEvent(getButtonByChildTestId(within(videoView), "arrowBackIcon"));
+      await asyncPressEvent(
+        getButtonByChildTestId(within(videoView), "arrowBackIcon")
+      );
 
       // Return to the home view
       expect(screen.queryByTestId("homeView")).toBeTruthy();
@@ -1844,26 +2311,26 @@ describe("App", () => {
     it("provides a button which opens the youtube channel the video is connected with", async () => {
       jest.spyOn(Linking, "openURL");
 
-      const apiPromise = Promise.resolve([
+      const videoApiPromise = Promise.resolve([
         {
           video_id: "123",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
           channel_title: "Ceres Fauna Ch. hololive-EN",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          channel_thumbnail_url: "https://i.ytimg.com/channel/123/mqdefault.jpg",
+          channel_thumbnail_url:
+            "https://i.ytimg.com/channel/123/mqdefault.jpg",
           video_title:
             "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
         },
       ]);
 
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
 
       const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
+      await act(() => videoApiPromise);
 
       const homeView = screen.queryByTestId("homeView");
 
@@ -1874,7 +2341,9 @@ describe("App", () => {
         within(screen.getByTestId("videoView")),
         "Ceres Fauna Ch. hololive-EN"
       );
-      expect(within(channelButton).queryByTestId("channelImage").props.source).toEqual({
+      expect(
+        within(channelButton).queryByTestId("channelImage").props.source
+      ).toEqual({
         uri: "https://i.ytimg.com/channel/123/mqdefault.jpg",
       });
 
@@ -1916,14 +2385,20 @@ describe("App", () => {
       expect(videoView).toBeTruthy();
 
       expect(
-        getButtonByText(within(screen.getByTestId("videoView")), "Ceres Fauna Ch. hololive-EN")
+        getButtonByText(
+          within(screen.getByTestId("videoView")),
+          "Ceres Fauna Ch. hololive-EN"
+        )
       ).toBeTruthy();
 
       // Switch to full screen mode
       await asyncPressEvent(getButtonByText(within(videoView), "Full Screen"));
 
       expect(
-        getButtonByText(within(screen.getByTestId("videoView")), "Ceres Fauna Ch. hololive-EN")
+        getButtonByText(
+          within(screen.getByTestId("videoView")),
+          "Ceres Fauna Ch. hololive-EN"
+        )
       ).not.toBeTruthy();
     });
 
@@ -1956,11 +2431,16 @@ describe("App", () => {
       await asyncPressEvent(videoButtons[0]);
 
       await asyncPressEvent(
-        getButtonByText(within(screen.getByTestId("videoView")), "Watch on youtube")
+        getButtonByText(
+          within(screen.getByTestId("videoView")),
+          "Watch on youtube"
+        )
       );
 
       expect(Linking.openURL).toHaveBeenCalledTimes(1);
-      expect(Linking.openURL).toHaveBeenCalledWith(`https://www.youtube.com/watch?v=123`);
+      expect(Linking.openURL).toHaveBeenCalledWith(
+        `https://www.youtube.com/watch?v=123`
+      );
     });
 
     it("provides a button which opens the youtube video on youtube in full screen mode", async () => {
@@ -1995,11 +2475,16 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(screen, "Full Screen"));
 
       await asyncPressEvent(
-        getButtonByChildTestId(within(screen.getByTestId("videoView")), "youtubeTvIcon")
+        getButtonByChildTestId(
+          within(screen.getByTestId("videoView")),
+          "youtubeTvIcon"
+        )
       );
 
       expect(Linking.openURL).toHaveBeenCalledTimes(1);
-      expect(Linking.openURL).toHaveBeenCalledWith(`https://www.youtube.com/watch?v=123`);
+      expect(Linking.openURL).toHaveBeenCalledWith(
+        `https://www.youtube.com/watch?v=123`
+      );
     });
 
     it("locks the screen when the lock button is pressed", async () => {
@@ -2047,7 +2532,9 @@ describe("App", () => {
 
       // Confirm locked message is visible
       expect(
-        within(lockedVideoView).queryByText("Screen is locked. Press anywhere to unlock")
+        within(lockedVideoView).queryByText(
+          "Screen is locked. Press anywhere to unlock"
+        )
       ).toBeTruthy();
 
       // Confirm the screens brightness is dimmed
@@ -2061,7 +2548,9 @@ describe("App", () => {
     });
 
     it("does not update the brightness when locking the screen if permission has not been given", async () => {
-      jest.spyOn(Brightness, "getPermissionsAsync").mockResolvedValue({ granted: false });
+      jest
+        .spyOn(Brightness, "getPermissionsAsync")
+        .mockResolvedValue({ granted: false });
 
       const apiPromise = Promise.resolve([
         {
@@ -2218,7 +2707,9 @@ describe("App", () => {
 
       // Stop pressing and wait for the press count message to vanish
       silenceAllErrorLogs();
-      await waitForElementToBeRemoved(() => screen.queryByText("Press anywhere 3 more times"));
+      await waitForElementToBeRemoved(() =>
+        screen.queryByText("Press anywhere 3 more times")
+      );
       enableAllErrorLogs();
 
       // Confirm the brightness is reduced again

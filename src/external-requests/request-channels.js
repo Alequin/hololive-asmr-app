@@ -2,16 +2,16 @@ import { getJson } from "./get-json";
 import secrets from "../secrets";
 import { serverUrl } from "./base-urls";
 
-const videosUrl = `${serverUrl}/videos`;
+const channelsUrl = `${serverUrl}/channels`;
 
-export const requestVideos = async () => {
-  const { data, status, error } = await getJson(videosUrl, {
+export const requestChannels = async () => {
+  const { data, status, error } = await getJson(channelsUrl, {
     headers: { authToken: secrets.serverAuthToken },
   });
 
   if (error) {
     throw new Error(
-      `Error requesting videos / Error: ${error}, Status code: ${status}`
+      `Error requesting channels / Error: ${error}, Status code: ${status}`
     );
   }
 

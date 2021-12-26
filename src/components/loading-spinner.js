@@ -2,5 +2,12 @@ import React from "react";
 import { ActivityIndicator } from "react-native";
 
 export const LoadingSpinner = (props) => {
-  return <ActivityIndicator size="large" color="#fff" {...props} />;
+  return (
+    <ActivityIndicator
+      testID="loadingIndicator"
+      size="large"
+      color="#fff"
+      {...props}
+    />
+  );
 };
