@@ -72,6 +72,7 @@ const ChannelOptionsList = ({
           >
             {orderedChannels?.map(
               ({
+                channel_id: channelId,
                 channel_title: channelTitle,
                 channel_thumbnail_url: channelThumbnailUrl,
               }) => {
@@ -80,8 +81,8 @@ const ChannelOptionsList = ({
                     key={channelTitle}
                     channelTitle={channelTitle}
                     channelThumbnailUrl={channelThumbnailUrl}
-                    onSelect={() => onSelectChannel(channelTitle)}
-                    isSelected={channelsToFilterBy.includes(channelTitle)}
+                    onSelect={() => onSelectChannel(channelId)}
+                    isSelected={channelsToFilterBy.includes(channelId)}
                   />
                 );
               }

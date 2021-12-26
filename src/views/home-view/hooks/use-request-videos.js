@@ -1,7 +1,8 @@
+import { isEmpty } from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import { requestVideos } from "../../../external-requests/request-videos";
 
-export const useRequestVideos = () => {
+export const useRequestVideos = (channelsToFilterBy) => {
   const [videos, setVideos] = useState(null);
   const [isRefreshingVideosFromAPI, setIsRefreshingVideosFromAPI] =
     useState(false);
@@ -9,17 +10,21 @@ export const useRequestVideos = () => {
 
   const fetchVideos = useCallback(async () => {
     try {
-      setVideos(await requestVideos());
+      setVideos(
+        await requestVideos({
+          channelIds: !isEmpty(channelsToFilterBy) && channelsToFilterBy,
+        })
+      );
     } catch (error) {
       setApiError(error);
     } finally {
       setIsRefreshingVideosFromAPI(false);
     }
-  }, []);
+  }, [channelsToFilterBy]);
 
   useEffect(() => {
     fetchVideos();
-  }, []);
+  }, [channelsToFilterBy]);
 
   useEffect(() => {
     if (videos) {

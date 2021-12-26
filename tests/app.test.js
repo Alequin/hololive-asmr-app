@@ -1095,7 +1095,7 @@ describe("App", () => {
       const videoApiPromise = Promise.resolve([
         {
           video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1",
           channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "fauna-thumbnail.jpg",
@@ -1104,7 +1104,7 @@ describe("App", () => {
         },
         {
           video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ2",
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "sana-thumbnail.jpg",
@@ -1113,7 +1113,7 @@ describe("App", () => {
         },
         {
           video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ3",
           channel_title: "Kiara",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "kiara-thumbnail.jpg",
@@ -1128,12 +1128,15 @@ describe("App", () => {
 
       const channelApiPromise = Promise.resolve([
         {
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1",
           channel_title: "Fauna",
         },
         {
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ2",
           channel_title: "Sana",
         },
         {
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ3",
           channel_title: "Kiara",
         },
       ]);
@@ -1210,30 +1213,9 @@ describe("App", () => {
           .style[1].fontWeight
       ).toBe("bold");
 
-      // Return to the list of videos
-      await asyncPressEvent(
-        getButtonByText(within(screen.queryByTestId(modalId)), "Back to Videos")
-      );
-
-      // Confirm the expected videos are visible and the others are not
-      const updatedHomeView = screen.queryByTestId("homeView");
-
-      const updatedVideoButtons =
-        within(updatedHomeView).queryAllByTestId("videoButton");
-
-      // Confirm the expected videos are visible
-      expect(updatedVideoButtons).toHaveLength(2);
-      expect(
-        within(updatedVideoButtons[0]).queryByTestId("videoImageBackground")
-          .props.source
-      ).toEqual({
-        uri: "sana-thumbnail.jpg",
-      });
-      expect(
-        within(updatedVideoButtons[1]).queryByTestId("videoImageBackground")
-          .props.source
-      ).toEqual({
-        uri: "kiara-thumbnail.jpg",
+      // Confirm API request for specific channel Ids has been made
+      expect(requestVideos.requestVideos).toHaveBeenCalledWith({
+        channelIds: ["UCO_aKKYxn4tvrqPjcTzZ6EQ2", "UCO_aKKYxn4tvrqPjcTzZ6EQ3"],
       });
     });
 
