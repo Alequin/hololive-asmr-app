@@ -135,6 +135,42 @@ describe("App", () => {
       );
     });
 
+    it("filters out any duplicate videos to guarantee users do not accidentally see the same video twice", async () => {
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1",
+          channel_title: "Ceres Fauna Ch. hololive-EN1",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1",
+          channel_title: "Ceres Fauna Ch. hololive-EN1",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Confirm only one of the duplicate videos is visible
+      expect(within(homeView).queryAllByTestId("videoButton")).toHaveLength(1);
+    });
+
     it("make a request for another 50 videos when the user scrolls to the bottom of the detailed list of videos", async () => {
       const apiPromise = Promise.resolve(
         new Array(50).fill(null).map((_, index) => ({
@@ -168,8 +204,25 @@ describe("App", () => {
       // Confirm 50 videos are visible
       expect(list.props.data).toHaveLength(50);
 
+      // return a new set of 50 videos
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () =>
+          new Array(50).fill(null).map((_, index) => ({
+            video_id: "234" + index,
+            channel_id: "UCO_aKKYxn4tvrqPjuf4huife" + index,
+            channel_title: "Gura" + index,
+            published_at: "2021-10-06T20:21:31Z",
+            video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+            video_title:
+              "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+          })),
+      });
+
       // Fake scroll to the bottom of the page
-      await act(async () => list.props.onEndReached());
+      await act(async () =>
+        screen.queryByTestId("detailedVideoList").props.onEndReached()
+      );
 
       // Confirm another api request is made for the next 50
       expect(fetch).toHaveBeenCalledWith(
@@ -184,8 +237,25 @@ describe("App", () => {
         100
       );
 
+      // return a new set of 50 videos
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () =>
+          new Array(50).fill(null).map((_, index) => ({
+            video_id: "345" + index,
+            channel_id: "UCO_aKKYxn4tvrqPijofj89f3" + index,
+            channel_title: "Mumei" + index,
+            published_at: "2021-10-06T20:21:31Z",
+            video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+            video_title:
+              "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+          })),
+      });
+
       // Fake scroll to the bottom of the page again
-      await act(async () => list.props.onEndReached());
+      await act(async () =>
+        screen.queryByTestId("detailedVideoList").props.onEndReached()
+      );
 
       // Confirm another api request is made for the next 50
       expect(fetch).toHaveBeenCalledWith(
@@ -553,8 +623,25 @@ describe("App", () => {
       // Confirm 50 videos are visible
       expect(list.props.data).toHaveLength(50);
 
+      // return a new set of 50 videos
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () =>
+          new Array(50).fill(null).map((_, index) => ({
+            video_id: "234" + index,
+            channel_id: "UCO_aKKYxn4tvrqPjuf4huife" + index,
+            channel_title: "Gura" + index,
+            published_at: "2021-10-06T20:21:31Z",
+            video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+            video_title:
+              "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+          })),
+      });
+
       // Fake scroll to the bottom of the page
-      await act(async () => list.props.onEndReached());
+      await act(async () =>
+        screen.queryByTestId("thumbnailVideoList").props.onEndReached()
+      );
 
       // Confirm another api request is made for the next 50
       expect(fetch).toHaveBeenCalledWith(
@@ -569,8 +656,25 @@ describe("App", () => {
         screen.queryByTestId("thumbnailVideoList").props.data
       ).toHaveLength(100);
 
+      // return a new set of 50 videos
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () =>
+          new Array(50).fill(null).map((_, index) => ({
+            video_id: "345" + index,
+            channel_id: "UCO_aKKYxn8feh89f3j89f3" + index,
+            channel_title: "Mumei" + index,
+            published_at: "2021-10-06T20:21:31Z",
+            video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+            video_title:
+              "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+          })),
+      });
+
       // Fake scroll to the bottom of the page again
-      await act(async () => list.props.onEndReached());
+      await act(async () =>
+        screen.queryByTestId("thumbnailVideoList").props.onEndReached()
+      );
 
       // Confirm another api request is made for the next 50
       expect(fetch).toHaveBeenCalledWith(

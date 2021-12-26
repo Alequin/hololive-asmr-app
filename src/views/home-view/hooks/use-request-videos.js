@@ -1,4 +1,4 @@
-import { isEmpty } from "lodash";
+import { isEmpty, uniqBy } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { requestVideos } from "../../../external-requests/request-videos";
 
@@ -17,16 +17,25 @@ export const useRequestVideos = (channelsToFilterBy) => {
     [channelsToFilterBy]
   );
 
+  const updateVideos = useCallback(
+    async (newVideosCallback) => {
+      const newVideos = await newVideosCallback(videos);
+      setVideos(uniqBy(newVideos, "video_id"));
+    },
+    [videos]
+  );
+
   const fetchVideos = useCallback(async () => {
     try {
       setShouldDisableNextPageFetch(false); // on fetching new videos enable next page fetch
-      setVideos(await requestVideos(baseVideoRequestParams));
+      const videos = await requestVideos(baseVideoRequestParams);
+      updateVideos(async () => videos);
     } catch (error) {
       setApiError(error);
     } finally {
       setIsRefreshingVideosFromAPI(false);
     }
-  }, [baseVideoRequestParams]);
+  }, [baseVideoRequestParams, updateVideos]);
 
   const [shouldDisableNextPageFetch, setShouldDisableNextPageFetch] =
     useState(null);
@@ -41,13 +50,18 @@ export const useRequestVideos = (channelsToFilterBy) => {
       });
 
       setShouldDisableNextPageFetch(reqestedvideos.length === 0);
-      setVideos((videos) => [...videos, ...reqestedvideos]);
+      updateVideos((videos) => [...videos, ...reqestedvideos]);
     } catch (error) {
       setApiError(error);
     } finally {
       setIsRefreshingVideosFromAPI(false);
     }
-  }, [baseVideoRequestParams, videos?.length, shouldDisableNextPageFetch]);
+  }, [
+    baseVideoRequestParams,
+    videos?.length,
+    shouldDisableNextPageFetch,
+    updateVideos,
+  ]);
 
   useEffect(() => {
     fetchVideos();
