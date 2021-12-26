@@ -2,9 +2,8 @@ import { isEmpty, uniqBy } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { requestVideos } from "../../../external-requests/request-videos";
 
-export const useRequestVideos = (channelsToFilterBy) => {
+export const useRequestVideos = (channelsToFilterBy, sortOrder) => {
   const [videos, setVideos] = useState(null);
-
   const [isRefreshingVideosFromAPI, setIsRefreshingVideosFromAPI] =
     useState(false);
   const [apiError, setApiError] = useState(null);
@@ -12,9 +11,9 @@ export const useRequestVideos = (channelsToFilterBy) => {
   const baseVideoRequestParams = useMemo(
     () => ({
       channelIds: !isEmpty(channelsToFilterBy) && channelsToFilterBy,
-      orderDirection: "desc",
+      orderDirection: sortOrder?.direction,
     }),
-    [channelsToFilterBy]
+    [channelsToFilterBy, sortOrder]
   );
 
   const updateVideos = useCallback(
@@ -43,7 +42,6 @@ export const useRequestVideos = (channelsToFilterBy) => {
   const fetchNextPageOfVideos = useCallback(async () => {
     try {
       if (shouldDisableNextPageFetch) return; // Stop making api calls onces disabled
-
       const reqestedvideos = await requestVideos({
         ...baseVideoRequestParams,
         offset: videos?.length,
@@ -64,7 +62,7 @@ export const useRequestVideos = (channelsToFilterBy) => {
   ]);
 
   useEffect(() => {
-    fetchVideos();
+    if (baseVideoRequestParams.orderDirection) fetchVideos();
   }, [baseVideoRequestParams]);
 
   useEffect(() => {

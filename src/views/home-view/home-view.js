@@ -1,7 +1,6 @@
 import * as Brightness from "expo-brightness";
-import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AdBanner } from "../../ad-banner";
 import { ControlBar } from "../../components/control-bar";
 import { FullScreenLoadingSpinner } from "../../components/full-screen-loading-spinner";
@@ -14,8 +13,6 @@ import { DetailedVideoList } from "./components/detailed-video-list";
 import { ErrorRequestingVideosMessage } from "./components/error-requesting-videos-message";
 import { FilterModal } from "./components/filter-modal";
 import { ThumbnailVideoList } from "./components/thumbnail-video-list";
-import { useHasSortOrderChanged } from "./hooks/use-has-sort-order-changed";
-import { useOrderedVideos } from "./hooks/use-ordered-videos";
 import { useRequestVideos } from "./hooks/use-request-videos";
 import { useVideoSortOrder } from "./hooks/use-sort-video-order";
 import { useViewMode } from "./hooks/use-view-mode";
@@ -23,7 +20,6 @@ import { useViewMode } from "./hooks/use-view-mode";
 const VIEW_ID = "homeView";
 
 export const HomeView = () => {
-  const { sortOrder, nextSortOrder } = useVideoSortOrder();
   const { isFilerModalOpen, showFilterModal, hideFilterModal } =
     useIsFilterModalVisible();
   const { isDetailedViewMode, toggleDetailedViewMode } = useViewMode();
@@ -42,6 +38,7 @@ export const HomeView = () => {
     toggleChannelToFilterBy,
     clearChannelsToFilterBy,
   } = useFilteredVideos();
+  const { sortOrder, nextSortOrder } = useVideoSortOrder();
 
   const {
     videos,
@@ -49,19 +46,14 @@ export const HomeView = () => {
     refreshVideos,
     fetchNextPageOfVideos,
     error: errorRequestingVideos,
-  } = useRequestVideos(channelsToFilterBy);
-
-  // TODO - ordering not required
-  const orderedVideos = useOrderedVideos(videos, sortOrder);
-  const hasSortOrderChanged = useHasSortOrderChanged(sortOrder);
+  } = useRequestVideos(channelsToFilterBy, sortOrder);
 
   const isError = !isRefreshing && errorRequestingVideos;
 
   const isPageLoading =
     !isError &&
-    (!orderedVideos || !sortOrder || isNil(isDetailedViewMode) || isRefreshing);
+    (!videos || !sortOrder || isNil(isDetailedViewMode) || isRefreshing);
   const canShowHomeView = !isError && !isPageLoading;
-  const isVideoViewLoading = hasSortOrderChanged;
 
   return (
     <ViewContainerWithStatusBar testID={VIEW_ID}>
@@ -72,19 +64,17 @@ export const HomeView = () => {
       {canShowHomeView && (
         <>
           <MainView>
-            {isVideoViewLoading && <FullScreenLoadingSpinner />}
-            {!isVideoViewLoading &&
-              (isDetailedViewMode ? (
-                <DetailedVideoList
-                  videos={orderedVideos}
-                  fetchNextPageOfVideos={fetchNextPageOfVideos}
-                />
-              ) : (
-                <ThumbnailVideoList
-                  videos={orderedVideos}
-                  fetchNextPageOfVideos={fetchNextPageOfVideos}
-                />
-              ))}
+            {isDetailedViewMode ? (
+              <DetailedVideoList
+                videos={videos}
+                fetchNextPageOfVideos={fetchNextPageOfVideos}
+              />
+            ) : (
+              <ThumbnailVideoList
+                videos={videos}
+                fetchNextPageOfVideos={fetchNextPageOfVideos}
+              />
+            )}
             <FilterModal
               isOpen={isFilerModalOpen}
               videos={videos}

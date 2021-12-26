@@ -1090,28 +1090,13 @@ describe("App", () => {
       const screen = await asyncRender(<App />);
       await act(() => apiPromise);
 
-      const homeView = screen.queryByTestId("homeView");
-
-      const videoButtons = within(homeView).queryAllByTestId("videoButton");
-
-      expect(
-        within(videoButtons[0]).queryByTestId("videoImageBackground").props
-          .source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-      });
-      expect(
-        within(videoButtons[1]).queryByTestId("videoImageBackground").props
-          .source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-      });
-      expect(
-        within(videoButtons[2]).queryByTestId("videoImageBackground").props
-          .source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-      });
+      // Confirm the videos were requested with the correct order
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
     });
 
     it("allows the video order to be changed", async () => {
@@ -1161,59 +1146,31 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(screen, "Newest to Oldest"));
       expect(getButtonByText(screen, "Oldest to Newest")).toBeTruthy();
 
-      const oldestToNewestVideos = within(
-        screen.queryByTestId("homeView")
-      ).queryAllByTestId("videoButton");
-      expect(
-        within(oldestToNewestVideos[0]).queryByTestId("videoImageBackground")
-          .props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-      });
-      expect(
-        within(oldestToNewestVideos[1]).queryByTestId("videoImageBackground")
-          .props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-      });
-      expect(
-        within(oldestToNewestVideos[2]).queryByTestId("videoImageBackground")
-          .props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-      });
-
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(2);
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(1);
+
+      // Confirm the videos were requested with the new order
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=asc",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
 
       // Press button to change order back
       await asyncPressEvent(getButtonByText(screen, "Oldest to Newest"));
       expect(getButtonByText(screen, "Newest to Oldest")).toBeTruthy();
 
-      const newestToOldestVideos = within(
-        screen.queryByTestId("homeView")
-      ).queryAllByTestId("videoButton");
-      expect(
-        within(newestToOldestVideos[0]).queryByTestId("videoImageBackground")
-          .props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-      });
-      expect(
-        within(newestToOldestVideos[1]).queryByTestId("videoImageBackground")
-          .props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-      });
-      expect(
-        within(newestToOldestVideos[2]).queryByTestId("videoImageBackground")
-          .props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-      });
-
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(3);
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
+
+      // Confirm the videos were requested with the new order
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
     });
 
     it("shows an error message if the api query fails", async () => {
@@ -1424,31 +1381,16 @@ describe("App", () => {
         json: () => apiPromise,
       });
 
-      const screen = await asyncRender(<App />);
+      await asyncRender(<App />);
       await act(() => apiPromise);
 
-      const homeView = screen.queryByTestId("homeView");
-
-      const videoButtons = within(homeView).queryAllByTestId("videoButton");
-
-      expect(
-        within(videoButtons[0]).queryByTestId("videoImageBackground").props
-          .source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-      });
-      expect(
-        within(videoButtons[1]).queryByTestId("videoImageBackground").props
-          .source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-      });
-      expect(
-        within(videoButtons[2]).queryByTestId("videoImageBackground").props
-          .source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-      });
+      // Confirm the videos were requested with the correct order
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
     });
 
     it("allows the user to filter the visible videos by channel name", async () => {
