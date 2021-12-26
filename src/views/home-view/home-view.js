@@ -51,6 +51,7 @@ export const HomeView = () => {
     error: errorRequestingVideos,
   } = useRequestVideos(channelsToFilterBy);
 
+  // TODO - ordering not required
   const orderedVideos = useOrderedVideos(videos, sortOrder);
   const hasSortOrderChanged = useHasSortOrderChanged(sortOrder);
 

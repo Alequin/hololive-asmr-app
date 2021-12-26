@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Image, FlatList } from "react-native";
 import { Button } from "../../../components/button";
 import { LoadingSpinner } from "../../../components/loading-spinner";
@@ -7,6 +7,7 @@ import { isMiniScreen, windowWidth } from "../../../window";
 import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
 
 export const ThumbnailVideoList = ({ videos, fetchNextPageOfVideos }) => {
+  const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
   useOrientation(); // update state on orientation change to re-calc size values
   const navigateToVideoView = useNavigateToVideoView();
 
@@ -20,7 +21,12 @@ export const ThumbnailVideoList = ({ videos, fetchNextPageOfVideos }) => {
       data={videos}
       numColumns={columnCount}
       keyExtractor={({ video_id }) => video_id}
-      onEndReached={async () => await fetchNextPageOfVideos()}
+      onEndReached={async () => {
+        if (isLoadingNextPage) return;
+        setIsLoadingNextPage(true);
+        await fetchNextPageOfVideos();
+        setIsLoadingNextPage(false);
+      }}
       renderItem={({ item }) => (
         <ThumbnailVideoButton
           size={windowWidth() / columnCount}
@@ -28,7 +34,7 @@ export const ThumbnailVideoList = ({ videos, fetchNextPageOfVideos }) => {
           onSelectVideo={() => navigateToVideoView(item)}
         />
       )}
-      ListFooterComponent={() => <LoadingSpinner />}
+      ListFooterComponent={() => isLoadingNextPage && <LoadingSpinner />}
     />
   );
 };

@@ -201,6 +201,64 @@ describe("App", () => {
       );
     });
 
+    it("does not make a request for another 50 videos when the user scrolls to the bottom of the detailed list of videos if the last fetch did not return any new videos", async () => {
+      const apiPromise = Promise.resolve(
+        new Array(50).fill(null).map((_, index) => ({
+          video_id: "123" + index,
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1" + index,
+          channel_title: "Ceres Fauna Ch. hololive-EN" + index,
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        }))
+      );
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      // Confirm the number of requested videos was 50
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
+
+      const list = screen.queryByTestId("detailedVideoList");
+      // Confirm 50 videos are visible
+      expect(list.props.data).toHaveLength(50);
+
+      // Mock the api returning zero videos
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => [],
+      });
+
+      // Fake scroll to the bottom of the page
+      await act(async () => list.props.onEndReached());
+
+      // Confirm another api request is made for the next 50
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc&offset=50",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
+
+      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2);
+      // Fake scroll to the bottom of the page again
+      await act(async () => list.props.onEndReached());
+
+      // Confirm no additional api call was made
+      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2);
+    });
+
     it("requests permission to change the system brightness when the app starts", async () => {
       const apiPromise = Promise.resolve([
         {
@@ -526,6 +584,67 @@ describe("App", () => {
       expect(
         screen.queryByTestId("thumbnailVideoList").props.data
       ).toHaveLength(150);
+    });
+
+    it("does not make a request for another 50 videos when the user scrolls to the bottom of the thumbnail only list of videos if the last fetch did not return any new videos", async () => {
+      const apiPromise = Promise.resolve(
+        new Array(50).fill(null).map((_, index) => ({
+          video_id: "123" + index,
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1" + index,
+          channel_title: "Ceres Fauna Ch. hololive-EN" + index,
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        }))
+      );
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      // Switch to the less detailed view
+      await asyncPressEvent(getButtonByText(screen, "Less Details"));
+
+      // Confirm the number of requested videos was 50
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
+
+      const list = screen.queryByTestId("thumbnailVideoList");
+      // Confirm 50 videos are visible
+      expect(list.props.data).toHaveLength(50);
+
+      // Mock the api returning zero videos
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => [],
+      });
+
+      // Fake scroll to the bottom of the page
+      await act(async () => list.props.onEndReached());
+
+      // Confirm another api request is made for the next 50
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc&offset=50",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
+
+      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2);
+      // Fake scroll to the bottom of the page again
+      await act(async () => list.props.onEndReached());
+
+      // Confirm no additional api call was made
+      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2);
     });
 
     it("saves the current view mode as the user modifies it", async () => {

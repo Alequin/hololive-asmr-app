@@ -1,36 +1,57 @@
 import { isEmpty } from "lodash";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { requestVideos } from "../../../external-requests/request-videos";
 
 export const useRequestVideos = (channelsToFilterBy) => {
   const [videos, setVideos] = useState(null);
+
   const [isRefreshingVideosFromAPI, setIsRefreshingVideosFromAPI] =
     useState(false);
   const [apiError, setApiError] = useState(null);
 
-  const fetchVideos = useCallback(
-    async (offset) => {
-      try {
-        const reqestedvideos = await requestVideos({
-          channelIds: !isEmpty(channelsToFilterBy) && channelsToFilterBy,
-          orderDirection: "desc",
-          offset,
-        });
-        setVideos((videos) =>
-          offset ? [...videos, ...reqestedvideos] : reqestedvideos
-        );
-      } catch (error) {
-        setApiError(error);
-      } finally {
-        setIsRefreshingVideosFromAPI(false);
-      }
-    },
+  const baseVideoRequestParams = useMemo(
+    () => ({
+      channelIds: !isEmpty(channelsToFilterBy) && channelsToFilterBy,
+      orderDirection: "desc",
+    }),
     [channelsToFilterBy]
   );
 
+  const fetchVideos = useCallback(async () => {
+    try {
+      setShouldDisableNextPageFetch(false); // on fetching new videos enable next page fetch
+      setVideos(await requestVideos(baseVideoRequestParams));
+    } catch (error) {
+      setApiError(error);
+    } finally {
+      setIsRefreshingVideosFromAPI(false);
+    }
+  }, [baseVideoRequestParams]);
+
+  const [shouldDisableNextPageFetch, setShouldDisableNextPageFetch] =
+    useState(null);
+
+  const fetchNextPageOfVideos = useCallback(async () => {
+    try {
+      if (shouldDisableNextPageFetch) return; // Stop making api calls onces disabled
+
+      const reqestedvideos = await requestVideos({
+        ...baseVideoRequestParams,
+        offset: videos?.length,
+      });
+
+      setShouldDisableNextPageFetch(reqestedvideos.length === 0);
+      setVideos((videos) => [...videos, ...reqestedvideos]);
+    } catch (error) {
+      setApiError(error);
+    } finally {
+      setIsRefreshingVideosFromAPI(false);
+    }
+  }, [baseVideoRequestParams, videos?.length, shouldDisableNextPageFetch]);
+
   useEffect(() => {
     fetchVideos();
-  }, [channelsToFilterBy]);
+  }, [baseVideoRequestParams]);
 
   useEffect(() => {
     if (videos) {
@@ -53,8 +74,6 @@ export const useRequestVideos = (channelsToFilterBy) => {
       async () => setIsRefreshingVideosFromAPI(true),
       []
     ),
-    fetchNextPageOfVideos: useCallback(async () => {
-      await fetchVideos(videos.length);
-    }, [fetchVideos, videos]),
+    fetchNextPageOfVideos,
   };
 };
