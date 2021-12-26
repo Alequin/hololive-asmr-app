@@ -12,8 +12,6 @@ const newStorageItem = (storageKey) => ({
   clear: async () => AsyncStorage.removeItem(storageKey),
 });
 
-export const cachedVideos = newStorageItem("CACHED_VIDEOS");
-
 export const sortOrderState = newStorageItem("SORT_ORDER_STATE");
 
 export const firstLoadState = newStorageItem("FIRST_LOAD_STATE");

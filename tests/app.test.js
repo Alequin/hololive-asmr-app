@@ -58,7 +58,6 @@ import { mockAppStateUpdate } from "./mock-app-state-update";
 describe("App", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(asyncStorage.cachedVideos, "load").mockResolvedValue(undefined);
     jest
       .spyOn(asyncStorage.sortOrderState, "load")
       .mockResolvedValue(undefined);
@@ -909,130 +908,7 @@ describe("App", () => {
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
     });
 
-    it("stores the requested videos in the cache", async () => {
-      jest.spyOn(asyncStorage.cachedVideos, "save");
-
-      const mockApiResponse = [
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-        {
-          video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-        {
-          video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ];
-
-      const apiPromise = Promise.resolve(mockApiResponse);
-
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      await asyncRender(<App />);
-      await act(() => apiPromise);
-
-      expect(asyncStorage.cachedVideos.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.cachedVideos.save).toHaveBeenCalledWith(
-        mockApiResponse
-      );
-    });
-
-    it("uses the cached videos but also make a call to the server as well to see if any videos have been updated", async () => {
-      jest.spyOn(asyncStorage.cachedVideos, "load").mockResolvedValue([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
-      const mockApiVideos = [
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-        {
-          video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-        {
-          video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ];
-
-      const apiPromise = Promise.resolve(mockApiVideos);
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      jest.spyOn(requestVideos, "requestVideos");
-
-      const screen = await asyncRender(<App />);
-
-      expect(asyncStorage.cachedVideos.load).toHaveBeenCalledTimes(1);
-      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
-
-      // Shows 3 videos even thought the cache contained 1 as the api call overrides the cache
-      expect(
-        within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton")
-      ).toHaveLength(3);
-    });
-
-    it("uses the cached videos when there is a issue requesting videos from the api", async () => {
-      jest.spyOn(asyncStorage.cachedVideos, "load").mockResolvedValue([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
+    it("shows an error message if the api query fails", async () => {
       const apiPromise = Promise.reject();
       fetch.mockResolvedValue({
         status: 400,
@@ -1043,29 +919,6 @@ describe("App", () => {
 
       const screen = await asyncRender(<App />);
 
-      expect(asyncStorage.cachedVideos.load).toHaveBeenCalledTimes(1);
-      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
-
-      // Shows 1 videos as the cache contained 1 and the api call failed
-      expect(
-        within(screen.queryByTestId("homeView")).queryAllByTestId("videoButton")
-      ).toHaveLength(1);
-    });
-
-    it("shows an error message if the api query fails and there is no cache", async () => {
-      jest.spyOn(asyncStorage.cachedVideos, "load").mockRejectedValue(null);
-
-      const apiPromise = Promise.reject();
-      fetch.mockResolvedValue({
-        status: 400,
-        json: () => apiPromise,
-      });
-
-      jest.spyOn(requestVideos, "requestVideos");
-
-      const screen = await asyncRender(<App />);
-
-      expect(asyncStorage.cachedVideos.load).toHaveBeenCalledTimes(1);
       expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
 
       // Shows an error message when no videos can be loaded
@@ -1079,8 +932,6 @@ describe("App", () => {
     });
 
     it("allows the user to manually recall the api for videos in the case of an error", async () => {
-      jest.spyOn(asyncStorage.cachedVideos, "load").mockRejectedValue(null);
-
       fetch.mockResolvedValue({
         status: 400,
         json: () => Promise.reject(),
