@@ -53,7 +53,7 @@ export const DetailedVideoList = ({ videos, fetchNextPageOfVideos }) => {
         />
       )}
       ListFooterComponent={() =>
-        shouldShowloadingIndicator && <LoadingSpinner />
+        shouldShowloadingIndicator ? <LoadingSpinner /> : null
       }
     />
   );

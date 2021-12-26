@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/core";
-import React, { useCallback, useContext } from "react";
+import React, { useCallback, useContext, useMemo } from "react";
 import { View } from "react-native";
 import { WebView } from "react-native-webview";
 import { AppContext } from "../../app-context";
@@ -9,6 +9,7 @@ import { IconButton } from "../../components/icon-button";
 import { MainView } from "../../components/main-view";
 import { StatusBar } from "../../components/status-bar";
 import { StyledText } from "../../styled-text";
+import { useFavorites } from "../../use-favorites";
 import { SCREEN_SIZES, withScreenSize } from "../../window";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { useIsFullScreenMode } from "./hooks/use-is-full-screen-mode";
@@ -16,16 +17,25 @@ import * as youtubeLinks from "./youtube-links";
 
 const VIEW_ID = "videoView";
 
-export const VideoView = ({
-  route: {
-    params: { channelId, channelTitle, videoId, channelThumbnailUrl, videoTitle },
-  },
-}) => {
+export const VideoView = ({ route: { params: video } }) => {
+  const {
+    channel_id,
+    channel_title,
+    channel_thumbnail_url,
+    video_title,
+    video_id,
+  } = video;
+
   const { isScreenLocked, lockScreen } = useContext(AppContext);
 
   const nav = useNavigation();
   const { isFullScreenMode, toggleFullScreenMode } = useIsFullScreenMode();
-  const { toYoutubeVideo, toYoutubeChannel } = useYoutubeLinks(videoId, channelId);
+  const { toYoutubeVideo, toYoutubeChannel } = useYoutubeLinks(
+    video_id,
+    channel_id
+  );
+  const { favorites, toggleFavorites, isInFavorites } = useFavorites();
+  const isFavoriteVideo = useMemo(() => isInFavorites(video), [favorites]);
 
   return (
     <ViewContainerWithStatusBar
@@ -37,7 +47,9 @@ export const VideoView = ({
       }}
     >
       <StatusBar isHidden={isFullScreenMode} />
-      <View style={{ flex: 1, height: "100%", justifyContent: "space-between" }}>
+      <View
+        style={{ flex: 1, height: "100%", justifyContent: "space-between" }}
+      >
         <MainView
           style={{
             flex: 80,
@@ -53,7 +65,7 @@ export const VideoView = ({
               }}
               fontSize={15}
             >
-              {videoTitle}
+              {video_title}
             </StyledText>
           )}
           <View
@@ -65,17 +77,33 @@ export const VideoView = ({
             <SideBar>
               {isFullScreenMode ? (
                 <>
-                  <FullViewIconButtons iconName="fullscreen" onPress={toggleFullScreenMode} />
+                  <FullViewIconButtons
+                    iconName="fullscreen"
+                    onPress={toggleFullScreenMode}
+                  />
                   <FullViewIconButtons iconName="lock" onPress={lockScreen} />
+                  <FullViewIconButtons
+                    iconName={isFavoriteVideo ? "favorite" : "favoriteOutline"}
+                    onPress={() => toggleFavorites(video)}
+                  />
                 </>
               ) : (
                 <>
                   <HalfViewIconButton
                     iconName="fullscreen"
                     onPress={toggleFullScreenMode}
-                    text="Full Screen"
+                    text="Full screen"
                   />
-                  <HalfViewIconButton iconName="lock" onPress={lockScreen} text="Lock Screen" />
+                  <HalfViewIconButton
+                    iconName="lock"
+                    onPress={lockScreen}
+                    text="Lock screen"
+                  />
+                  <HalfViewIconButton
+                    iconName={isFavoriteVideo ? "favorite" : "favoriteOutline"}
+                    text="Add to favorites"
+                    onPress={() => toggleFavorites(video)}
+                  />
                 </>
               )}
             </SideBar>
@@ -97,15 +125,21 @@ export const VideoView = ({
                 }}
                 originWhitelist={["*"]}
                 source={{
-                  uri: youtubeLinks.youtubeEmbeddedVideoUri(videoId),
+                  uri: youtubeLinks.youtubeEmbeddedVideoUri(video_id),
                 }}
               />
             </View>
             <SideBar>
               {isFullScreenMode ? (
                 <>
-                  <FullViewIconButtons iconName="youtubeTv" onPress={toYoutubeVideo} />
-                  <FullViewIconButtons iconName="back" onPress={() => nav.goBack()} />
+                  <FullViewIconButtons
+                    iconName="youtubeTv"
+                    onPress={toYoutubeVideo}
+                  />
+                  <FullViewIconButtons
+                    iconName="back"
+                    onPress={() => nav.goBack()}
+                  />
                 </>
               ) : (
                 <>
@@ -114,14 +148,20 @@ export const VideoView = ({
                     onPress={toYoutubeVideo}
                     text="Watch on youtube"
                   />
-                  <HalfViewIconButton iconName="back" onPress={() => nav.goBack()} text="Back" />
+                  <HalfViewIconButton
+                    iconName="back"
+                    onPress={() => nav.goBack()}
+                    text="Back"
+                  />
                 </>
               )}
             </SideBar>
           </View>
         </MainView>
         {(isScreenLocked || !isFullScreenMode) && (
-          <ControlBar style={{ flex: isScreenLocked && isFullScreenMode ? 10 : 20 }}>
+          <ControlBar
+            style={{ flex: isScreenLocked && isFullScreenMode ? 10 : 20 }}
+          >
             {isScreenLocked && (
               <StyledText
                 fontSize={18}
@@ -147,8 +187,8 @@ export const VideoView = ({
               >
                 <ChannelButton
                   variant="black"
-                  channelTitle={channelTitle}
-                  channelThumbnailUrl={channelThumbnailUrl}
+                  channelTitle={channel_title}
+                  channelThumbnailUrl={channel_thumbnail_url}
                   onPress={toYoutubeChannel}
                   hitSlop={{ left: 30, right: 30, bottom: 0, top: 0 }}
                 />
@@ -161,12 +201,18 @@ export const VideoView = ({
   );
 };
 
-const SideBar = (props) => <View style={{ flex: 1, justifyContent: "space-around" }} {...props} />;
+const SideBar = (props) => (
+  <View style={{ flex: 1, justifyContent: "space-around" }} {...props} />
+);
 
 const HalfViewIconButton = (props) => (
   <IconButton
     {...props}
-    style={{ justifyContent: "space-between", alignItems: "center", padding: 5 }}
+    style={{
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: 5,
+    }}
   />
 );
 
@@ -179,8 +225,14 @@ const FullViewIconButtons = (props) => (
 );
 
 const useYoutubeLinks = (videoId, channelId) => ({
-  toYoutubeVideo: useCallback(() => youtubeLinks.toYoutubeVideo(videoId), [videoId]),
-  toYoutubeChannel: useCallback(() => youtubeLinks.toYoutubeChannel(channelId), [channelId]),
+  toYoutubeVideo: useCallback(
+    () => youtubeLinks.toYoutubeVideo(videoId),
+    [videoId]
+  ),
+  toYoutubeChannel: useCallback(
+    () => youtubeLinks.toYoutubeChannel(channelId),
+    [channelId]
+  ),
 });
 
 const HALF_SCREEN_VIDEO_WIDTH = withScreenSize({

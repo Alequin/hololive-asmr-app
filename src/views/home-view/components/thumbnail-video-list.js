@@ -39,7 +39,7 @@ export const ThumbnailVideoList = ({ videos, fetchNextPageOfVideos }) => {
         />
       )}
       ListFooterComponent={() =>
-        shouldShowloadingIndicator && <LoadingSpinner />
+        shouldShowloadingIndicator ? <LoadingSpinner /> : null
       }
     />
   );

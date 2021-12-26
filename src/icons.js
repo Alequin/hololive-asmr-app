@@ -10,7 +10,8 @@ import { View } from "react-native";
 
 export const Icon = ({ name, ...otherProps }) => {
   const IconToRender = ICON_OPTIONS[name];
-  if (!IconToRender) throw new Error(`Unable to find an icon by the name ${name}`);
+  if (!IconToRender)
+    throw new Error(`Unable to find an icon by the name ${name}`);
   return <IconToRender {...otherProps} />;
 };
 
@@ -19,10 +20,19 @@ const customIcon =
   ({ size, color, style, ...otherProps }) =>
     (
       <TestIdElement
-        testID={testIdOverride ? `${testIdOverride}Icon` : `${camelCase(iconName)}Icon`}
+        testID={
+          testIdOverride
+            ? `${testIdOverride}Icon`
+            : `${camelCase(iconName)}Icon`
+        }
         style={style}
       >
-        <IconSourceElement name={iconName} size={size} color={color} {...otherProps} />
+        <IconSourceElement
+          name={iconName}
+          size={size}
+          color={color}
+          {...otherProps}
+        />
       </TestIdElement>
     );
 
@@ -38,6 +48,8 @@ const ICON_OPTIONS = {
   youtubeTv: customIcon(MaterialCommunityIcons, "youtube-tv"),
   refresh: customIcon(FontAwesome, "refresh"),
   fullscreen: customIcon(MaterialCommunityIcons, "fullscreen"),
+  favoriteOutline: customIcon(MaterialIcons, "favorite-outline"),
+  favorite: customIcon(MaterialIcons, "favorite"),
 };
 
 const TestIdElement = (props) => <View {...props} />;
