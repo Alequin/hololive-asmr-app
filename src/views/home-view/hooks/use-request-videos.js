@@ -8,19 +8,25 @@ export const useRequestVideos = (channelsToFilterBy) => {
     useState(false);
   const [apiError, setApiError] = useState(null);
 
-  const fetchVideos = useCallback(async () => {
-    try {
-      setVideos(
-        await requestVideos({
+  const fetchVideos = useCallback(
+    async (offset) => {
+      try {
+        const reqestedvideos = await requestVideos({
           channelIds: !isEmpty(channelsToFilterBy) && channelsToFilterBy,
-        })
-      );
-    } catch (error) {
-      setApiError(error);
-    } finally {
-      setIsRefreshingVideosFromAPI(false);
-    }
-  }, [channelsToFilterBy]);
+          orderDirection: "desc",
+          offset,
+        });
+        setVideos((videos) =>
+          offset ? [...videos, ...reqestedvideos] : reqestedvideos
+        );
+      } catch (error) {
+        setApiError(error);
+      } finally {
+        setIsRefreshingVideosFromAPI(false);
+      }
+    },
+    [channelsToFilterBy]
+  );
 
   useEffect(() => {
     fetchVideos();
@@ -47,5 +53,8 @@ export const useRequestVideos = (channelsToFilterBy) => {
       async () => setIsRefreshingVideosFromAPI(true),
       []
     ),
+    fetchNextPageOfVideos: useCallback(async () => {
+      await fetchVideos(videos.length);
+    }, [fetchVideos, videos]),
   };
 };

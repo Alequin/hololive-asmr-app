@@ -83,12 +83,12 @@ describe("App", () => {
   });
 
   describe("Home View", () => {
-    it("requests and shows the list of videos on the home view", async () => {
+    it("requests and shows up to the first 50 videos on the home view", async () => {
       const apiPromise = Promise.resolve([
         {
           video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1",
+          channel_title: "Ceres Fauna Ch. hololive-EN1",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
@@ -96,8 +96,8 @@ describe("App", () => {
         },
         {
           video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ2",
+          channel_title: "Ceres Fauna Ch. hololive-EN2",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
           video_title:
@@ -105,8 +105,8 @@ describe("App", () => {
         },
         {
           video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ3",
+          channel_title: "Ceres Fauna Ch. hololive-EN3",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
           video_title:
@@ -125,11 +125,79 @@ describe("App", () => {
       const homeView = screen.queryByTestId("homeView");
 
       expect(within(homeView).queryAllByTestId("videoButton")).toHaveLength(3);
+
+      // Confirm the number of requested videos was 50
       expect(fetch).toHaveBeenCalledWith(
-        "https://hololive-asmr-server.herokuapp.com/videos",
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc",
         {
           headers: { authToken: secrets.serverAuthToken },
         }
+      );
+    });
+
+    it("make a request for another 50 videos when the user scrolls to the bottom of the detailed list of videos", async () => {
+      const apiPromise = Promise.resolve(
+        new Array(50).fill(null).map((_, index) => ({
+          video_id: "123" + index,
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1" + index,
+          channel_title: "Ceres Fauna Ch. hololive-EN" + index,
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        }))
+      );
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      // Confirm the number of requested videos was 50
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
+
+      const list = screen.queryByTestId("detailedVideoList");
+      // Confirm 50 videos are visible
+      expect(list.props.data).toHaveLength(50);
+
+      // Fake scroll to the bottom of the page
+      await act(async () => list.props.onEndReached());
+
+      // Confirm another api request is made for the next 50
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc&offset=50",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
+
+      // Confirm 100 videos are visible
+      expect(screen.queryByTestId("detailedVideoList").props.data).toHaveLength(
+        100
+      );
+
+      // Fake scroll to the bottom of the page again
+      await act(async () => list.props.onEndReached());
+
+      // Confirm another api request is made for the next 50
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc&offset=50",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
+
+      // Confirm 150 videos are visible
+      expect(screen.queryByTestId("detailedVideoList").props.data).toHaveLength(
+        150
       );
     });
 
@@ -295,7 +363,7 @@ describe("App", () => {
       expect(button3.queryByText("31 Dec 2019")).toBeTruthy();
     });
 
-    it("allows the user to see a less detailed view of the list of videos", async () => {
+    it("allows the user to see a thumbnail only view of the list of videos", async () => {
       const apiPromise = Promise.resolve([
         {
           video_id: "123",
@@ -389,6 +457,75 @@ describe("App", () => {
       expect(detailedButton1.queryByText("video 1")).toBeTruthy();
       expect(detailedButton1.queryByTestId("channelImage")).toBeTruthy();
       expect(detailedButton1.queryByText("Fauna")).toBeTruthy();
+    });
+
+    it("make a request for another 50 videos when the user scrolls to the bottom of the thumbnail only view of videos", async () => {
+      const apiPromise = Promise.resolve(
+        new Array(50).fill(null).map((_, index) => ({
+          video_id: "123" + index,
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1" + index,
+          channel_title: "Ceres Fauna Ch. hololive-EN" + index,
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        }))
+      );
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      // Switch to the less detailed view
+      await asyncPressEvent(getButtonByText(screen, "Less Details"));
+
+      // Confirm the number of requested videos was 50
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
+
+      const list = screen.queryByTestId("thumbnailVideoList");
+      // Confirm 50 videos are visible
+      expect(list.props.data).toHaveLength(50);
+
+      // Fake scroll to the bottom of the page
+      await act(async () => list.props.onEndReached());
+
+      // Confirm another api request is made for the next 50
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc&offset=50",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
+
+      // Confirm 100 videos are visible
+      expect(
+        screen.queryByTestId("thumbnailVideoList").props.data
+      ).toHaveLength(100);
+
+      // Fake scroll to the bottom of the page again
+      await act(async () => list.props.onEndReached());
+
+      // Confirm another api request is made for the next 50
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc&offset=50",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
+
+      // Confirm 150 videos are visible
+      expect(
+        screen.queryByTestId("thumbnailVideoList").props.data
+      ).toHaveLength(150);
     });
 
     it("saves the current view mode as the user modifies it", async () => {
@@ -1216,6 +1353,7 @@ describe("App", () => {
       // Confirm API request for specific channel Ids has been made
       expect(requestVideos.requestVideos).toHaveBeenCalledWith({
         channelIds: ["UCO_aKKYxn4tvrqPjcTzZ6EQ2", "UCO_aKKYxn4tvrqPjcTzZ6EQ3"],
+        orderDirection: "desc",
       });
     });
 

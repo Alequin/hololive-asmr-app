@@ -21,9 +21,12 @@ export const requestVideos = async (queryParams) => {
   return data;
 };
 
-const buildQueryParams = ({ channelIds }) => {
+const buildQueryParams = ({ channelIds, max = 50, orderDirection, offset }) => {
   const queryObject = new URLSearchParams();
   if (channelIds) queryObject.append("channelIds", channelIds.join(","));
+  queryObject.append("max", max);
+  queryObject.append("orderDirection", orderDirection);
+  if (offset) queryObject.append("offset", offset);
 
   return queryObject.toString();
 };

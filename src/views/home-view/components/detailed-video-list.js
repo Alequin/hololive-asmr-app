@@ -2,16 +2,22 @@ import React from "react";
 import { FlatList, Image, View } from "react-native";
 import { Button } from "../../../components/button";
 import { ChannelThumbnail } from "../../../components/channel-thumbnail";
+import { LoadingSpinner } from "../../../components/loading-spinner";
 import { StyledText } from "../../../styled-text";
 import { useOrientation } from "../../../use-orientation";
-import { isMiniScreen, SCREEN_SIZES, windowHeight, withScreenSize } from "../../../window";
+import {
+  isMiniScreen,
+  SCREEN_SIZES,
+  windowHeight,
+  withScreenSize,
+} from "../../../window";
 import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
 import { dateString } from "./date-string";
 
 const ONE_COLUMN = 1;
 const TWO_COLUMNS = 2;
 
-export const DetailedVideoList = ({ videos }) => {
+export const DetailedVideoList = ({ videos, fetchNextPageOfVideos }) => {
   useOrientation(); // update state on orientation change to re-calc size values
   const navigateToVideoView = useNavigateToVideoView();
   const columnCount = isMiniScreen() ? ONE_COLUMN : TWO_COLUMNS;
@@ -19,11 +25,12 @@ export const DetailedVideoList = ({ videos }) => {
   return (
     <FlatList
       key={`flatlist-${columnCount}-columns`} // force re-render if numColumns changes
-      testID="videoList"
+      testID="detailedVideoList"
       style={{ width: "100%", height: "100%" }}
       data={videos}
       keyExtractor={({ video_id }) => video_id}
       numColumns={columnCount}
+      onEndReached={async () => await fetchNextPageOfVideos()}
       renderItem={({ item }) => (
         <DetailedVideoButton
           title={item.video_title}
@@ -35,6 +42,7 @@ export const DetailedVideoList = ({ videos }) => {
           onSelectVideo={() => navigateToVideoView(item)}
         />
       )}
+      ListFooterComponent={() => <LoadingSpinner />}
     />
   );
 };
@@ -107,13 +115,20 @@ const DetailedVideoButton = ({
           >
             <ChannelThumbnail channelThumbnailUrl={channelThumbnailUrl} />
             <StyledText
-              style={{ color: "white", textAlign: "center", width: "100%", margin: 1 }}
+              style={{
+                color: "white",
+                textAlign: "center",
+                width: "100%",
+                margin: 1,
+              }}
               numberOfLines={1}
             >
               {channelTitle}
             </StyledText>
           </View>
-          <StyledText style={{ color: "white", textAlign: "center", width: "100%" }}>
+          <StyledText
+            style={{ color: "white", textAlign: "center", width: "100%" }}
+          >
             {publishDate}
           </StyledText>
         </View>

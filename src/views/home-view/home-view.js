@@ -47,6 +47,7 @@ export const HomeView = () => {
     videos,
     isRefreshing,
     refreshVideos,
+    fetchNextPageOfVideos,
     error: errorRequestingVideos,
   } = useRequestVideos(channelsToFilterBy);
 
@@ -73,9 +74,15 @@ export const HomeView = () => {
             {isVideoViewLoading && <FullScreenLoadingSpinner />}
             {!isVideoViewLoading &&
               (isDetailedViewMode ? (
-                <DetailedVideoList videos={orderedVideos} />
+                <DetailedVideoList
+                  videos={orderedVideos}
+                  fetchNextPageOfVideos={fetchNextPageOfVideos}
+                />
               ) : (
-                <ThumbnailVideoList videos={orderedVideos} />
+                <ThumbnailVideoList
+                  videos={orderedVideos}
+                  fetchNextPageOfVideos={fetchNextPageOfVideos}
+                />
               ))}
             <FilterModal
               isOpen={isFilerModalOpen}
