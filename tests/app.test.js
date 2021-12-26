@@ -826,60 +826,8 @@ describe("App", () => {
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(2);
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(1);
 
-      // Press button to change order to a to z
+      // Press button to change order back
       await asyncPressEvent(getButtonByText(screen, "Oldest to Newest"));
-      expect(getButtonByText(screen, "A to Z")).toBeTruthy();
-
-      const aToZVideos = within(
-        screen.queryByTestId("homeView")
-      ).queryAllByTestId("videoButton");
-      expect(
-        within(aToZVideos[0]).queryByTestId("videoImageBackground").props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-      });
-      expect(
-        within(aToZVideos[1]).queryByTestId("videoImageBackground").props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-      });
-      expect(
-        within(aToZVideos[2]).queryByTestId("videoImageBackground").props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-      });
-
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(3);
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(2);
-
-      // Press button to change order to z to a
-      await asyncPressEvent(getButtonByText(screen, "A to Z"));
-      expect(getButtonByText(screen, "Z to A")).toBeTruthy();
-
-      const zToAVideos = within(
-        screen.queryByTestId("homeView")
-      ).queryAllByTestId("videoButton");
-      expect(
-        within(zToAVideos[0]).queryByTestId("videoImageBackground").props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-      });
-      expect(
-        within(zToAVideos[1]).queryByTestId("videoImageBackground").props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-      });
-      expect(
-        within(zToAVideos[2]).queryByTestId("videoImageBackground").props.source
-      ).toEqual({
-        uri: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-      });
-
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(4);
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(3);
-
-      // Press button to change order back to the original Newest to Oldest
-      await asyncPressEvent(getButtonByText(screen, "Z to A"));
       expect(getButtonByText(screen, "Newest to Oldest")).toBeTruthy();
 
       const newestToOldestVideos = within(
@@ -904,7 +852,7 @@ describe("App", () => {
         uri: "https://i.ytimg.com/vi/123/mqdefault.jpg",
       });
 
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(5);
+      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(3);
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
     });
 
@@ -1048,23 +996,11 @@ describe("App", () => {
       await asyncPressEvent(getButtonByText(screen, "Oldest to Newest"));
 
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(3);
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(2);
-
-      // Press button to change order to z to a
-      await asyncPressEvent(getButtonByText(screen, "A to Z"));
-
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(4);
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(3);
-
-      // Press button to change order back to the original Newest to Oldest
-      await asyncPressEvent(getButtonByText(screen, "Z to A"));
-
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(5);
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
     });
 
     it("loads the saved sort order on mount", async () => {
-      jest.spyOn(asyncStorage.sortOrderState, "load").mockResolvedValue(3);
+      jest.spyOn(asyncStorage.sortOrderState, "load").mockResolvedValue(1);
 
       const apiPromise = Promise.resolve([
         {
@@ -1087,7 +1023,7 @@ describe("App", () => {
       await act(() => apiPromise);
 
       expect(asyncStorage.sortOrderState.load).toHaveBeenCalledTimes(1);
-      expect(getButtonByText(screen, "Z to A")).toBeTruthy();
+      expect(getButtonByText(screen, "Oldest to Newest")).toBeTruthy();
     });
 
     it("defaults the sort order to sort newest to oldest if there is an issue loading the cache", async () => {

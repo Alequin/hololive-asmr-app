@@ -5,8 +5,6 @@ import { sortOrderState } from "../../../async-storage";
 const VIDEO_SORT_METHODS = [
   { key: "published_at", direction: "desc", name: "Newest to Oldest" },
   { key: "published_at", direction: "asc", name: "Oldest to Newest" },
-  { key: "channel_title", direction: "asc", name: "A to Z" },
-  { key: "channel_title", direction: "desc", name: "Z to A" },
 ];
 
 export const useVideoSortOrder = () => {
@@ -32,7 +30,9 @@ export const useVideoSortOrder = () => {
   }, []);
 
   return {
-    sortOrder: !isNil(sortOrderIndex) ? VIDEO_SORT_METHODS[sortOrderIndex] : null,
+    sortOrder: VIDEO_SORT_METHODS[sortOrderIndex]
+      ? VIDEO_SORT_METHODS[sortOrderIndex]
+      : null,
     nextSortOrder: useCallback(() => {
       setSortOrderIndex((currentIndex) => {
         const nextIndex = currentIndex + 1;
