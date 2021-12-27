@@ -54,7 +54,6 @@ export const HomeView = () => {
 
   const {
     videos: videosFromApi,
-    isRefreshing,
     refreshVideos,
     fetchNextPageOfVideos,
     error: errorRequestingVideos,
@@ -63,12 +62,12 @@ export const HomeView = () => {
   const videos = areFavoritesVisible ? favoriteVideos : videosFromApi;
 
   const hasErroredRequestingVideos =
-    !areFavoritesVisible && !isRefreshing && errorRequestingVideos;
+    !areFavoritesVisible && errorRequestingVideos;
   const hasErroredLoadingFavorites = areFavoritesVisible && errorFavoriteVideos;
 
   const isPageLoading =
     !hasErroredRequestingVideos &&
-    (!videos || !sortOrder || isNil(isDetailedViewMode) || isRefreshing);
+    (!videos || !sortOrder || isNil(isDetailedViewMode));
   const canShowHomeView =
     !hasErroredRequestingVideos &&
     !hasErroredLoadingFavorites &&

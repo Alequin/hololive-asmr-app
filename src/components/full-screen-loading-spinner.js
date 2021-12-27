@@ -1,6 +1,6 @@
 import React from "react";
 import { LoadingSpinner } from "./loading-spinner";
 
-export const FullScreenLoadingSpinner = () => {
-  return <LoadingSpinner style={{ flex: 1 }} />;
+export const FullScreenLoadingSpinner = ({ colour }) => {
+  return <LoadingSpinner color={colour} style={{ flex: 1 }} />;
 };

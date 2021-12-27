@@ -4,8 +4,7 @@ import { requestVideos } from "../../../external-requests/request-videos";
 
 export const useRequestVideos = (channelsToFilterBy, sortOrder) => {
   const [videos, setVideos] = useState(null);
-  const [isRefreshingVideosFromAPI, setIsRefreshingVideosFromAPI] =
-    useState(false);
+
   const [apiError, setApiError] = useState(null);
 
   const baseVideoRequestParams = useMemo(
@@ -31,8 +30,6 @@ export const useRequestVideos = (channelsToFilterBy, sortOrder) => {
       updateVideos(async () => videos);
     } catch (error) {
       setApiError(error);
-    } finally {
-      setIsRefreshingVideosFromAPI(false);
     }
   }, [baseVideoRequestParams, updateVideos]);
 
@@ -53,8 +50,6 @@ export const useRequestVideos = (channelsToFilterBy, sortOrder) => {
       return wereThereMoreVideos;
     } catch (error) {
       setApiError(error);
-    } finally {
-      setIsRefreshingVideosFromAPI(false);
     }
   }, [
     baseVideoRequestParams,
@@ -74,20 +69,10 @@ export const useRequestVideos = (channelsToFilterBy, sortOrder) => {
     }
   }, [Boolean(videos)]);
 
-  useEffect(() => {
-    if (isRefreshingVideosFromAPI)
-      // Fake a delay to allow the interface to show a spinner and reduce how often users can spam retry
-      new Promise((r) => setTimeout(r, 2000)).then(() => fetchVideos(videos));
-  }, [isRefreshingVideosFromAPI]);
-
   return {
     videos,
-    isRefreshing: isRefreshingVideosFromAPI,
     error: apiError,
-    refreshVideos: useCallback(
-      async () => setIsRefreshingVideosFromAPI(true),
-      []
-    ),
+    refreshVideos: useCallback(async () => fetchVideos(videos), [videos]),
     fetchNextPageOfVideos,
   };
 };

@@ -7,8 +7,6 @@ export const useRequestChannels = () => {
   const [channels, setChannels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isRefreshingChannelsFromAPI, setIsRefreshingChannelsFromAPI] =
-    useState(false);
 
   const fetchChannels = useCallback(async () => {
     try {
@@ -19,7 +17,6 @@ export const useRequestChannels = () => {
       setError(error);
     } finally {
       setLoading(false);
-      setIsRefreshingChannelsFromAPI(false);
     }
   }, []);
 
@@ -27,18 +24,10 @@ export const useRequestChannels = () => {
     fetchChannels();
   }, []);
 
-  useEffect(() => {
-    if (isRefreshingChannelsFromAPI) {
-      setError(null);
-      // Fake a delay to allow the interface to show a spinner and reduce how often users can spam retry
-      new Promise((r) => setTimeout(r, 2000)).then(fetchChannels);
-    }
-  }, [isRefreshingChannelsFromAPI, fetchChannels]);
-
   return {
     channels,
-    loading: loading || isRefreshingChannelsFromAPI,
+    loading,
     error,
-    refetchChannels: useCallback(() => setIsRefreshingChannelsFromAPI(true)),
+    refetchChannels: fetchChannels,
   };
 };
