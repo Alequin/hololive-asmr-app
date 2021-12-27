@@ -1,6 +1,6 @@
 import { googleMobileAdsAppId } from "./secrets.json";
 
-const version = 7;
+const version = 9;
 
 export default {
   name: "Hololive ASMR Catalog",
