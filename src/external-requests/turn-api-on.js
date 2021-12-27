@@ -1,9 +1,15 @@
 import { get } from "./get";
 import secrets from "../secrets";
+import { serverUrl } from "./base-urls";
 
-const healthUrl = `https://hololive-asmr-server.herokuapp.com/_health`;
+const healthUrl = `${serverUrl}/_health`;
 
-export const turnApiOn = async () =>
-  get(healthUrl, {
-    headers: { authToken: secrets.serverAuthToken },
-  });
+export const turnApiOn = async () => {
+  try {
+    await get(healthUrl, {
+      headers: { authToken: secrets.serverAuthToken },
+    });
+  } catch (error) {
+    // Do not throw when waking up API. The next call will do it
+  }
+};
