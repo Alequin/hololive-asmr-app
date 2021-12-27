@@ -66,8 +66,7 @@ export const HomeView = () => {
   const hasErroredLoadingFavorites = areFavoritesVisible && errorFavoriteVideos;
 
   const isPageLoading =
-    !hasErroredRequestingVideos &&
-    (!videos || !sortOrder || isNil(isDetailedViewMode));
+    !hasErroredRequestingVideos && (!videos || isNil(isDetailedViewMode));
   const canShowHomeView =
     !hasErroredRequestingVideos &&
     !hasErroredLoadingFavorites &&

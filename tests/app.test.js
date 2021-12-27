@@ -59,10 +59,6 @@ describe("App", () => {
   beforeEach(() => {
     jest.restoreAllMocks();
     jest.clearAllMocks();
-    jest
-      .spyOn(asyncStorage.sortOrderState, "load")
-      .mockResolvedValue(undefined);
-
     jest.spyOn(asyncStorage.viewModeState, "load").mockResolvedValue(undefined);
     jest.spyOn(asyncStorage.favorites, "save");
     jest.spyOn(asyncStorage.favorites, "load");
@@ -1075,7 +1071,6 @@ describe("App", () => {
     });
 
     it("requests videos in the desired sort order when then sort button is pressed", async () => {
-      jest.spyOn(asyncStorage.sortOrderState, "save");
       const apiPromise = Promise.resolve([
         {
           video_id: "123",
@@ -1114,17 +1109,11 @@ describe("App", () => {
       const screen = await asyncRender(<App />);
       await act(() => apiPromise);
 
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
-
       // Press button to change order to oldest to newest
       await asyncPressEvent(
         getButtonByChildTestId(screen, "sortAmountAscIcon")
       );
       expect(getButtonByChildTestId(screen, "sortAmountAscIcon")).toBeTruthy();
-
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(2);
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(1);
 
       // confirm the current sort order message is shown
       expect(showToast.showToast).toHaveBeenCalledTimes(1);
@@ -1146,9 +1135,6 @@ describe("App", () => {
         getButtonByChildTestId(screen, "sortAmountAscIcon")
       );
       expect(getButtonByChildTestId(screen, "sortAmountAscIcon")).toBeTruthy();
-
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(3);
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
 
       // confirm the current sort order message is shown
       expect(showToast.showToast).toHaveBeenCalledTimes(2);
@@ -1251,149 +1237,6 @@ describe("App", () => {
         expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2)
       );
       enableAllErrorLogs();
-    });
-
-    it("saves the sort order index when the user modifies it", async () => {
-      jest.spyOn(asyncStorage.sortOrderState, "save");
-      const apiPromise = Promise.resolve([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Gura",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-        {
-          video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Sana",
-          published_at: "2021-11-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-        {
-          video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Fauna",
-          published_at: "2021-12-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      const screen = await asyncRender(<App />);
-      await act(() => apiPromise);
-
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
-
-      // Press button to change order to oldest to newest
-      await asyncPressEvent(
-        getButtonByChildTestId(screen, "sortAmountAscIcon")
-      );
-
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(2);
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(1);
-
-      // Press button to change order to a to z
-      await asyncPressEvent(
-        getButtonByChildTestId(screen, "sortAmountAscIcon")
-      );
-
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(3);
-      expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
-    });
-
-    it("loads the saved sort order on mount", async () => {
-      jest.spyOn(asyncStorage.sortOrderState, "load").mockResolvedValue(1);
-
-      const apiPromise = Promise.resolve([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      await asyncRender(<App />);
-      await act(() => apiPromise);
-
-      expect(asyncStorage.sortOrderState.load).toHaveBeenCalledTimes(1);
-      // Confirm the videos were requested with the correct order
-      expect(fetch).toHaveBeenCalledWith(
-        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=asc",
-        {
-          headers: { authToken: secrets.serverAuthToken },
-        }
-      );
-    });
-
-    it("defaults the sort order to sort newest to oldest if there is an issue loading the cache", async () => {
-      jest.spyOn(asyncStorage.sortOrderState, "load").mockRejectedValue(null);
-
-      const apiPromise = Promise.resolve([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-        {
-          video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-11-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-        {
-          video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-12-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      await asyncRender(<App />);
-      await act(() => apiPromise);
-
-      // Confirm the videos were requested with the correct order
-      expect(fetch).toHaveBeenCalledWith(
-        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=desc",
-        {
-          headers: { authToken: secrets.serverAuthToken },
-        }
-      );
     });
 
     it("allows the user to filter the visible videos by channel name", async () => {

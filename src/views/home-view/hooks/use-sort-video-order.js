@@ -1,6 +1,4 @@
-import isNil from "lodash/isNil";
 import { useCallback, useEffect, useState } from "react";
-import { sortOrderState } from "../../../async-storage";
 import { showToast } from "../../../show-toast";
 
 export const VIDEO_SORT_METHODS = [
@@ -9,26 +7,7 @@ export const VIDEO_SORT_METHODS = [
 ];
 
 export const useVideoSortOrder = () => {
-  const [hasLoadedCache, setHasLoadedCache] = useState(false);
-  const [sortOrderIndex, setSortOrderIndex] = useState(null);
-
-  useEffect(() => {
-    // Save current zoom
-    if (hasLoadedCache) sortOrderState.save(sortOrderIndex);
-  }, [hasLoadedCache, sortOrderIndex]);
-
-  useEffect(() => {
-    sortOrderState
-      .load()
-      .then((savedSortOrderIndex) => {
-        setSortOrderIndex(savedSortOrderIndex || 0);
-        setHasLoadedCache(true);
-      })
-      .catch(() => {
-        setSortOrderIndex(0);
-        setHasLoadedCache(true);
-      });
-  }, []);
+  const [sortOrderIndex, setSortOrderIndex] = useState(0);
 
   return {
     sortOrder: VIDEO_SORT_METHODS[sortOrderIndex]

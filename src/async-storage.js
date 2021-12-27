@@ -11,8 +11,6 @@ const newStorageItem = (storageKey) => ({
   clear: async () => AsyncStorage.removeItem(storageKey),
 });
 
-export const sortOrderState = newStorageItem("SORT_ORDER_STATE");
-
 export const firstLoadState = newStorageItem("FIRST_LOAD_STATE");
 
 export const viewModeState = newStorageItem("VIEW_MODE");

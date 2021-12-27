@@ -10,7 +10,7 @@ export const useRequestVideos = (channelsToFilterBy, sortOrder) => {
   const baseVideoRequestParams = useMemo(
     () => ({
       channelIds: !isEmpty(channelsToFilterBy) && channelsToFilterBy,
-      orderDirection: sortOrder?.direction,
+      orderDirection: sortOrder.direction,
     }),
     [channelsToFilterBy, sortOrder]
   );
