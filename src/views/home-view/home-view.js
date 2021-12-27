@@ -134,7 +134,6 @@ const ViewModeButton = ({ isDetailedViewMode, toggleViewMode }) => (
   <HomeViewIconButton
     iconName={isDetailedViewMode ? "zoomOut" : "zoomIn"}
     onPress={toggleViewMode}
-    text={isDetailedViewMode ? "Less Details" : "More Details"}
   />
 );
 
@@ -143,7 +142,6 @@ const PermissionsButton = ({ shouldRequestPermission }) =>
     <HomeViewIconButton
       iconName="shieldKey"
       onPress={requestBrightnessPermissions}
-      text="Give System Permission"
     />
   ) : null;
 
@@ -152,7 +150,6 @@ const FilterModalButton = ({ openSearchModal }) => (
     iconName="search"
     iconSize={20}
     onPress={openSearchModal}
-    text="Filter By Channel"
   />
 );
 
@@ -161,7 +158,6 @@ const SortButton = ({ nextSortOrder, sortOrderDescription }) => (
     iconName="sortOrder"
     iconSize={20}
     onPress={nextSortOrder}
-    text={sortOrderDescription}
   />
 );
 

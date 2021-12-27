@@ -1,10 +1,11 @@
 import isNil from "lodash/isNil";
 import { useCallback, useEffect, useState } from "react";
 import { sortOrderState } from "../../../async-storage";
+import { showToast } from "../../../show-toast";
 
 const VIDEO_SORT_METHODS = [
-  { key: "published_at", direction: "desc", name: "Newest to Oldest" },
-  { key: "published_at", direction: "asc", name: "Oldest to Newest" },
+  { key: "published_at", direction: "desc", name: "Newest to oldest" },
+  { key: "published_at", direction: "asc", name: "Oldest to newest" },
 ];
 
 export const useVideoSortOrder = () => {
@@ -36,8 +37,15 @@ export const useVideoSortOrder = () => {
     nextSortOrder: useCallback(() => {
       setSortOrderIndex((currentIndex) => {
         const nextIndex = currentIndex + 1;
-        return VIDEO_SORT_METHODS[nextIndex] ? nextIndex : 0;
+        const nextSortOrderIndex = VIDEO_SORT_METHODS[nextIndex]
+          ? nextIndex
+          : 0;
+        showToast(
+          `Sorting videos: ${VIDEO_SORT_METHODS[nextSortOrderIndex].name}`,
+          3000
+        );
+        return nextSortOrderIndex;
       });
-    }, [setSortOrderIndex]),
+    }, []),
   };
 };

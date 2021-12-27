@@ -539,7 +539,7 @@ describe("App", () => {
       const homeView = screen.queryByTestId("homeView");
 
       // Switch to the less detailed view
-      await asyncPressEvent(getButtonByText(screen, "Less Details"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "zoomOutIcon"));
 
       const videoButtons = within(homeView).queryAllByTestId("videoButton");
 
@@ -575,7 +575,7 @@ describe("App", () => {
       expect(button3.queryByText("Ina")).not.toBeTruthy();
 
       // Switch to the more detailed view
-      await asyncPressEvent(getButtonByText(screen, "More Details"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "zoomInIcon"));
       // Confirm all details are back
       const detailedButton1 = within(
         within(homeView).queryAllByTestId("videoButton")[0]
@@ -612,7 +612,7 @@ describe("App", () => {
       await act(() => apiPromise);
 
       // Switch to the less detailed view
-      await asyncPressEvent(getButtonByText(screen, "Less Details"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "zoomOutIcon"));
 
       // Confirm the number of requested videos was 50
       expect(fetch).toHaveBeenCalledWith(
@@ -715,7 +715,7 @@ describe("App", () => {
       await act(() => apiPromise);
 
       // Switch to the less detailed view
-      await asyncPressEvent(getButtonByText(screen, "Less Details"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "zoomOutIcon"));
 
       // Confirm the number of requested videos was 50
       expect(fetch).toHaveBeenCalledWith(
@@ -801,12 +801,12 @@ describe("App", () => {
       expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(1);
 
       // Switch to the less detailed view
-      await asyncPressEvent(getButtonByText(screen, "Less Details"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "zoomOutIcon"));
 
       expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(2);
 
       // Switch to the more detailed view
-      await asyncPressEvent(getButtonByText(screen, "More Details"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "zoomInIcon"));
 
       expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(3);
     });
@@ -858,7 +858,7 @@ describe("App", () => {
       const homeView = screen.queryByTestId("homeView");
 
       // Confirm option to switch to more details is available
-      expect(getButtonByText(screen, "More Details")).toBeTruthy();
+      expect(getButtonByChildTestId(screen, "zoomInIcon")).toBeTruthy();
 
       const videoButtons = within(homeView).queryAllByTestId("videoButton");
 
@@ -941,7 +941,7 @@ describe("App", () => {
       const homeView = screen.queryByTestId("homeView");
 
       // Confirm option to switch to less details is available
-      expect(getButtonByText(screen, "Less Details")).toBeTruthy();
+      expect(getButtonByChildTestId(screen, "zoomOutIcon")).toBeTruthy();
 
       // Confirm the default mode is the more detail view mode
       const videoButtons = within(homeView).queryAllByTestId("videoButton");
@@ -1011,9 +1011,9 @@ describe("App", () => {
       const homeView = screen.queryByTestId("homeView");
 
       // Confirm button is visible
-      const permissionButtons = getButtonByText(
+      const permissionButtons = getButtonByChildTestId(
         within(homeView),
-        "Give System Permission"
+        "shieldKeyIcon"
       );
       expect(permissionButtons).toBeTruthy();
 
@@ -1102,7 +1102,7 @@ describe("App", () => {
       );
     });
 
-    it("allows the video order to be changed", async () => {
+    it("requests videos in the desired sort order when then sort button is pressed", async () => {
       jest.spyOn(asyncStorage.sortOrderState, "save");
       const apiPromise = Promise.resolve([
         {
@@ -1146,11 +1146,20 @@ describe("App", () => {
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
 
       // Press button to change order to oldest to newest
-      await asyncPressEvent(getButtonByText(screen, "Newest to Oldest"));
-      expect(getButtonByText(screen, "Oldest to Newest")).toBeTruthy();
+      await asyncPressEvent(
+        getButtonByChildTestId(screen, "sortAmountAscIcon")
+      );
+      expect(getButtonByChildTestId(screen, "sortAmountAscIcon")).toBeTruthy();
 
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(2);
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(1);
+
+      // confirm the current sort order message is shown
+      expect(showToast.showToast).toHaveBeenCalledTimes(1);
+      expect(showToast.showToast).toHaveBeenCalledWith(
+        "Sorting videos: Oldest to newest",
+        3000
+      );
 
       // Confirm the videos were requested with the new order
       expect(fetch).toHaveBeenCalledWith(
@@ -1161,11 +1170,20 @@ describe("App", () => {
       );
 
       // Press button to change order back
-      await asyncPressEvent(getButtonByText(screen, "Oldest to Newest"));
-      expect(getButtonByText(screen, "Newest to Oldest")).toBeTruthy();
+      await asyncPressEvent(
+        getButtonByChildTestId(screen, "sortAmountAscIcon")
+      );
+      expect(getButtonByChildTestId(screen, "sortAmountAscIcon")).toBeTruthy();
 
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(3);
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
+
+      // confirm the current sort order message is shown
+      expect(showToast.showToast).toHaveBeenCalledTimes(2);
+      expect(showToast.showToast).toHaveBeenCalledWith(
+        "Sorting videos: Newest to oldest",
+        3000
+      );
 
       // Confirm the videos were requested with the new order
       expect(fetch).toHaveBeenCalledWith(
@@ -1307,13 +1325,17 @@ describe("App", () => {
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
 
       // Press button to change order to oldest to newest
-      await asyncPressEvent(getButtonByText(screen, "Newest to Oldest"));
+      await asyncPressEvent(
+        getButtonByChildTestId(screen, "sortAmountAscIcon")
+      );
 
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(2);
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(1);
 
       // Press button to change order to a to z
-      await asyncPressEvent(getButtonByText(screen, "Oldest to Newest"));
+      await asyncPressEvent(
+        getButtonByChildTestId(screen, "sortAmountAscIcon")
+      );
 
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledTimes(3);
       expect(asyncStorage.sortOrderState.save).toHaveBeenCalledWith(0);
@@ -1339,11 +1361,17 @@ describe("App", () => {
         json: () => apiPromise,
       });
 
-      const screen = await asyncRender(<App />);
+      await asyncRender(<App />);
       await act(() => apiPromise);
 
       expect(asyncStorage.sortOrderState.load).toHaveBeenCalledTimes(1);
-      expect(getButtonByText(screen, "Oldest to Newest")).toBeTruthy();
+      // Confirm the videos were requested with the correct order
+      expect(fetch).toHaveBeenCalledWith(
+        "https://hololive-asmr-server.herokuapp.com/videos?max=50&orderDirection=asc",
+        {
+          headers: { authToken: secrets.serverAuthToken },
+        }
+      );
     });
 
     it("defaults the sort order to sort newest to oldest if there is an issue loading the cache", async () => {
@@ -1479,7 +1507,7 @@ describe("App", () => {
       });
 
       // Open filter by channels modal
-      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "searchIcon"));
       await act(() => channelApiPromise);
 
       // Confirm all options are unselected
@@ -1576,7 +1604,7 @@ describe("App", () => {
       const modalId = "filterModal";
 
       // Open filter by channels modal
-      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "searchIcon"));
 
       // Confirm the loading indicator is visible
       expect(
@@ -1633,7 +1661,7 @@ describe("App", () => {
       const modalId = "filterModal";
 
       // Open filter by channels modal
-      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "searchIcon"));
 
       // Confirm the error message is visible
       expect(
@@ -1698,7 +1726,7 @@ describe("App", () => {
       const modalId = "filterModal";
 
       // Open filter by channels modal
-      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "searchIcon"));
 
       // Press the refresh button
       jest.spyOn(requestChannels, "requestChannels").mockResolvedValue([
@@ -1798,7 +1826,7 @@ describe("App", () => {
       await act(() => videoApiPromise);
 
       // Open filter by channels modal
-      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "searchIcon"));
       await act(() => channelApiPromise);
 
       // Confirm all the thumbnails are visible
@@ -1884,7 +1912,7 @@ describe("App", () => {
       expect(videoButtons).toHaveLength(3);
 
       // Open filter by channels modal
-      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "searchIcon"));
       await act(() => channelApiPromise);
 
       // Confirm all options are unselected
@@ -2011,7 +2039,7 @@ describe("App", () => {
       expect(videoButtons).toHaveLength(3);
 
       // Open filter by channels modal
-      await asyncPressEvent(getButtonByText(screen, "Filter By Channel"));
+      await asyncPressEvent(getButtonByChildTestId(screen, "searchIcon"));
       await act(() => channelApiPromise);
 
       // Confirm all options are unselected
