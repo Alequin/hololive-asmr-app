@@ -13,6 +13,7 @@ import { useIsAppStateActive } from "../../use-app-state";
 import { requestBrightnessPermissions } from "../../use-brightness";
 import { useFavorites } from "../../use-favorites";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
+import { ErrorLoadingFavoriteVideos } from "./components/error-loading-favorite-videos-message";
 import { ErrorRequestingVideosMessage } from "./components/error-requesting-videos-message";
 import { FilterModal } from "./components/filter-modal";
 import { NoFavoriteVideosMessage } from "./components/no-favorite-videos-message";
@@ -39,7 +40,11 @@ export const HomeView = () => {
 
   const { sortOrder, nextSortOrder } = useVideoSortOrder();
   const [areFavoritesVisible, setAreFavoritesVisible] = useState(false);
-  const { favorites: favoriteVideos } = useFavorites(sortOrder);
+  const {
+    favorites: favoriteVideos,
+    error: errorFavoriteVideos,
+    reloadFavorites,
+  } = useFavorites(sortOrder);
 
   const {
     channelsToFilterBy,
@@ -57,17 +62,25 @@ export const HomeView = () => {
 
   const videos = areFavoritesVisible ? favoriteVideos : videosFromApi;
 
-  const isError = !isRefreshing && errorRequestingVideos;
+  const hasErroredRequestingVideos =
+    !areFavoritesVisible && !isRefreshing && errorRequestingVideos;
+  const hasErroredLoadingFavorites = areFavoritesVisible && errorFavoriteVideos;
 
   const isPageLoading =
-    !isError &&
+    !hasErroredRequestingVideos &&
     (!videos || !sortOrder || isNil(isDetailedViewMode) || isRefreshing);
-  const canShowHomeView = !isError && !isPageLoading;
+  const canShowHomeView =
+    !hasErroredRequestingVideos &&
+    !hasErroredLoadingFavorites &&
+    !isPageLoading;
 
   return (
     <ViewContainerWithStatusBar testID={VIEW_ID}>
-      {isError && (
+      {hasErroredRequestingVideos && (
         <ErrorRequestingVideosMessage onPressRefresh={refreshVideos} />
+      )}
+      {hasErroredLoadingFavorites && (
+        <ErrorLoadingFavoriteVideos onPressRefresh={reloadFavorites} />
       )}
       {isPageLoading && <FullScreenLoadingSpinner />}
       {canShowHomeView && (

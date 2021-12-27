@@ -62,9 +62,7 @@ describe("App", () => {
     jest
       .spyOn(asyncStorage.sortOrderState, "load")
       .mockResolvedValue(undefined);
-    jest
-      .spyOn(asyncStorage.firstLoadState, "load")
-      .mockResolvedValue(undefined);
+
     jest.spyOn(asyncStorage.viewModeState, "load").mockResolvedValue(undefined);
     jest.spyOn(asyncStorage.favorites, "save");
     jest.spyOn(asyncStorage.favorites, "load");
@@ -354,32 +352,6 @@ describe("App", () => {
       await act(() => apiPromise);
 
       expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
-    });
-
-    it("does not requests permission to change the system brightness when the app starts if the app have previously started", async () => {
-      jest.spyOn(asyncStorage.firstLoadState, "load").mockResolvedValue(true);
-
-      const apiPromise = Promise.resolve([
-        {
-          video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
-          published_at: "2021-10-06T20:21:31Z",
-          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
-          video_title:
-            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
-        },
-      ]);
-
-      fetch.mockResolvedValue({
-        status: 200,
-        json: () => apiPromise,
-      });
-
-      await asyncRender(<App />);
-      await act(() => apiPromise);
-
-      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(0);
     });
 
     it("requests permission to change the system brightness when the app starts and there is an issue check if this is the first load of the app", async () => {
@@ -2240,7 +2212,7 @@ describe("App", () => {
       ).toBeTruthy();
     });
 
-    it("shows a message says there are no favorite vidoes if the user views the favorites page without any saved", async () => {
+    it("shows a message saying there are no favorite vidoes if the user views the favorites page without any saved", async () => {
       const videoApiPromise = Promise.resolve([
         {
           video_id: "123",
@@ -2286,6 +2258,64 @@ describe("App", () => {
           "You can add to your favorites while watching a video"
         )
       ).toBeTruthy();
+    });
+
+    it("If there is an issue loading the favorite videos shows the user a messsage and allows them to retry", async () => {
+      const videoApiPromise = Promise.resolve([]);
+
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
+
+      // Fake an issue with loading the favorite videos
+      asyncStorage.favorites.load.mockImplementation(() => {
+        throw new Error("error asyncStorage.favorites.load");
+      });
+
+      const screen = await asyncRender(<App />);
+      await act(() => videoApiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Press the favorite button
+      const favoriteButton = within(homeView).queryByTestId(
+        "favoriteOutlineIcon"
+      );
+      expect(favoriteButton).toBeTruthy();
+      await asyncPressEvent(favoriteButton);
+
+      // Confirm the error message and retry button are shown
+      expect(
+        getButtonByText(
+          screen,
+          "Sorry, there was an issue fetching your favorite videos"
+        )
+      ).toBeTruthy();
+      expect(
+        getButtonByText(screen, "Press anywhere to refresh and try again")
+      ).toBeTruthy();
+
+      // Press the retry button to re-load the favorites
+      asyncStorage.favorites.load.mockResolvedValue([
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ2",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "sana-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+      await asyncPressEvent(
+        getButtonByText(screen, "Press anywhere to refresh and try again")
+      );
+
+      // Confirm the favorite video is now visible
+      const favoriteVideoButtons =
+        within(homeView).queryAllByTestId("videoButton");
+      expect(favoriteVideoButtons).toHaveLength(1);
+      expect(within(favoriteVideoButtons[0]).queryByText("Sana")).toBeTruthy();
     });
   });
 

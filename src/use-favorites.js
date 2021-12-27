@@ -7,11 +7,20 @@ import { VIDEO_SORT_METHODS } from "./views/home-view/hooks/use-sort-video-order
 export const useFavorites = (sortOrder) => {
   const sortOrderToUse = sortOrder || VIDEO_SORT_METHODS[0];
   const [favorites, setFavorites] = useState([]);
+  const [error, setError] = useState(null);
 
-  const loadFavorites = useCallback(
-    async (onLoad) => onLoad((await asyncStorage.favorites.load()) || []),
-    []
-  );
+  const loadFavorites = useCallback(async (onLoad) => {
+    try {
+      setError(null);
+      onLoad((await asyncStorage.favorites.load()) || []);
+    } catch (error) {
+      setError(
+        new Error(
+          `There was an issue while loading favorite videos / ${error?.message}`
+        )
+      );
+    }
+  }, []);
 
   // Load on mount
   useEffect(() => {
@@ -34,6 +43,8 @@ export const useFavorites = (sortOrder) => {
       () => orderBy(favorites, sortOrderToUse.key, sortOrderToUse.direction),
       [favorites, sortOrderToUse]
     ),
+    error,
+    reloadFavorites: useCallback(() => loadFavorites(setFavorites), []),
     isInFavorites: useCallback(
       (video) =>
         Boolean(favorites.find(({ video_id }) => video_id === video.video_id)),
