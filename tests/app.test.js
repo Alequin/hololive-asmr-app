@@ -60,6 +60,9 @@ describe("App", () => {
     jest.restoreAllMocks();
     jest.clearAllMocks();
     jest.spyOn(asyncStorage.viewModeState, "load").mockResolvedValue(undefined);
+    jest
+      .spyOn(asyncStorage.firstLoadState, "load")
+      .mockResolvedValue(undefined);
     jest.spyOn(asyncStorage.favorites, "save");
     jest.spyOn(asyncStorage.favorites, "load");
     jest
@@ -2159,6 +2162,58 @@ describe("App", () => {
         within(homeView).queryAllByTestId("videoButton");
       expect(favoriteVideoButtons).toHaveLength(1);
       expect(within(favoriteVideoButtons[0]).queryByText("Sana")).toBeTruthy();
+    });
+
+    it("does not requests permission to change the system brightness when the app starts if the app have previously started", async () => {
+      jest.spyOn(asyncStorage.firstLoadState, "load").mockResolvedValue(true);
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(0);
+    });
+
+    it("requests permission to change the system brightness when the app starts and there is an issue check if this is the first load of the app", async () => {
+      jest.spyOn(asyncStorage.firstLoadState, "load").mockRejectedValue(null);
+
+      const apiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_title: "Ceres Fauna Ch. hololive-EN",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      fetch.mockResolvedValue({
+        status: 200,
+        json: () => apiPromise,
+      });
+
+      await asyncRender(<App />);
+      await act(() => apiPromise);
+
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
     });
   });
 
