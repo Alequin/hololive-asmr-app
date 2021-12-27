@@ -1,4 +1,4 @@
-import { isEmpty } from "lodash";
+import isEmpty from "lodash/isEmpty";
 import React, { useState } from "react";
 import { Image, FlatList } from "react-native";
 import { Button } from "../../../components/button";

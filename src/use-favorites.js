@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { orderBy } from "lodash";
+import orderBy from "lodash/orderBy";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as asyncStorage from "./async-storage";
 import { VIDEO_SORT_METHODS } from "./views/home-view/hooks/use-sort-video-order";

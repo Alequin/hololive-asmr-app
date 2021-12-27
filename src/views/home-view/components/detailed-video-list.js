@@ -1,5 +1,5 @@
-import { isEmpty } from "lodash";
-import React, { useEffect, useState } from "react";
+import isEmpty from "lodash/isEmpty";
+import React, { useState } from "react";
 import { FlatList, Image, View } from "react-native";
 import { Button } from "../../../components/button";
 import { ChannelThumbnail } from "../../../components/channel-thumbnail";

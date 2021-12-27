@@ -1,4 +1,5 @@
-import { isEmpty, uniqBy } from "lodash";
+import uniqBy from "lodash/uniqBy";
+import isEmpty from "lodash/isEmpty";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { requestVideos } from "../../../external-requests/request-videos";
 

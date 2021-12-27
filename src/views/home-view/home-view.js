@@ -1,5 +1,5 @@
 import * as Brightness from "expo-brightness";
-import { isEmpty } from "lodash";
+import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
