@@ -1,7 +1,8 @@
 import * as Brightness from "expo-brightness";
+import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import { AdBanner } from "../../ad-banner";
 import { ControlBar } from "../../components/control-bar";
 import { FullScreenLoadingSpinner } from "../../components/full-screen-loading-spinner";
@@ -12,10 +13,10 @@ import { useIsAppStateActive } from "../../use-app-state";
 import { requestBrightnessPermissions } from "../../use-brightness";
 import { useFavorites } from "../../use-favorites";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
-import { DetailedVideoList } from "./components/detailed-video-list";
 import { ErrorRequestingVideosMessage } from "./components/error-requesting-videos-message";
 import { FilterModal } from "./components/filter-modal";
-import { ThumbnailVideoList } from "./components/thumbnail-video-list";
+import { NoFavoriteVideosMessage } from "./components/no-favorite-videos-message";
+import { VideoList } from "./components/video-list";
 import { useRequestVideos } from "./hooks/use-request-videos";
 import { useVideoSortOrder } from "./hooks/use-sort-video-order";
 import { useViewMode } from "./hooks/use-view-mode";
@@ -72,19 +73,17 @@ export const HomeView = () => {
       {canShowHomeView && (
         <>
           <MainView>
-            {isDetailedViewMode ? (
-              <DetailedVideoList
-                videos={videos}
-                fetchNextPageOfVideos={fetchNextPageOfVideos}
-                shouldDisableNextPageFetch={areFavoritesVisible}
-              />
+            {isEmpty(videos) && areFavoritesVisible ? (
+              <NoFavoriteVideosMessage />
             ) : (
-              <ThumbnailVideoList
+              <VideoList
+                isDetailedViewMode={isDetailedViewMode}
                 videos={videos}
                 fetchNextPageOfVideos={fetchNextPageOfVideos}
                 shouldDisableNextPageFetch={areFavoritesVisible}
               />
             )}
+
             <FilterModal
               isOpen={isFilerModalOpen}
               videos={videos}

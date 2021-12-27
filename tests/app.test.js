@@ -2239,6 +2239,54 @@ describe("App", () => {
         within(ascendingVideoButtons[1]).queryByText("Fauna")
       ).toBeTruthy();
     });
+
+    it("shows a message says there are no favorite vidoes if the user views the favorites page without any saved", async () => {
+      const videoApiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1",
+          channel_title: "Fauna",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "fauna-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
+
+      // Fake no vidoes in favorites
+      asyncStorage.favorites.load.mockResolvedValue([]);
+
+      const screen = await asyncRender(<App />);
+      await act(() => videoApiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Confirm favorite is not visible
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      expect(videoButtons).toHaveLength(1);
+      expect(within(videoButtons[0]).queryByText("Fauna")).toBeTruthy();
+
+      // Press the favorite button
+      const favoriteButton = within(homeView).queryByTestId(
+        "favoriteOutlineIcon"
+      );
+      expect(favoriteButton).toBeTruthy();
+      await asyncPressEvent(favoriteButton);
+
+      // Confirm "no videos in favorites" message is shown
+      expect(
+        screen.queryByText("You don't have any videos in your favorites")
+      ).toBeTruthy();
+      expect(
+        screen.queryByText(
+          "You can add to your favorites while watching a video"
+        )
+      ).toBeTruthy();
+    });
   });
 
   describe("Video View", () => {
