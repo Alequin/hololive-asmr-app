@@ -1,3 +1,4 @@
+import { isEmpty } from "lodash";
 import React, { useState } from "react";
 import { Image, FlatList } from "react-native";
 import { Button } from "../../../components/button";
@@ -6,7 +7,11 @@ import { useOrientation } from "../../../use-orientation";
 import { isMiniScreen, windowWidth } from "../../../window";
 import { useNavigateToVideoView } from "../hooks/use-navigate-to-video-view";
 
-export const ThumbnailVideoList = ({ videos, fetchNextPageOfVideos }) => {
+export const ThumbnailVideoList = ({
+  videos,
+  fetchNextPageOfVideos,
+  shouldDisableNextPageFetch,
+}) => {
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
   const [shouldShowloadingIndicator, setShouldShowloadingIndicator] =
     useState(true);
@@ -39,7 +44,11 @@ export const ThumbnailVideoList = ({ videos, fetchNextPageOfVideos }) => {
         />
       )}
       ListFooterComponent={() =>
-        shouldShowloadingIndicator ? <LoadingSpinner /> : null
+        !shouldDisableNextPageFetch &&
+        isEmpty(videos) &&
+        shouldShowloadingIndicator ? (
+          <LoadingSpinner />
+        ) : null
       }
     />
   );

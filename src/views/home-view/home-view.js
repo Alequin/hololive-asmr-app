@@ -1,13 +1,16 @@
 import * as Brightness from "expo-brightness";
 import isNil from "lodash/isNil";
 import React, { useEffect, useState } from "react";
+import { View } from "react-native";
 import { AdBanner } from "../../ad-banner";
 import { ControlBar } from "../../components/control-bar";
 import { FullScreenLoadingSpinner } from "../../components/full-screen-loading-spinner";
 import { IconButton } from "../../components/icon-button";
 import { MainView } from "../../components/main-view";
+import { showToast } from "../../show-toast";
 import { useIsAppStateActive } from "../../use-app-state";
 import { requestBrightnessPermissions } from "../../use-brightness";
+import { useFavorites } from "../../use-favorites";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { DetailedVideoList } from "./components/detailed-video-list";
 import { ErrorRequestingVideosMessage } from "./components/error-requesting-videos-message";
@@ -33,20 +36,25 @@ export const HomeView = () => {
       );
   }, [isAppActive]);
 
+  const { sortOrder, nextSortOrder } = useVideoSortOrder();
+  const [areFavoritesVisible, setAreFavoritesVisible] = useState(false);
+  const { favorites: favoriteVideos } = useFavorites(sortOrder);
+
   const {
     channelsToFilterBy,
     toggleChannelToFilterBy,
     clearChannelsToFilterBy,
   } = useFilteredVideos();
-  const { sortOrder, nextSortOrder } = useVideoSortOrder();
 
   const {
-    videos,
+    videos: videosFromApi,
     isRefreshing,
     refreshVideos,
     fetchNextPageOfVideos,
     error: errorRequestingVideos,
   } = useRequestVideos(channelsToFilterBy, sortOrder);
+
+  const videos = areFavoritesVisible ? favoriteVideos : videosFromApi;
 
   const isError = !isRefreshing && errorRequestingVideos;
 
@@ -68,11 +76,13 @@ export const HomeView = () => {
               <DetailedVideoList
                 videos={videos}
                 fetchNextPageOfVideos={fetchNextPageOfVideos}
+                shouldDisableNextPageFetch={areFavoritesVisible}
               />
             ) : (
               <ThumbnailVideoList
                 videos={videos}
                 fetchNextPageOfVideos={fetchNextPageOfVideos}
+                shouldDisableNextPageFetch={areFavoritesVisible}
               />
             )}
             <FilterModal
@@ -86,6 +96,20 @@ export const HomeView = () => {
           </MainView>
           <ControlBar>
             <FilterModalButton openSearchModal={showFilterModal} />
+            <ShowFavoritesButton
+              areFavoritesVisible={areFavoritesVisible}
+              toggleFavorites={() => {
+                const willShowFavorites = !areFavoritesVisible;
+                showToast(
+                  willShowFavorites
+                    ? "Showing favorite videos"
+                    : "Showing all videos",
+                  1000
+                );
+                setAreFavoritesVisible(willShowFavorites);
+              }}
+            />
+            {shouldRequestPermission ? <PermissionsButton /> : <View />}
             <SortButton
               nextSortOrder={nextSortOrder}
               sortOrderDescription={sortOrder.name}
@@ -93,9 +117,6 @@ export const HomeView = () => {
             <ViewModeButton
               isDetailedViewMode={isDetailedViewMode}
               toggleViewMode={toggleDetailedViewMode}
-            />
-            <PermissionsButton
-              shouldRequestPermission={shouldRequestPermission}
             />
           </ControlBar>
         </>
@@ -137,13 +158,12 @@ const ViewModeButton = ({ isDetailedViewMode, toggleViewMode }) => (
   />
 );
 
-const PermissionsButton = ({ shouldRequestPermission }) =>
-  shouldRequestPermission ? (
-    <HomeViewIconButton
-      iconName="shieldKey"
-      onPress={requestBrightnessPermissions}
-    />
-  ) : null;
+const PermissionsButton = () => (
+  <HomeViewIconButton
+    iconName="shieldKey"
+    onPress={requestBrightnessPermissions}
+  />
+);
 
 const FilterModalButton = ({ openSearchModal }) => (
   <HomeViewIconButton
@@ -153,11 +173,19 @@ const FilterModalButton = ({ openSearchModal }) => (
   />
 );
 
-const SortButton = ({ nextSortOrder, sortOrderDescription }) => (
+const SortButton = ({ nextSortOrder }) => (
   <HomeViewIconButton
     iconName="sortOrder"
     iconSize={20}
     onPress={nextSortOrder}
+  />
+);
+
+const ShowFavoritesButton = ({ areFavoritesVisible, toggleFavorites }) => (
+  <HomeViewIconButton
+    iconName={areFavoritesVisible ? "favorite" : "favoriteOutline"}
+    iconSize={23}
+    onPress={toggleFavorites}
   />
 );
 

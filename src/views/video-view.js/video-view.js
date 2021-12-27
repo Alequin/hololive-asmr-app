@@ -75,37 +75,24 @@ export const VideoView = ({ route: { params: video } }) => {
             }}
           >
             <SideBar>
-              {isFullScreenMode ? (
-                <>
-                  <FullViewIconButtons
-                    iconName="fullscreen"
-                    onPress={toggleFullScreenMode}
-                  />
-                  <FullViewIconButtons iconName="lock" onPress={lockScreen} />
-                  <FullViewIconButtons
-                    iconName={isFavoriteVideo ? "favorite" : "favoriteOutline"}
-                    onPress={() => toggleFavorites(video)}
-                  />
-                </>
-              ) : (
-                <>
-                  <HalfViewIconButton
-                    iconName="fullscreen"
-                    onPress={toggleFullScreenMode}
-                    text="Full screen"
-                  />
-                  <HalfViewIconButton
-                    iconName="lock"
-                    onPress={lockScreen}
-                    text="Lock screen"
-                  />
-                  <HalfViewIconButton
-                    iconName={isFavoriteVideo ? "favorite" : "favoriteOutline"}
-                    text="Add to favorites"
-                    onPress={() => toggleFavorites(video)}
-                  />
-                </>
-              )}
+              <VideoviewIconButton
+                isFullScreenMode={isFullScreenMode}
+                iconName="fullscreen"
+                onPress={toggleFullScreenMode}
+                text="Full screen"
+              />
+              <VideoviewIconButton
+                isFullScreenMode={isFullScreenMode}
+                iconName="lock"
+                onPress={lockScreen}
+                text="Lock screen"
+              />
+              <VideoviewIconButton
+                isFullScreenMode={isFullScreenMode}
+                iconName={isFavoriteVideo ? "favorite" : "favoriteOutline"}
+                text={isFavoriteVideo ? "Remove favorite" : "Add favorite"}
+                onPress={() => toggleFavorites(video)}
+              />
             </SideBar>
             <View
               testID="embeddedVideoContainer"
@@ -130,31 +117,18 @@ export const VideoView = ({ route: { params: video } }) => {
               />
             </View>
             <SideBar>
-              {isFullScreenMode ? (
-                <>
-                  <FullViewIconButtons
-                    iconName="youtubeTv"
-                    onPress={toYoutubeVideo}
-                  />
-                  <FullViewIconButtons
-                    iconName="back"
-                    onPress={() => nav.goBack()}
-                  />
-                </>
-              ) : (
-                <>
-                  <HalfViewIconButton
-                    iconName="youtubeTv"
-                    onPress={toYoutubeVideo}
-                    text="Watch on youtube"
-                  />
-                  <HalfViewIconButton
-                    iconName="back"
-                    onPress={() => nav.goBack()}
-                    text="Back"
-                  />
-                </>
-              )}
+              <VideoviewIconButton
+                isFullScreenMode={isFullScreenMode}
+                iconName="youtubeTv"
+                onPress={toYoutubeVideo}
+                text="Watch on youtube"
+              />
+              <VideoviewIconButton
+                isFullScreenMode={isFullScreenMode}
+                iconName="back"
+                onPress={() => nav.goBack()}
+                text="Back"
+              />
             </SideBar>
           </View>
         </MainView>
@@ -205,6 +179,14 @@ const SideBar = (props) => (
   <View style={{ flex: 1, justifyContent: "space-around" }} {...props} />
 );
 
+const VideoviewIconButton = ({ isFullScreenMode, ...otherProps }) => {
+  return isFullScreenMode ? (
+    <FullViewIconButtons {...otherProps} />
+  ) : (
+    <HalfViewIconButton {...otherProps} />
+  );
+};
+
 const HalfViewIconButton = (props) => (
   <IconButton
     {...props}
@@ -219,6 +201,7 @@ const HalfViewIconButton = (props) => (
 const FullViewIconButtons = (props) => (
   <IconButton
     {...props}
+    text={undefined}
     iconSize={26}
     style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
   />

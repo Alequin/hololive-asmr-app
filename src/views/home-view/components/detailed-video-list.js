@@ -1,3 +1,4 @@
+import { isEmpty } from "lodash";
 import React, { useEffect, useState } from "react";
 import { FlatList, Image, View } from "react-native";
 import { Button } from "../../../components/button";
@@ -17,7 +18,11 @@ import { dateString } from "./date-string";
 const ONE_COLUMN = 1;
 const TWO_COLUMNS = 2;
 
-export const DetailedVideoList = ({ videos, fetchNextPageOfVideos }) => {
+export const DetailedVideoList = ({
+  videos,
+  fetchNextPageOfVideos,
+  shouldDisableNextPageFetch,
+}) => {
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
   const [shouldShowloadingIndicator, setShouldShowloadingIndicator] =
     useState(true);
@@ -35,7 +40,7 @@ export const DetailedVideoList = ({ videos, fetchNextPageOfVideos }) => {
       keyExtractor={({ video_id }) => video_id}
       numColumns={columnCount}
       onEndReached={async () => {
-        if (isLoadingNextPage) return;
+        if (isLoadingNextPage || shouldDisableNextPageFetch) return;
         setIsLoadingNextPage(true);
         const wereThereMoreVideos = await fetchNextPageOfVideos();
         setIsLoadingNextPage(false);
@@ -53,7 +58,11 @@ export const DetailedVideoList = ({ videos, fetchNextPageOfVideos }) => {
         />
       )}
       ListFooterComponent={() =>
-        shouldShowloadingIndicator ? <LoadingSpinner /> : null
+        !shouldDisableNextPageFetch &&
+        isEmpty(videos) &&
+        shouldShowloadingIndicator ? (
+          <LoadingSpinner />
+        ) : null
       }
     />
   );

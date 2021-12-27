@@ -2090,6 +2090,155 @@ describe("App", () => {
       // Checks again after the app goes from the background to active
       expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(2);
     });
+
+    it("shows the users favorite videos when the hove view favorite button is pressed", async () => {
+      const videoApiPromise = Promise.resolve([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1",
+          channel_title: "Fauna",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "fauna-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
+
+      // Fake a video already been in the list of favorites
+      asyncStorage.favorites.load.mockResolvedValue([
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ2",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "sana-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      const screen = await asyncRender(<App />);
+      await act(() => videoApiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Confirm favorite is not visible
+      const videoButtons = within(homeView).queryAllByTestId("videoButton");
+      expect(videoButtons).toHaveLength(1);
+      expect(within(videoButtons[0]).queryByText("Fauna")).toBeTruthy();
+
+      // Press the favorite button
+      const favoriteButton = within(homeView).queryByTestId(
+        "favoriteOutlineIcon"
+      );
+      expect(favoriteButton).toBeTruthy();
+      await asyncPressEvent(favoriteButton);
+
+      // Confirm message is shown
+      expect(showToast.showToast).toHaveBeenCalledTimes(1);
+      expect(showToast.showToast).toHaveBeenCalledWith(
+        "Showing favorite videos",
+        1000
+      );
+
+      // Confirm the favorite video is now visible
+      const favoriteVideoButtons =
+        within(homeView).queryAllByTestId("videoButton");
+      expect(favoriteVideoButtons).toHaveLength(1);
+      expect(within(favoriteVideoButtons[0]).queryByText("Sana")).toBeTruthy();
+
+      // Press the favorite button again to show all videos
+      const turnOfffavoritesButton =
+        within(homeView).queryByTestId("favoriteIcon");
+      expect(turnOfffavoritesButton).toBeTruthy();
+      await asyncPressEvent(turnOfffavoritesButton);
+
+      // Confirm message is shown
+      expect(showToast.showToast).toHaveBeenCalledTimes(2);
+      expect(showToast.showToast).toHaveBeenCalledWith(
+        "Showing all videos",
+        1000
+      );
+
+      // Confirm favorite is not visible again
+      const nonFavoriteVideoButtons =
+        within(homeView).queryAllByTestId("videoButton");
+      expect(nonFavoriteVideoButtons).toHaveLength(1);
+      expect(
+        within(nonFavoriteVideoButtons[0]).queryByText("Fauna")
+      ).toBeTruthy();
+    });
+
+    it("orders the favorite videos using the users requested sort order", async () => {
+      const videoApiPromise = Promise.resolve([]);
+
+      jest
+        .spyOn(requestVideos, "requestVideos")
+        .mockReturnValue(videoApiPromise);
+
+      // Fake a video already been in the list of favorites
+      asyncStorage.favorites.load.mockResolvedValue([
+        {
+          video_id: "123",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1",
+          channel_title: "Fauna",
+          published_at: "2022-10-06T20:21:31Z",
+          video_thumbnail_url: "fauna-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+        {
+          video_id: "234",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ2",
+          channel_title: "Sana",
+          published_at: "2021-10-06T20:21:31Z",
+          video_thumbnail_url: "sana-thumbnail.jpg",
+          video_title:
+            "【Fauna&#39;s ASMR】 Comfy Ear Cleaning, Oil Massage, and ASMR Triggers by Fauna 💚 #holoCouncil",
+        },
+      ]);
+
+      const screen = await asyncRender(<App />);
+      await act(() => videoApiPromise);
+
+      const homeView = screen.queryByTestId("homeView");
+
+      // Press the favorite button
+      const favoriteButton = within(homeView).queryByTestId(
+        "favoriteOutlineIcon"
+      );
+      expect(favoriteButton).toBeTruthy();
+      await asyncPressEvent(favoriteButton);
+
+      // Confirm the favorite video is now visible in the expected order
+      const descendingVideoButtons =
+        within(homeView).queryAllByTestId("videoButton");
+      expect(descendingVideoButtons).toHaveLength(2);
+      expect(
+        within(descendingVideoButtons[0]).queryByText("Fauna")
+      ).toBeTruthy();
+      expect(
+        within(descendingVideoButtons[1]).queryByText("Sana")
+      ).toBeTruthy();
+
+      // Change the sort order to ascending
+      const orderbutton = getButtonByChildTestId(screen, "sortAmountAscIcon");
+      expect(orderbutton).toBeTruthy();
+      await asyncPressEvent(orderbutton);
+
+      // Confirm the favorite videos are in the expected order
+      const ascendingVideoButtons =
+        within(homeView).queryAllByTestId("videoButton");
+      expect(ascendingVideoButtons).toHaveLength(2);
+      expect(within(ascendingVideoButtons[0]).queryByText("Sana")).toBeTruthy();
+      expect(
+        within(ascendingVideoButtons[1]).queryByText("Fauna")
+      ).toBeTruthy();
+    });
   });
 
   describe("Video View", () => {
@@ -2865,14 +3014,16 @@ describe("App", () => {
 
       // Press the favorite icon
       const favoriteButton = getButtonByChildTestId(
-        screen,
+        within(videoView),
         "favoriteOutlineIcon"
       );
       expect(favoriteButton).toBeTruthy();
       await asyncPressEvent(favoriteButton);
 
       // Confirm the video was added to favorites
-      expect(getButtonByChildTestId(screen, "favoriteIcon"));
+      expect(
+        getButtonByChildTestId(within(videoView), "favoriteIcon")
+      ).toBeTruthy();
       expect(asyncStorage.favorites.save).toHaveBeenCalledTimes(1);
       expect(asyncStorage.favorites.save).toHaveBeenCalledWith([
         {
@@ -2940,12 +3091,20 @@ describe("App", () => {
       expect(videoView).toBeTruthy();
 
       // Press the favorite icon
-      const favoriteButton = getButtonByChildTestId(screen, "favoriteIcon");
+      const favoriteButton = getButtonByChildTestId(
+        within(screen.queryByTestId("videoView")),
+        "favoriteIcon"
+      );
       expect(favoriteButton).toBeTruthy();
       await asyncPressEvent(favoriteButton);
 
       // Confirm the video was removed from favorites
-      expect(getButtonByChildTestId(screen, "favoriteOutlineIcon"));
+      expect(
+        getButtonByChildTestId(
+          within(screen.queryByTestId("videoView")),
+          "favoriteOutlineIcon"
+        )
+      );
       expect(asyncStorage.favorites.save).toHaveBeenCalledTimes(1);
       expect(asyncStorage.favorites.save).toHaveBeenCalledWith([]);
     });
