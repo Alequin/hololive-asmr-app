@@ -146,7 +146,7 @@ describe("App", () => {
         {
           video_id: "123",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1",
-          channel_title: "Ceres Fauna Ch. hololive-EN1",
+          channel_title: "Ceres Fauna Ch. hololive-EN2",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
           video_title:
@@ -380,7 +380,7 @@ describe("App", () => {
       const apiPromise = Promise.resolve([
         {
           video_id: "123",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjcTj9owfr3jio",
           channel_title: "Fauna",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/123/mqdefault.jpg",
@@ -400,7 +400,7 @@ describe("App", () => {
         },
         {
           video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjioefop",
           channel_title: "Ina",
           published_at: "2019-12-31T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
@@ -476,7 +476,7 @@ describe("App", () => {
         },
         {
           video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjjf3opk",
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
@@ -486,7 +486,7 @@ describe("App", () => {
         },
         {
           video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjciofejio",
           channel_title: "Ina",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
@@ -738,7 +738,7 @@ describe("App", () => {
         },
         {
           video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqjrf3jko",
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
@@ -748,7 +748,7 @@ describe("App", () => {
         },
         {
           video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjjiowefjio",
           channel_title: "Ina",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
@@ -795,7 +795,7 @@ describe("App", () => {
         },
         {
           video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzji9wdk90",
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
@@ -805,7 +805,7 @@ describe("App", () => {
         },
         {
           video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjcTjiowefo",
           channel_title: "Ina",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
@@ -878,7 +878,7 @@ describe("App", () => {
         },
         {
           video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjcj9owek9o",
           channel_title: "Sana",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
@@ -888,7 +888,7 @@ describe("App", () => {
         },
         {
           video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjjwefj90",
           channel_title: "Ina",
           published_at: "2021-10-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
@@ -1035,8 +1035,8 @@ describe("App", () => {
         },
         {
           video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzjiowefkop",
+          channel_title: "Ceres Fauna Ch. hololive-EN2",
           published_at: "2021-11-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
           video_title:
@@ -1044,8 +1044,8 @@ describe("App", () => {
         },
         {
           video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
-          channel_title: "Ceres Fauna Ch. hololive-EN",
+          channel_id: "UCO_aKKYxn4tvrqPjcTzjiowefioj",
+          channel_title: "Ceres Fauna Ch. hololive-EN3",
           published_at: "2021-12-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
           video_title:
@@ -1083,7 +1083,7 @@ describe("App", () => {
         },
         {
           video_id: "234",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjioweio",
           channel_title: "Sana",
           published_at: "2021-11-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/234/mqdefault.jpg",
@@ -1092,7 +1092,7 @@ describe("App", () => {
         },
         {
           video_id: "345",
-          channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
+          channel_id: "UCO_aKKYxn4tvrqPjcTiojweQ",
           channel_title: "Fauna",
           published_at: "2021-12-06T20:21:31Z",
           video_thumbnail_url: "https://i.ytimg.com/vi/345/mqdefault.jpg",
