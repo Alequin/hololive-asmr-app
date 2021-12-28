@@ -1,8 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { showToast } from "../../../show-toast";
 
 export const VIDEO_SORT_METHODS = [
-  { key: "published_at", direction: "desc", name: "Newest to oldest" },
+  {
+    key: "published_at",
+    direction: "desc",
+    name: "Newest to oldest",
+    isDefaultOrder: true,
+  },
   { key: "published_at", direction: "asc", name: "Oldest to newest" },
 ];
 
