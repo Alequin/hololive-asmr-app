@@ -48,8 +48,12 @@ const ICON_OPTIONS = {
   youtubeTv: customIcon(MaterialCommunityIcons, "youtube-tv"),
   refresh: customIcon(FontAwesome, "refresh"),
   fullscreen: customIcon(MaterialCommunityIcons, "fullscreen"),
-  favoriteOutline: customIcon(MaterialIcons, "favorite-outline"),
-  favorite: customIcon(MaterialIcons, "favorite"),
+  favouriteOutline: customIcon(MaterialIcons, "favorite-outline", {
+    testIdOverride: "favouriteOutline",
+  }),
+  favourite: customIcon(MaterialIcons, "favorite", {
+    testIdOverride: "favourite",
+  }),
 };
 
 const TestIdElement = (props) => <View {...props} />;

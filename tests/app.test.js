@@ -65,8 +65,8 @@ describe("App", () => {
     jest
       .spyOn(asyncStorage.firstLoadState, "load")
       .mockResolvedValue(undefined);
-    jest.spyOn(asyncStorage.favorites, "save");
-    jest.spyOn(asyncStorage.favorites, "load");
+    jest.spyOn(asyncStorage.favourites, "save");
+    jest.spyOn(asyncStorage.favourites, "load");
     jest
       .spyOn(Brightness, "requestPermissionsAsync")
       .mockResolvedValue({ granted: true });
@@ -2079,7 +2079,7 @@ describe("App", () => {
       expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(2);
     });
 
-    it("shows the users favorite videos when the hove view favorite button is pressed", async () => {
+    it("shows the users favourite videos when the hove view favourite button is pressed", async () => {
       const videoApiPromise = Promise.resolve([
         {
           video_id: "123",
@@ -2096,8 +2096,8 @@ describe("App", () => {
         .spyOn(requestVideos, "requestVideos")
         .mockReturnValue(videoApiPromise);
 
-      // Fake a video already been in the list of favorites
-      asyncStorage.favorites.load.mockResolvedValue([
+      // Fake a video already been in the list of favourites
+      asyncStorage.favourites.load.mockResolvedValue([
         {
           video_id: "234",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ2",
@@ -2114,36 +2114,36 @@ describe("App", () => {
 
       const homeView = screen.queryByTestId("homeView");
 
-      // Confirm favorite is not visible
+      // Confirm favourite is not visible
       const videoButtons = within(homeView).queryAllByTestId("videoButton");
       expect(videoButtons).toHaveLength(1);
       expect(within(videoButtons[0]).queryByText("Fauna")).toBeTruthy();
 
-      // Press the favorite button
-      const favoriteButton = within(homeView).queryByTestId(
-        "favoriteOutlineIcon"
+      // Press the favourite button
+      const favouriteButton = within(homeView).queryByTestId(
+        "favouriteOutlineIcon"
       );
-      expect(favoriteButton).toBeTruthy();
-      await asyncPressEvent(favoriteButton);
+      expect(favouriteButton).toBeTruthy();
+      await asyncPressEvent(favouriteButton);
 
       // Confirm message is shown
       expect(showToast.showToast).toHaveBeenCalledTimes(1);
       expect(showToast.showToast).toHaveBeenCalledWith(
-        "Showing favorite videos",
+        "Showing favourite videos",
         1000
       );
 
-      // Confirm the favorite video is now visible
-      const favoriteVideoButtons =
+      // Confirm the favourite video is now visible
+      const favouriteVideoButtons =
         within(homeView).queryAllByTestId("videoButton");
-      expect(favoriteVideoButtons).toHaveLength(1);
-      expect(within(favoriteVideoButtons[0]).queryByText("Sana")).toBeTruthy();
+      expect(favouriteVideoButtons).toHaveLength(1);
+      expect(within(favouriteVideoButtons[0]).queryByText("Sana")).toBeTruthy();
 
-      // Press the favorite button again to show all videos
-      const turnOfffavoritesButton =
-        within(homeView).queryByTestId("favoriteIcon");
-      expect(turnOfffavoritesButton).toBeTruthy();
-      await asyncPressEvent(turnOfffavoritesButton);
+      // Press the favourite button again to show all videos
+      const turnOfffavouritesButton =
+        within(homeView).queryByTestId("favouriteIcon");
+      expect(turnOfffavouritesButton).toBeTruthy();
+      await asyncPressEvent(turnOfffavouritesButton);
 
       // Confirm message is shown
       expect(showToast.showToast).toHaveBeenCalledTimes(2);
@@ -2152,24 +2152,24 @@ describe("App", () => {
         1000
       );
 
-      // Confirm favorite is not visible again
-      const nonFavoriteVideoButtons =
+      // Confirm favourite is not visible again
+      const nonFavouriteVideoButtons =
         within(homeView).queryAllByTestId("videoButton");
-      expect(nonFavoriteVideoButtons).toHaveLength(1);
+      expect(nonFavouriteVideoButtons).toHaveLength(1);
       expect(
-        within(nonFavoriteVideoButtons[0]).queryByText("Fauna")
+        within(nonFavouriteVideoButtons[0]).queryByText("Fauna")
       ).toBeTruthy();
     });
 
-    it("orders the favorite videos using the users requested sort order", async () => {
+    it("orders the favourite videos using the users requested sort order", async () => {
       const videoApiPromise = Promise.resolve([]);
 
       jest
         .spyOn(requestVideos, "requestVideos")
         .mockReturnValue(videoApiPromise);
 
-      // Fake a video already been in the list of favorites
-      asyncStorage.favorites.load.mockResolvedValue([
+      // Fake a video already been in the list of favourites
+      asyncStorage.favourites.load.mockResolvedValue([
         {
           video_id: "123",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ1",
@@ -2195,14 +2195,14 @@ describe("App", () => {
 
       const homeView = screen.queryByTestId("homeView");
 
-      // Press the favorite button
-      const favoriteButton = within(homeView).queryByTestId(
-        "favoriteOutlineIcon"
+      // Press the favourite button
+      const favouriteButton = within(homeView).queryByTestId(
+        "favouriteOutlineIcon"
       );
-      expect(favoriteButton).toBeTruthy();
-      await asyncPressEvent(favoriteButton);
+      expect(favouriteButton).toBeTruthy();
+      await asyncPressEvent(favouriteButton);
 
-      // Confirm the favorite video is now visible in the expected order
+      // Confirm the favourite video is now visible in the expected order
       const descendingVideoButtons =
         within(homeView).queryAllByTestId("videoButton");
       expect(descendingVideoButtons).toHaveLength(2);
@@ -2218,7 +2218,7 @@ describe("App", () => {
       expect(orderbutton).toBeTruthy();
       await asyncPressEvent(orderbutton);
 
-      // Confirm the favorite videos are in the expected order
+      // Confirm the favourite videos are in the expected order
       const ascendingVideoButtons =
         within(homeView).queryAllByTestId("videoButton");
       expect(ascendingVideoButtons).toHaveLength(2);
@@ -2228,7 +2228,7 @@ describe("App", () => {
       ).toBeTruthy();
     });
 
-    it("shows a message saying there are no favorite vidoes if the user views the favorites page without any saved", async () => {
+    it("shows a message saying there are no favourite vidoes if the user views the favourites page without any saved", async () => {
       const videoApiPromise = Promise.resolve([
         {
           video_id: "123",
@@ -2245,47 +2245,47 @@ describe("App", () => {
         .spyOn(requestVideos, "requestVideos")
         .mockReturnValue(videoApiPromise);
 
-      // Fake no vidoes in favorites
-      asyncStorage.favorites.load.mockResolvedValue([]);
+      // Fake no vidoes in favourites
+      asyncStorage.favourites.load.mockResolvedValue([]);
 
       const screen = await asyncRender(<App />);
       await act(() => videoApiPromise);
 
       const homeView = screen.queryByTestId("homeView");
 
-      // Confirm favorite is not visible
+      // Confirm favourite is not visible
       const videoButtons = within(homeView).queryAllByTestId("videoButton");
       expect(videoButtons).toHaveLength(1);
       expect(within(videoButtons[0]).queryByText("Fauna")).toBeTruthy();
 
-      // Press the favorite button
-      const favoriteButton = within(homeView).queryByTestId(
-        "favoriteOutlineIcon"
+      // Press the favourite button
+      const favouriteButton = within(homeView).queryByTestId(
+        "favouriteOutlineIcon"
       );
-      expect(favoriteButton).toBeTruthy();
-      await asyncPressEvent(favoriteButton);
+      expect(favouriteButton).toBeTruthy();
+      await asyncPressEvent(favouriteButton);
 
-      // Confirm "no videos in favorites" message is shown
+      // Confirm "no videos in favourites" message is shown
       expect(
-        screen.queryByText("You don't have any videos in your favorites")
+        screen.queryByText("You don't have any videos in your favourites")
       ).toBeTruthy();
       expect(
         screen.queryByText(
-          "You can add to your favorites while watching a video"
+          "You can add to your favourites while watching a video"
         )
       ).toBeTruthy();
     });
 
-    it("If there is an issue loading the favorite videos shows the user a messsage and allows them to retry", async () => {
+    it("If there is an issue loading the favourite videos shows the user a messsage and allows them to retry", async () => {
       const videoApiPromise = Promise.resolve([]);
 
       jest
         .spyOn(requestVideos, "requestVideos")
         .mockReturnValue(videoApiPromise);
 
-      // Fake an issue with loading the favorite videos
-      asyncStorage.favorites.load.mockImplementation(() => {
-        throw new Error("error asyncStorage.favorites.load");
+      // Fake an issue with loading the favourite videos
+      asyncStorage.favourites.load.mockImplementation(() => {
+        throw new Error("error asyncStorage.favourites.load");
       });
 
       const screen = await asyncRender(<App />);
@@ -2293,26 +2293,26 @@ describe("App", () => {
 
       const homeView = screen.queryByTestId("homeView");
 
-      // Press the favorite button
-      const favoriteButton = within(homeView).queryByTestId(
-        "favoriteOutlineIcon"
+      // Press the favourite button
+      const favouriteButton = within(homeView).queryByTestId(
+        "favouriteOutlineIcon"
       );
-      expect(favoriteButton).toBeTruthy();
-      await asyncPressEvent(favoriteButton);
+      expect(favouriteButton).toBeTruthy();
+      await asyncPressEvent(favouriteButton);
 
       // Confirm the error message and retry button are shown
       expect(
         getButtonByText(
           screen,
-          "Sorry, there was an issue fetching your favorite videos"
+          "Sorry, there was an issue fetching your favourite videos"
         )
       ).toBeTruthy();
       expect(
         getButtonByText(screen, "Press anywhere to refresh and try again")
       ).toBeTruthy();
 
-      // Press the retry button to re-load the favorites
-      asyncStorage.favorites.load.mockResolvedValue([
+      // Press the retry button to re-load the favourites
+      asyncStorage.favourites.load.mockResolvedValue([
         {
           video_id: "234",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ2",
@@ -2327,11 +2327,11 @@ describe("App", () => {
         getButtonByText(screen, "Press anywhere to refresh and try again")
       );
 
-      // Confirm the favorite video is now visible
-      const favoriteVideoButtons =
+      // Confirm the favourite video is now visible
+      const favouriteVideoButtons =
         within(homeView).queryAllByTestId("videoButton");
-      expect(favoriteVideoButtons).toHaveLength(1);
-      expect(within(favoriteVideoButtons[0]).queryByText("Sana")).toBeTruthy();
+      expect(favouriteVideoButtons).toHaveLength(1);
+      expect(within(favouriteVideoButtons[0]).queryByText("Sana")).toBeTruthy();
     });
 
     it("does not requests permission to change the system brightness when the app starts if the app have previously started", async () => {
@@ -3115,7 +3115,7 @@ describe("App", () => {
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0]);
     });
 
-    it("allows the user to add a video to their favorites", async () => {
+    it("allows the user to add a video to their favourites", async () => {
       const apiPromise = Promise.resolve([
         {
           video_id: "123",
@@ -3133,8 +3133,8 @@ describe("App", () => {
         json: () => apiPromise,
       });
 
-      // Fake a video already been in the list of favorites
-      asyncStorage.favorites.load.mockResolvedValue([
+      // Fake a video already been in the list of favourites
+      asyncStorage.favourites.load.mockResolvedValue([
         {
           video_id: "234",
           channel_id: "UCO_aKKYxn4tvrqP8484894",
@@ -3158,20 +3158,20 @@ describe("App", () => {
       const videoView = screen.queryByTestId("videoView");
       expect(videoView).toBeTruthy();
 
-      // Press the favorite icon
-      const favoriteButton = getButtonByChildTestId(
+      // Press the favourite icon
+      const favouriteButton = getButtonByChildTestId(
         within(videoView),
-        "favoriteOutlineIcon"
+        "favouriteOutlineIcon"
       );
-      expect(favoriteButton).toBeTruthy();
-      await asyncPressEvent(favoriteButton);
+      expect(favouriteButton).toBeTruthy();
+      await asyncPressEvent(favouriteButton);
 
-      // Confirm the video was added to favorites
+      // Confirm the video was added to favourites
       expect(
-        getButtonByChildTestId(within(videoView), "favoriteIcon")
+        getButtonByChildTestId(within(videoView), "favouriteIcon")
       ).toBeTruthy();
-      expect(asyncStorage.favorites.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.favorites.save).toHaveBeenCalledWith([
+      expect(asyncStorage.favourites.save).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.favourites.save).toHaveBeenCalledWith([
         {
           video_id: "234",
           channel_id: "UCO_aKKYxn4tvrqP8484894",
@@ -3193,7 +3193,7 @@ describe("App", () => {
       ]);
     });
 
-    it("allows the user to remove a video from their favorites", async () => {
+    it("allows the user to remove a video from their favourites", async () => {
       const apiPromise = Promise.resolve([
         {
           video_id: "123",
@@ -3211,8 +3211,8 @@ describe("App", () => {
         json: () => apiPromise,
       });
 
-      // Fake the video already been in the list of favorites
-      asyncStorage.favorites.load.mockResolvedValue([
+      // Fake the video already been in the list of favourites
+      asyncStorage.favourites.load.mockResolvedValue([
         {
           video_id: "123",
           channel_id: "UCO_aKKYxn4tvrqPjcTzZ6EQ",
@@ -3236,23 +3236,23 @@ describe("App", () => {
       const videoView = screen.queryByTestId("videoView");
       expect(videoView).toBeTruthy();
 
-      // Press the favorite icon
-      const favoriteButton = getButtonByChildTestId(
+      // Press the favourite icon
+      const favouriteButton = getButtonByChildTestId(
         within(screen.queryByTestId("videoView")),
-        "favoriteIcon"
+        "favouriteIcon"
       );
-      expect(favoriteButton).toBeTruthy();
-      await asyncPressEvent(favoriteButton);
+      expect(favouriteButton).toBeTruthy();
+      await asyncPressEvent(favouriteButton);
 
-      // Confirm the video was removed from favorites
+      // Confirm the video was removed from favourites
       expect(
         getButtonByChildTestId(
           within(screen.queryByTestId("videoView")),
-          "favoriteOutlineIcon"
+          "favouriteOutlineIcon"
         )
       );
-      expect(asyncStorage.favorites.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.favorites.save).toHaveBeenCalledWith([]);
+      expect(asyncStorage.favourites.save).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.favourites.save).toHaveBeenCalledWith([]);
     });
   });
 });

@@ -11,12 +11,12 @@ import { MainView } from "../../components/main-view";
 import { showToast } from "../../show-toast";
 import { useIsAppStateActive } from "../../use-app-state";
 import { requestBrightnessPermissions } from "../../use-brightness";
-import { useFavorites } from "../../use-favorites";
+import { useFavourites } from "../../use-favourites";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
-import { ErrorLoadingFavoriteVideos } from "./components/error-loading-favorite-videos-message";
+import { ErrorLoadingFavouriteVideos } from "./components/error-loading-favourite-videos-message";
 import { ErrorRequestingVideosMessage } from "./components/error-requesting-videos-message";
 import { FilterModal } from "./components/filter-modal";
-import { NoFavoriteVideosMessage } from "./components/no-favorite-videos-message";
+import { NoFavouriteVideosMessage } from "./components/no-favourite-videos-message";
 import { VideoList } from "./components/video-list";
 import { useRequestVideos } from "./hooks/use-request-videos";
 import { useVideoSortOrder } from "./hooks/use-sort-video-order";
@@ -39,12 +39,12 @@ export const HomeView = () => {
   }, [isAppActive]);
 
   const { sortOrder, nextSortOrder } = useVideoSortOrder();
-  const [areFavoritesVisible, setAreFavoritesVisible] = useState(false);
+  const [areFavouritesVisible, setAreFavouritesVisible] = useState(false);
   const {
-    favorites: favoriteVideos,
-    error: errorFavoriteVideos,
-    reloadFavorites,
-  } = useFavorites(sortOrder);
+    favourites: favouriteVideos,
+    error: errorFavouriteVideos,
+    reloadFavourites,
+  } = useFavourites(sortOrder);
 
   const {
     channelsToFilterBy,
@@ -59,17 +59,18 @@ export const HomeView = () => {
     error: errorRequestingVideos,
   } = useRequestVideos(channelsToFilterBy, sortOrder);
 
-  const videos = areFavoritesVisible ? favoriteVideos : videosFromApi;
+  const videos = areFavouritesVisible ? favouriteVideos : videosFromApi;
 
   const hasErroredRequestingVideos =
-    !areFavoritesVisible && errorRequestingVideos;
-  const hasErroredLoadingFavorites = areFavoritesVisible && errorFavoriteVideos;
+    !areFavouritesVisible && errorRequestingVideos;
+  const hasErroredLoadingFavourites =
+    areFavouritesVisible && errorFavouriteVideos;
 
   const isPageLoading =
     !hasErroredRequestingVideos && (!videos || isNil(isDetailedViewMode));
   const canShowHomeView =
     !hasErroredRequestingVideos &&
-    !hasErroredLoadingFavorites &&
+    !hasErroredLoadingFavourites &&
     !isPageLoading;
 
   return (
@@ -77,21 +78,21 @@ export const HomeView = () => {
       {hasErroredRequestingVideos && (
         <ErrorRequestingVideosMessage onPressRefresh={refreshVideos} />
       )}
-      {hasErroredLoadingFavorites && (
-        <ErrorLoadingFavoriteVideos onPressRefresh={reloadFavorites} />
+      {hasErroredLoadingFavourites && (
+        <ErrorLoadingFavouriteVideos onPressRefresh={reloadFavourites} />
       )}
       {isPageLoading && <FullScreenLoadingSpinner />}
       {canShowHomeView && (
         <>
           <MainView>
-            {isEmpty(videos) && areFavoritesVisible ? (
-              <NoFavoriteVideosMessage />
+            {isEmpty(videos) && areFavouritesVisible ? (
+              <NoFavouriteVideosMessage />
             ) : (
               <VideoList
                 isDetailedViewMode={isDetailedViewMode}
                 videos={videos}
                 fetchNextPageOfVideos={fetchNextPageOfVideos}
-                shouldDisableNextPageFetch={areFavoritesVisible}
+                shouldDisableNextPageFetch={areFavouritesVisible}
               />
             )}
 
@@ -106,17 +107,17 @@ export const HomeView = () => {
           </MainView>
           <ControlBar>
             <FilterModalButton openSearchModal={showFilterModal} />
-            <ShowFavoritesButton
-              areFavoritesVisible={areFavoritesVisible}
-              toggleFavorites={() => {
-                const willShowFavorites = !areFavoritesVisible;
+            <ShowFavouritesButton
+              areFavouritesVisible={areFavouritesVisible}
+              toggleFavourites={() => {
+                const willShowFavourites = !areFavouritesVisible;
                 showToast(
-                  willShowFavorites
-                    ? "Showing favorite videos"
+                  willShowFavourites
+                    ? "Showing favourite videos"
                     : "Showing all videos",
                   1000
                 );
-                setAreFavoritesVisible(willShowFavorites);
+                setAreFavouritesVisible(willShowFavourites);
               }}
             />
             {shouldRequestPermission ? <PermissionsButton /> : <View />}
@@ -191,11 +192,11 @@ const SortButton = ({ nextSortOrder }) => (
   />
 );
 
-const ShowFavoritesButton = ({ areFavoritesVisible, toggleFavorites }) => (
+const ShowFavouritesButton = ({ areFavouritesVisible, toggleFavourites }) => (
   <HomeViewIconButton
-    iconName={areFavoritesVisible ? "favorite" : "favoriteOutline"}
+    iconName={areFavouritesVisible ? "favourite" : "favouriteOutline"}
     iconSize={23}
-    onPress={toggleFavorites}
+    onPress={toggleFavourites}
   />
 );
 

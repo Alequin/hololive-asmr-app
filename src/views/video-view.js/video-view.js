@@ -9,7 +9,7 @@ import { IconButton } from "../../components/icon-button";
 import { MainView } from "../../components/main-view";
 import { StatusBar } from "../../components/status-bar";
 import { StyledText } from "../../styled-text";
-import { useFavorites } from "../../use-favorites";
+import { useFavourites } from "../../use-favourites";
 import { SCREEN_SIZES, withScreenSize } from "../../window";
 import { ViewContainerWithStatusBar } from "../view-container-with-status-bar";
 import { useIsFullScreenMode } from "./hooks/use-is-full-screen-mode";
@@ -34,8 +34,8 @@ export const VideoView = ({ route: { params: video } }) => {
     video_id,
     channel_id
   );
-  const { favorites, toggleFavorites, isInFavorites } = useFavorites();
-  const isFavoriteVideo = useMemo(() => isInFavorites(video), [favorites]);
+  const { favourites, toggleFavourites, isInFavourites } = useFavourites();
+  const isFavouriteVideo = useMemo(() => isInFavourites(video), [favourites]);
 
   return (
     <ViewContainerWithStatusBar
@@ -89,9 +89,9 @@ export const VideoView = ({ route: { params: video } }) => {
               />
               <VideoviewIconButton
                 isFullScreenMode={isFullScreenMode}
-                iconName={isFavoriteVideo ? "favorite" : "favoriteOutline"}
-                text={isFavoriteVideo ? "Remove favorite" : "Add favorite"}
-                onPress={() => toggleFavorites(video)}
+                iconName={isFavouriteVideo ? "favourite" : "favouriteOutline"}
+                text={isFavouriteVideo ? "Remove favourite" : "Add favourite"}
+                onPress={() => toggleFavourites(video)}
               />
             </SideBar>
             <View
