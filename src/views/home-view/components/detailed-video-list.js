@@ -58,9 +58,7 @@ export const DetailedVideoList = ({
         />
       )}
       ListFooterComponent={() =>
-        !shouldDisableNextPageFetch &&
-        isEmpty(videos) &&
-        shouldShowloadingIndicator ? (
+        !shouldDisableNextPageFetch && shouldShowloadingIndicator ? (
           <LoadingSpinner />
         ) : null
       }
