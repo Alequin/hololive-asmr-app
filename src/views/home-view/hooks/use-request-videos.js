@@ -5,6 +5,9 @@ import { requestVideos } from "../../../external-requests/request-videos";
 import { videoCache } from "../../../async-storage";
 import { flatten } from "lodash";
 
+let x = 0;
+let y = 5;
+
 export const useRequestVideos = (channelsToFilterBy, sortOrder) => {
   const [hasCacheLoaded, setHasCacheLoaded] = useState(null);
   const [videos, setVideos] = useState(null);
@@ -28,6 +31,7 @@ export const useRequestVideos = (channelsToFilterBy, sortOrder) => {
       }
       setVideos(uniqByVideoId(videos));
     } catch (error) {
+      setVideos(null);
       setApiError(error);
     }
   }, [baseVideoRequestParams]);
@@ -48,6 +52,7 @@ export const useRequestVideos = (channelsToFilterBy, sortOrder) => {
       setVideos((videos) => uniqByVideoId(videos, reqestedvideos));
       return wereThereMoreVideos;
     } catch (error) {
+      setVideos(null);
       setApiError(error);
     }
   }, [baseVideoRequestParams, videos, shouldDisableNextPageFetch]);
