@@ -14,6 +14,7 @@ export const useRequestChannels = () => {
       setLoading(true);
       setChannels(await requestChannels());
     } catch (error) {
+      setChannels(null);
       setError(error);
     } finally {
       setLoading(false);
