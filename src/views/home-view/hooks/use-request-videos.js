@@ -5,9 +5,6 @@ import { requestVideos } from "../../../external-requests/request-videos";
 import { videoCache } from "../../../async-storage";
 import { flatten } from "lodash";
 
-let x = 0;
-let y = 5;
-
 export const useRequestVideos = (channelsToFilterBy, sortOrder) => {
   const [hasCacheLoaded, setHasCacheLoaded] = useState(null);
   const [videos, setVideos] = useState(null);

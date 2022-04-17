@@ -1,4 +1,4 @@
-jest.mock("react-native/Libraries/Animated/src/NativeAnimatedHelper");
+jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
 jest.mock("node-fetch", () => jest.fn());
 jest.mock("expo-linking", () => ({
   openURL: jest.fn(),
@@ -21,6 +21,13 @@ jest.mock("react-native/Libraries/AppState/AppState", () => {
     currentState: "active",
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
+  };
+});
+jest.mock("@react-native-async-storage/async-storage", () => {
+  return {
+    setItem: jest.fn(),
+    getItem: jest.fn(),
+    removeItem: jest.fn(),
   };
 });
 
@@ -157,9 +164,9 @@ describe("App", () => {
       await asyncRender(<App />);
 
       // Confirm only the first 50 videos were cached
-      expect(asyncStorage.videoCache.save).toHaveBeenCalledTimes(1);
-      expect(asyncStorage.videoCache.save.mock.calls[0][0]).toHaveLength(50);
-      expect(asyncStorage.videoCache.save.mock.calls[0][0]).toEqual(
+      expect(asyncStorage.videoCache.save).toHaveBeenCalled();
+      expect(last(asyncStorage.videoCache.save.mock.calls)[0]).toHaveLength(50);
+      expect(last(asyncStorage.videoCache.save.mock.calls)[0]).toEqual(
         videos.slice(0, 50)
       );
     });
@@ -214,7 +221,7 @@ describe("App", () => {
       const screen = await asyncRender(<App />);
 
       // Confirm the cache was loaded
-      expect(asyncStorage.videoCache.load).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.videoCache.load).toHaveBeenCalled();
 
       // Confirm the cached video is displayed
       const videoButtons = within(
@@ -300,7 +307,7 @@ describe("App", () => {
       const screen = await asyncRender(<App />);
 
       // Confirm the cache was loaded
-      expect(asyncStorage.videoCache.load).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.videoCache.load).toHaveBeenCalled();
 
       // Confirm the api videos are shown without issue
       const homeView = screen.queryByTestId("homeView");
@@ -493,12 +500,12 @@ describe("App", () => {
         }
       );
 
-      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2);
+      requestVideos.requestVideos.mockClear();
       // Fake scroll to the bottom of the page again
       await act(async () => list.props.onEndReached());
 
       // Confirm no additional api call was made
-      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2);
+      expect(requestVideos.requestVideos).not.toHaveBeenCalled();
     });
 
     it("requests permission to change the system brightness when the app starts", async () => {
@@ -522,7 +529,7 @@ describe("App", () => {
       await asyncRender(<App />);
       await act(() => apiPromise);
 
-      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalled();
     });
 
     it("requests permission to change the system brightness when the app starts and there is an issue check if this is the first load of the app", async () => {
@@ -548,7 +555,7 @@ describe("App", () => {
       await asyncRender(<App />);
       await act(() => apiPromise);
 
-      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalled();
     });
 
     it("shows the expected detailed content in the video buttons", async () => {
@@ -889,12 +896,12 @@ describe("App", () => {
         }
       );
 
-      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2);
+      requestVideos.requestVideos.mockClear();
       // Fake scroll to the bottom of the page again
       await act(async () => list.props.onEndReached());
 
       // Confirm no additional api call was made
-      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2);
+      expect(requestVideos.requestVideos).not.toHaveBeenCalled();
     });
 
     it("saves the current view mode as the user modifies it", async () => {
@@ -941,17 +948,22 @@ describe("App", () => {
       const screen = await asyncRender(<App />);
       await act(() => apiPromise);
 
-      expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(1);
+      expect(asyncStorage.viewModeState.save).toHaveBeenCalled();
+      const callCount = asyncStorage.viewModeState.save.mock.calls.length;
 
       // Switch to the less detailed view
       await asyncPressEvent(getButtonByChildTestId(screen, "zoomOutIcon"));
 
-      expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(2);
+      expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(
+        callCount + 1
+      );
 
       // Switch to the more detailed view
       await asyncPressEvent(getButtonByChildTestId(screen, "zoomInIcon"));
 
-      expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(3);
+      expect(asyncStorage.viewModeState.save).toHaveBeenCalledTimes(
+        callCount + 2
+      );
     });
 
     it("loads the saved value for the view mode on mount", async () => {
@@ -1163,7 +1175,7 @@ describe("App", () => {
       jest.clearAllMocks();
       // Confirm permission is requested on press
       await asyncPressEvent(permissionButtons);
-      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalled();
     });
 
     it("hides the 'Give System Permission' button when permission has been given", async () => {
@@ -1336,7 +1348,7 @@ describe("App", () => {
 
       const screen = await asyncRender(<App />);
 
-      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
+      expect(requestVideos.requestVideos).toHaveBeenCalled();
 
       // Shows an error message when no videos can be loaded
       expect(
@@ -1358,7 +1370,7 @@ describe("App", () => {
 
       const screen = await asyncRender(<App />);
 
-      expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1);
+      expect(requestVideos.requestVideos).toHaveBeenCalled();
 
       fetch.mockResolvedValue({
         status: 200,
@@ -1397,6 +1409,7 @@ describe("App", () => {
           ]),
       });
 
+      requestVideos.requestVideos.mockClear();
       // Press the error button to re-request videos from the api
       await asyncPressEvent(
         getButtonByText(
@@ -1407,10 +1420,10 @@ describe("App", () => {
 
       silenceAllErrorLogs();
       await waitForExpect(() =>
-        expect(requestVideos.requestVideos).toHaveBeenCalledTimes(2)
+        expect(requestVideos.requestVideos).toHaveBeenCalledTimes(1)
       );
       enableAllErrorLogs();
-    });
+    }, 10_000);
 
     it("allows the user to filter the visible videos by channel name", async () => {
       const videoApiPromise = Promise.resolve([
@@ -2071,12 +2084,13 @@ describe("App", () => {
       await asyncRender(<App />);
       await act(() => apiPromise);
 
-      // Checks once on mount
-      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(1);
+      // Checks on mount
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalled();
+      Brightness.getPermissionsAsync.mockClear();
       await act(() => setAppState("background"));
       await act(() => setAppState("active"));
       // Checks again after the app goes from the background to active
-      expect(Brightness.getPermissionsAsync).toHaveBeenCalledTimes(2);
+      expect(Brightness.getPermissionsAsync).toHaveBeenCalled();
     });
 
     it("shows the users favourite videos when the hove view favourite button is pressed", async () => {
@@ -2383,7 +2397,7 @@ describe("App", () => {
       await asyncRender(<App />);
       await act(() => apiPromise);
 
-      expect(Brightness.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(Brightness.requestPermissionsAsync).toHaveBeenCalled();
     });
   });
 
@@ -2941,7 +2955,7 @@ describe("App", () => {
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0]);
 
       // Confirm the backhandler is disabling the hardware back button by always returning true
-      expect(BackHandler.addEventListener).toHaveBeenCalledTimes(2);
+      expect(BackHandler.addEventListener).toHaveBeenCalledTimes(3);
       expect(getBackHandlerCallback()()).toBe(true);
     });
 
@@ -3105,15 +3119,16 @@ describe("App", () => {
 
       // Stop pressing and wait for the press count message to vanish
       silenceAllErrorLogs();
-      await waitForElementToBeRemoved(() =>
-        screen.queryByText("Press anywhere 3 more times")
+      await waitForElementToBeRemoved(
+        () => screen.queryByText("Press anywhere 3 more times"),
+        { timeout: 5_000 }
       );
       enableAllErrorLogs();
 
       // Confirm the brightness is reduced again
       expect(Brightness.setBrightnessAsync).toHaveBeenCalledTimes(1);
       expect(last(Brightness.setBrightnessAsync.mock.calls)).toEqual([0]);
-    });
+    }, 10_000);
 
     it("allows the user to add a video to their favourites", async () => {
       const apiPromise = Promise.resolve([
